@@ -18,14 +18,47 @@
 ## リスト
 まだなし
 
-# クラス構造
-## 基底クラス
-### CustomizableWidget
-
 # Function
 ## フォルダ探索
 * 全探索
 * フォルダ指定探索
+アーティスト名などのメタデータを取得する必要がある．
+https://developer.android.com/reference/android/media/MediaMetadataRetriever
+を使うのかな？
+Dart側でディレクトリ走査->Java側のMedaData取得ルーチンをコール?
+```dart
+static dynamic getMetaData (File file) async {
+ dynamic tags =  await _methodChannel.invokeMethod(
+   'getMetaData', <dynamic>[file.absolute.path]
+  );
+  return tags 
+}
+
+// フォルダ指定探索
+static dynamic getMetaDataFromEachEntry (dynamic[] paths) async {
+  for (dynamic path in paths) {
+    String pathString;
+    if (path is String) {
+      pathString = path;
+    } else if (path is Directory) {
+      pathString = path.toString();
+    } else {
+      throw StylishException('oi');
+    }
+
+    Directory dir = Directory(pathString);
+    if (dir.existsSync()) {
+      for (FileSystemEntity f in dir.listSync()) {
+        if (f is File) {
+          MusicDataStructure.add(f); // ここでgetMetaDataをコール？
+        } else if (f is Directory) {
+          getMetaDataFromEachEntry(f);
+        }
+      }
+    }
+  }
+}
+```
 
 ## Player
 * バックグランド再生（フォアグラウンド再生？）
