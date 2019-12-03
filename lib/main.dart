@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 
 void main() => runApp(MyApp());
 
@@ -45,9 +47,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  Timer _timer;
 
   _MyHomePageState () {
-    
+    // _timer = Timer.periodic(
+    //   Duration(seconds: 1),
+    //   (Timer timer) => _incrementCounter()
+    // );
   }
 
   void _incrementCounter() {
@@ -58,6 +64,22 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+      // print(_timer.tick);
+      // print(_counter);
+      
+      Map<String, String> e = Map<String, String>();
+      e['a'] = 'booooooooo';
+      e['b'] = 'maaaaaaaaa';
+      e['c'] = 'aooooooooi';
+      var v = e.values.toList()..sort((str1, str2) {
+        print(str1);
+        print(str2);
+        var res = str1.compareTo(str2);
+        print(res);
+        return res;
+      });
+
+      print(v);
     });
   }
 
