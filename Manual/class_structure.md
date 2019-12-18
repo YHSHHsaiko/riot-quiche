@@ -159,11 +159,16 @@ static abstract class HogeHogePlayer {
 ```
 
 ## MediaBrowserService [☆]
+tutorialらしきもの:https://developer.android.com/guide/topics/media-apps/audio-app/building-a-mediabrowserservice
+Qiitaの人気記事:https://qiita.com/siy1121/items/f01167186a6677c22435#クライアントからのmedia-sessionに対する要求を処理する
 MediaBrowserServiceCompat:https://developer.android.com/reference/androidx/media/MediaBrowserServiceCompat
+MediaSessionCompat:https://developer.android.com/reference/android/support/v4/media/session/MediaSessionCompat
+MediaBrowserCompat.MediaItem:https://developer.android.com/reference/android/support/v4/media/MediaBrowserCompat.MediaItem
 
 * Java側で``androidx.media.MediaBrowserServiceCompat``を用いてフォアグラウンドサービスを作成
 * ``onLoadChildlen()``メソッドで固有のIDを持つ``MediaItem``オブジェクトを走査してくれるらしい．
-* どうやってそのデータをDartと連携する？Java側だけで保持して，逐次``MethodChannel``からデータを受け取る？
+* どうやってそのオブジェクトをDartと連携する？Java側だけで保持して，逐次``MethodChannel``からデータを受け取る？
+一回``Bitmap``を配列に変換したりするから．パフォーマンス的にどうなの？
 * 
 
 ### シークバーの更新について
