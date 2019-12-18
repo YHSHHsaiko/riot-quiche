@@ -158,9 +158,18 @@ static abstract class HogeHogePlayer {
 }
 ```
 
+## MediaBrowserService [☆]
+MediaBrowserServiceCompat:https://developer.android.com/reference/androidx/media/MediaBrowserServiceCompat
+
+* Java側で``androidx.media.MediaBrowserServiceCompat``を用いてフォアグラウンドサービスを作成
+* ``onLoadChildlen()``メソッドで固有のIDを持つ``MediaItem``オブジェクトを走査してくれるらしい．
+* どうやってそのデータをDartと連携する？Java側だけで保持して，逐次``MethodChannel``からデータを受け取る？
+* 
+
 ### シークバーの更新について
 * JavaからDartへ現在の再生時間を定期的に伝えることは多分無理
 * Playする際に現在の再生時間も一緒にDartに伝えてDart側で数える？
 * Timer クラスで１秒ごと（？）にjava側と同期してスライダーを動かす
   * https://api.dartlang.org/stable/2.6.1/dart-async/Timer-class.html
     * Timer.periodic tickじゃなくcounterを用意
+

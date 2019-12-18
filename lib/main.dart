@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'AndroidInvoker.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -25,6 +27,9 @@ class MyApp extends StatelessWidget {
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
+
+
+
 }
 
 class MyHomePage extends StatefulWidget {
@@ -64,22 +69,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
-      // print(_timer.tick);
-      // print(_counter);
-      
-      Map<String, String> e = Map<String, String>();
-      e['a'] = 'booooooooo';
-      e['b'] = 'maaaaaaaaa';
-      e['c'] = 'aooooooooi';
-      var v = e.values.toList()..sort((str1, str2) {
-        print(str1);
-        print(str2);
-        var res = str1.compareTo(str2);
-        print(res);
-        return res;
-      });
+      AndroidInvoker.hello();
 
-      print(v);
     });
   }
 
@@ -124,6 +115,15 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
+            FlatButton(
+              child: Text("remain: $_counter"),
+              onPressed: () {
+                setState(() {
+                  AndroidInvoker.coldSleep(_counter * 1000);
+                  _counter = 0;
+                });
+              }
+            )
           ],
         ),
       ),
