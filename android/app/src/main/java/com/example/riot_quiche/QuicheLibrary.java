@@ -1,0 +1,80 @@
+package com.example.riot_quiche;
+
+
+import android.content.ContentUris;
+import android.content.Context;
+import android.database.Cursor;
+
+import android.content.ContentResolver;
+
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.support.v4.media.MediaMetadataCompat;
+
+import androidx.annotation.NonNull;
+
+import java.util.LinkedHashMap;
+
+
+public class QuicheLibrary {
+    private String[] projection = {
+        MediaStore.Audio.Media._ID,
+        MediaStore.Audio.Media.ARTIST,
+        MediaStore.Audio.Media.ARTIST_ID,
+        MediaStore.Audio.Media.ALBUM,
+        MediaStore.Audio.Media.ALBUM_ID,
+        MediaStore.Audio.Media.DURATION,
+        MediaStore.Audio.Media.TRACK,
+        MediaStore.Audio.Media.TITLE
+    };
+
+    private int id_index = 0;
+    private int artist_index = 1;
+    private int artist_id_index = 2;
+    private int album_index = 3;
+    private int album_id_index = 4;
+    private int duration_index = 5;
+    private int track_index = 6;
+    private int title_index = 7;
+
+    private ContentResolver contentResolver;
+
+
+    public QuicheLibrary (@NonNull Context context) {
+        contentResolver = context.getContentResolver();
+    }
+
+    public LinkedHashMap<String, MediaMetadataCompat> getMetaData () {
+        LinkedHashMap<String, MediaMetadataCompat> metadataList = null;
+        Uri source = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Cursor cursor = contentResolver.query(
+                source,
+                projection, MediaStore.Audio.Media.IS_MUSIC + " != 0", null, null
+        );
+
+        if (cursor != null) {
+            metadataList = new LinkedHashMap<>();
+            cursor.moveToFirst();
+
+            Uri mediaArtUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
+            Uri mediaAlbumArtUri =  ContentUris.withAppendedId(source, cursor.getLong(album_id_index));
+
+            do {
+                MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
+                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(id_index))
+                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, cursor.getString(title_index))
+                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artist_index))
+                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, cursor.getString(album_index))
+                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, cursor.getLong(duration_index))
+                        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUri.getPath())
+                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, mediaAlbumArtUri.getPath())
+                        .build();
+                metadataList.put(cursor.getString(id_index), metadata);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+
+        return metadataList;
+    }
+}

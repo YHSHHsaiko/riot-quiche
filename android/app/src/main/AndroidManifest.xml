@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".StylishMediaService"
+        <service android:name=".QuicheMediaService"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
