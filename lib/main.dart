@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/AndroidInvoker.dart';
 
 import 'package:riot_quiche/Settings.dart';
 import 'package:riot_quiche/Utils.dart';
@@ -25,11 +26,58 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: TopMain()
+      // home: TopMain()
+      home: Scaffold(
+        body: Test()
+      )
     );
   }
 }
 
+class Test extends StatefulWidget {
+  
+  @override
+  TestState createState () {
+    return TestState();
+  }
+}
+
+class TestState extends State<Test> {
+  
+  @override
+  Widget build (BuildContext context) {
+    return FutureBuilder(
+      future: _getMediaIdList(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          List<String> miList = snapshot.data;
+          print(miList);
+          return ListView.builder(
+            itemCount: miList.length,
+            itemBuilder: (BuildContext context, int index) {
+              return ListTile(
+                leading: Icon(Icons.access_time),
+                title: Text(miList[index]),
+                onTap: () async {
+                  await AndroidInvoker.init(miList[index]);
+                  AndroidInvoker.play();
+                },
+              );
+            }
+          );
+        } else if (snapshot.hasError) {
+          return Text("Error!!!!!!");
+        } else {
+          return Text("wait....");
+        }
+      }
+    );
+  }
+
+  Future<List<String>> _getMediaIdList () async {
+    return await AndroidInvoker.butterflyEffect();
+  }
+}
 
 class TopMain extends StatelessWidget {
 

@@ -1,13 +1,20 @@
 package com.example.riot_quiche;
 
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.IInterface;
+import android.os.Parcel;
+import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -33,6 +40,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
+import java.io.FileDescriptor;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,7 +55,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private int notificationVisibility = NotificationCompat.VISIBILITY_PUBLIC;
     private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder stateBuilder;
-    private QuicheLibrary library;
+    public QuicheLibrary library;
     private ExoPlayer exoPlayer;
     private AudioManager audioManager;
     private Handler handler;
@@ -106,8 +114,10 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                     getApplicationContext(),
                     Util.getUserAgent(getApplicationContext(), "Sevas")
             );
+            Uri uri = targetItem.getDescription().getMediaUri();
+            System.out.println(uri.getPath());
             MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(targetItem.getDescription().getMediaUri());
+                    .createMediaSource(uri);
 
             // prepare exoPlayer
             exoPlayer.prepare(mediaSource);
@@ -162,7 +172,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     };
 
     private void updatePlaybackState (boolean playWhenReady, int playbackState) {
-        int state = PlaybackStateCompat.STATE_NONE;
+        int state;
 
         switch (playbackState) {
             case Player.STATE_IDLE: {
@@ -200,14 +210,15 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     }
 
     @Override
-    public void onCreate () {
-        super.onCreate();
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
 
+        System.out.println("QuicheMediaService: onCreate()");
         // create an AudioManager
         audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
         // initialize the music library
-        library = new QuicheLibrary(this);
+        library = QuicheLibrary.createInstance(this);
 
         // create a MediaSessionCompat
         mediaSession = new MediaSessionCompat(this, LOG_TAG);
@@ -222,17 +233,20 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                         PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_STOP);
 
         mediaSession.setPlaybackState(stateBuilder.build());
+
         mediaSession.setCallback(mediaSessionCallback);
+
         setSessionToken(mediaSession.getSessionToken());
+
         mediaSession.getController().registerCallback(new MediaControllerCompat.Callback() {
             @Override
             public void onPlaybackStateChanged (PlaybackStateCompat state) {
-                notificate();
+                notification();
             }
 
             @Override
             public void onMetadataChanged (MediaMetadataCompat metadata) {
-                notificate();
+                notification();
             }
         });
 
@@ -246,19 +260,51 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         // create async handler
         handler = new Handler();
         handler.postDelayed(new Runnable () {
-           @Override
-           public void run () {
-               int state = exoPlayer.getPlaybackState();
-               if (state == Player.STATE_READY && exoPlayer.getPlayWhenReady()) {
-                   updatePlaybackState(true, state);
-               }
+            @Override
+            public void run () {
+                int state = exoPlayer.getPlaybackState();
+                if (state == Player.STATE_READY && exoPlayer.getPlayWhenReady()) {
+                    updatePlaybackState(true, state);
+                }
 
-               handler.postDelayed(this, 500);
-           }
+                handler.postDelayed(this, 500);
+            }
         }, 500);
+
+        return START_STICKY;
     }
 
-    private void notificate () {
+    @Nullable
+    @Override
+    public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
+        BrowserRoot root = new BrowserRoot(MEDIA_ROOT_ID, null);
+        return root;
+    }
+
+    @Override
+    public void onLoadChildren(
+            @NonNull final String parentId,
+            @NonNull final Result<List<MediaBrowserCompat.MediaItem>> result) {
+
+        List<MediaBrowserCompat.MediaItem> mediaItemList = new ArrayList<>();
+//        if (parentId.equals(MEDIA_ROOT_ID)) {
+//            LinkedHashMap<String, MediaMetadataCompat> metadataList = library.getMetaData();
+//
+//            for (MediaMetadataCompat mbc : metadataList.values()) {
+//                mediaItemList.add(
+//                        new MediaBrowserCompat.MediaItem(
+//                                mbc.getDescription(),
+//                                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE |
+//                                MediaBrowserCompat.MediaItem.FLAG_BROWSABLE)
+//                );
+//            }
+//        }
+
+        //TODO: 今は何も返していない（Metadataは全てQuicheLibraryが保持している）.
+        result.sendResult(mediaItemList);
+    }
+
+    private void notification () {
         MediaControllerCompat mediaController = mediaSession.getController();
         MediaMetadataCompat metadata = mediaController.getMetadata();
 
@@ -267,6 +313,13 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         }
 
         MediaDescriptionCompat description = metadata.getDescription();
+
+        Intent notificationIntent = getApplicationContext().getPackageManager()
+                .getLaunchIntentForPackage(getApplicationContext().getPackageName());
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                getApplicationContext(), 0,
+                notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT
+        );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 getApplicationContext(), NOTIFICATION_CHANNEL);
@@ -277,7 +330,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 .setSubText(description.getDescription())
                 .setLargeIcon(description.getIconBitmap())
 
-//                .setContentIntent(notificationIntent)
+                .setContentIntent(pendingIntent)
 
                 .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this, PlaybackStateCompat.ACTION_STOP))
@@ -322,35 +375,5 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             stopForeground(false);
         }
 
-    }
-
-    @Nullable
-    @Override
-    public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
-        BrowserRoot root = new BrowserRoot(MEDIA_ROOT_ID, null);
-        return root;
-    }
-
-    @Override
-    public void onLoadChildren(
-            @NonNull final String parentId,
-            @NonNull final Result<List<MediaBrowserCompat.MediaItem>> result) {
-
-        List<MediaBrowserCompat.MediaItem> mediaItemList = new ArrayList<>();
-//        if (parentId.equals(MEDIA_ROOT_ID)) {
-//            LinkedHashMap<String, MediaMetadataCompat> metadataList = library.getMetaData();
-//
-//            for (MediaMetadataCompat mbc : metadataList.values()) {
-//                mediaItemList.add(
-//                        new MediaBrowserCompat.MediaItem(
-//                                mbc.getDescription(),
-//                                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE |
-//                                MediaBrowserCompat.MediaItem.FLAG_BROWSABLE)
-//                );
-//            }
-//        }
-
-        //TODO: 今は何も返していない（Metadataは全てQuicheLibraryが保持している）.
-        result.sendResult(mediaItemList);
     }
 }

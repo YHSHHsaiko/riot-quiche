@@ -2,9 +2,12 @@ package com.example.riot_quiche;
 
 import android.app.PictureInPictureParams;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
@@ -18,6 +21,7 @@ import androidx.annotation.NonNull;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import io.flutter.Log;
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
@@ -44,6 +48,11 @@ public class MainActivity extends FlutterActivity {
 
             mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallback);
         }
+
+        @Override
+        public void onConnectionFailed () {
+        }
+
     };
     private MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback() {
         @Override
@@ -95,22 +104,35 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
 
-        /* register SamplePlugin */
-        SamplePlugin.registerWith(
-                this.registrarFor("com.example.riot_quiche.SamplePlugin")
+        /* register QuicheMusicPlayerPlugin */
+        QuicheMusicPlayerPlugin.registerWith(
+                this.registrarFor("com.example.riot_quiche.QuicheMusicPlayerPlugin")
         );
 
         // start media foreground service
         startService(new Intent(this, QuicheMediaService.class));
 
-        // initialize mediabrowser
+        // initialize media browser
         mediaBrowser = new MediaBrowserCompat(
                 this,
                 new ComponentName(this, QuicheMediaService.class),
                 connectionCallback,
                 null
         );
+
+        mediaBrowser.connect();
     }
 
+    @Override
+    protected void onDestroy () {
+        Intent intent = new Intent(this, QuicheMediaService.class);
+        stopService(intent);
+
+        super.onDestroy();
+    }
+
+    public void playFromMediaId (String mediaId) {
+        mediaController.getTransportControls().playFromMediaId(mediaId, null);
+    }
 
 }
