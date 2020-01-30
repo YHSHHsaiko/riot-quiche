@@ -1,21 +1,21 @@
 package com.example.riot_quiche;
 
-import android.app.PictureInPictureParams;
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import io.flutter.app.FlutterActivity;
@@ -23,6 +23,8 @@ import io.flutter.plugins.GeneratedPluginRegistrant;
 
 
 public class MainActivity extends FlutterActivity {
+    public int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
+
     private MediaBrowserCompat mediaBrowser;
     private MediaControllerCompat mediaController;
     private MediaBrowserCompat.ConnectionCallback connectionCallback = new MediaBrowserCompat.ConnectionCallback() {
@@ -43,6 +45,11 @@ public class MainActivity extends FlutterActivity {
             }
 
             mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallback);
+        }
+
+        @Override
+        public void onConnectionFailed () {
+            Log.e("MainActivity.connectionCallback", "MediaBrowserCompat: connection failed.");
         }
     };
     private MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback() {
@@ -95,22 +102,68 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
 
-        /* register SamplePlugin */
-        SamplePlugin.registerWith(
-                this.registrarFor("com.example.riot_quiche.SamplePlugin")
+        /* register QuicheMusicPlayerPlugin */
+        QuicheMusicPlayerPlugin.registerWith(
+                this.registrarFor("com.example.riot_quiche.QuicheMusicPlayerPlugin")
         );
 
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (false && shouldShowRequestPermissionRationale(
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                // Explain to the user why we need to read the contacts
+            }
+
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+            // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+            // app-defined int constant that should be quite unique
+        } else {
+            startServiceAndConnect();
+        }
+    }
+
+    @Override
+    protected void onDestroy () {
+        Intent intent = new Intent(this, QuicheMediaService.class);
+        stopService(intent);
+
+        super.onDestroy();
+    }
+
+    @Override
+    public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
+
+        for (String permission : permissions) {
+            switch (permission) {
+                case Manifest.permission.READ_EXTERNAL_STORAGE: {
+                    startServiceAndConnect();
+                    break;
+                }
+            }
+        }
+    }
+
+    private void startServiceAndConnect () {
         // start media foreground service
         startService(new Intent(this, QuicheMediaService.class));
 
-        // initialize mediabrowser
+        // initialize media browser
         mediaBrowser = new MediaBrowserCompat(
                 this,
                 new ComponentName(this, QuicheMediaService.class),
                 connectionCallback,
                 null
         );
+
+        mediaBrowser.connect();
+
     }
 
+    public void playFromMediaId (String mediaId) {
+        mediaController.getTransportControls().playFromMediaId(mediaId, null);
+    }
 
 }

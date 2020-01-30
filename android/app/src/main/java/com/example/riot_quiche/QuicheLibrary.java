@@ -29,7 +29,7 @@ public class QuicheLibrary {
         MediaStore.Audio.Media.ALBUM_ID,
         MediaStore.Audio.Media.DURATION,
         MediaStore.Audio.Media.TRACK,
-        MediaStore.Audio.Media.TITLE
+        MediaStore.Audio.Media.TITLE,
     };
 
     private int id_index = 0;
@@ -45,10 +45,23 @@ public class QuicheLibrary {
 
     private LinkedHashMap<String, MediaMetadataCompat> metadataMap;
 
+    private static QuicheLibrary _instance;
 
-    public QuicheLibrary (@NonNull Context context) {
+
+    private QuicheLibrary (Context context) {
         contentResolver = context.getContentResolver();
         initializeMetadataMap();
+    }
+
+    public static QuicheLibrary createInstance (@NonNull Context context) {
+        return _instance = new QuicheLibrary(context);
+    }
+    public static QuicheLibrary getInstance () throws Exception {
+        if (_instance != null) {
+            return _instance;
+        } else {
+            throw new Exception("no instance for QuicheLibrary");
+        }
     }
 
     public LinkedHashMap<String, MediaMetadataCompat> getMetadataMap () {
@@ -67,7 +80,7 @@ public class QuicheLibrary {
 
     private void initializeMetadataMap () {
         metadataMap = new LinkedHashMap<>();
-        Uri source = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Uri source = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
         Cursor cursor = contentResolver.query(
                 source,
                 projection, MediaStore.Audio.Media.IS_MUSIC + " != 0", null, null
@@ -76,8 +89,9 @@ public class QuicheLibrary {
         if (cursor != null) {
             cursor.moveToFirst();
 
+            Uri mediaUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
             Uri mediaArtUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
-            Uri mediaAlbumArtUri =  ContentUris.withAppendedId(source, cursor.getLong(album_id_index));
+            Uri mediaAlbumArtUri = ContentUris.withAppendedId(source, cursor.getLong(album_id_index));
 
             do {
                 MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
@@ -86,8 +100,9 @@ public class QuicheLibrary {
                         .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artist_index))
                         .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, cursor.getString(album_index))
                         .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, cursor.getLong(duration_index))
-                        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUri.getPath())
-                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, mediaAlbumArtUri.getPath())
+                        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUri.toString())
+                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, mediaAlbumArtUri.toString())
+                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUri.toString())
                         .build();
                 metadataMap.put(cursor.getString(id_index), metadata);
             } while (cursor.moveToNext());

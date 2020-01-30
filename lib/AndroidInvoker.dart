@@ -8,12 +8,18 @@ class AndroidInvoker {
     'test_channel'
   );
 
-  static Future<Null> hello () async {
-    await _methodChannel.invokeMethod('hello', <dynamic>[]);
+  static Future<List<String>> butterflyEffect () async {
+    List<dynamic> res = await _methodChannel.invokeMethod('butterflyEffect', <dynamic>[]);
+
+    return List<String>.from(res);
   }
 
-  static Future<Null> coldSleep (int delay) async {
-    await _methodChannel.invokeListMethod('coldSleep', <dynamic>[delay]);
+  static Future<Null> init (String mediaId) async {
+    await _methodChannel.invokeMethod('init', <dynamic>[mediaId]);
+  }
+
+  static Future<Null> play () async {
+    await _methodChannel.invokeMethod('play', <dynamic>[]);
   }
 
 }

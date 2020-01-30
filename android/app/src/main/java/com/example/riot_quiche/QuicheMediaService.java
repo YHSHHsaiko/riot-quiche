@@ -1,11 +1,16 @@
 package com.example.riot_quiche;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -30,6 +35,7 @@ import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSchemeDataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
@@ -42,7 +48,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private static final String MEDIA_ROOT_ID = "quiche";
     private static final String MEDIA_EMPTY_ROOT_ID = "nirvana";
     private static final String LOG_TAG = "quiche_log";
-    private static final String NOTIFICATION_CHANNEL = "riot-quiche";
+    private static final String NOTIFICAION_CHANNEL_ID = "riot-quiche";
+    private static final String NOTIFICATION_ID = "media-play";
 
     private int notificationVisibility = NotificationCompat.VISIBILITY_PUBLIC;
     private MediaSessionCompat mediaSession;
@@ -104,7 +111,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
             DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
                     getApplicationContext(),
-                    Util.getUserAgent(getApplicationContext(), "Sevas")
+                    Util.getUserAgent(getApplicationContext(), "riot-quiche")
             );
             MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(targetItem.getDescription().getMediaUri());
@@ -200,14 +207,14 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     }
 
     @Override
-    public void onCreate () {
-        super.onCreate();
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
 
         // create an AudioManager
         audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
         // initialize the music library
-        library = new QuicheLibrary(this);
+        library = QuicheLibrary.createInstance(this);
 
         // create a MediaSessionCompat
         mediaSession = new MediaSessionCompat(this, LOG_TAG);
@@ -227,12 +234,12 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         mediaSession.getController().registerCallback(new MediaControllerCompat.Callback() {
             @Override
             public void onPlaybackStateChanged (PlaybackStateCompat state) {
-                notificate();
+                notification();
             }
 
             @Override
             public void onMetadataChanged (MediaMetadataCompat metadata) {
-                notificate();
+                notification();
             }
         });
 
@@ -256,9 +263,11 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                handler.postDelayed(this, 500);
            }
         }, 500);
+
+        return START_NOT_STICKY;
     }
 
-    private void notificate () {
+    private void notification () {
         MediaControllerCompat mediaController = mediaSession.getController();
         MediaMetadataCompat metadata = mediaController.getMetadata();
 
@@ -268,8 +277,27 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         MediaDescriptionCompat description = metadata.getDescription();
 
+        Intent notificationIntent = getApplicationContext().getPackageManager()
+                .getLaunchIntentForPackage(getApplicationContext().getPackageName());
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                getApplicationContext(), 0,
+                notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(
+                    NOTIFICAION_CHANNEL_ID,  NOTIFICATION_ID,
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+
+            NotificationManager notificationManager =
+                    (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(notificationChannel);
+
+        }
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                getApplicationContext(), NOTIFICATION_CHANNEL);
+                getApplicationContext(), NOTIFICAION_CHANNEL_ID);
 
         // TODO: intent作る　いらない気もする．．．タップして開きたいなら必要
         builder
@@ -277,14 +305,17 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 .setSubText(description.getDescription())
                 .setLargeIcon(description.getIconBitmap())
 
-//                .setContentIntent(notificationIntent)
+                .setContentIntent(pendingIntent)
 
                 .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this, PlaybackStateCompat.ACTION_STOP))
 
                 .setVisibility(notificationVisibility)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
                 .setSmallIcon(R.drawable.exo_controls_play)
+
+                .setDefaults(0)
 //                .setColor()
 //                .setStyle()
         ;
