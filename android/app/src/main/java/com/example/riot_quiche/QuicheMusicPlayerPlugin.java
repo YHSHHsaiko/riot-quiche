@@ -21,6 +21,10 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler {
 
     private String _currentMediaId;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 820ac9b4a39bf7bb1d71896b639b39ae55e2f616
     private QuicheMusicPlayerPlugin(Activity activity) {
         _activity = (MainActivity)activity;
     }
@@ -69,7 +73,6 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler {
                     result.success(res);
                     break;
                 }
-
                 default: {
                     result.notImplemented();
                     break;

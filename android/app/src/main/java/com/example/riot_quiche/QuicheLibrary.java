@@ -7,15 +7,12 @@ import android.database.Cursor;
 
 import android.content.ContentResolver;
 
-import android.media.browse.MediaBrowser;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 
 import androidx.annotation.NonNull;
-
-import com.google.android.exoplayer2.Player;
 
 import java.util.LinkedHashMap;
 
@@ -40,6 +37,7 @@ public class QuicheLibrary {
     private int duration_index = 5;
     private int track_index = 6;
     private int title_index = 7;
+    private int data_index = 8;
 
     private ContentResolver contentResolver;
 
@@ -51,6 +49,16 @@ public class QuicheLibrary {
     private QuicheLibrary (Context context) {
         contentResolver = context.getContentResolver();
         initializeMetadataMap();
+    }
+    public static QuicheLibrary createInstance (@NonNull Context context) {
+        return _instance = new QuicheLibrary(context);
+    }
+    public static QuicheLibrary getInstance () throws Exception {
+        if (_instance != null) {
+            return _instance;
+        } else {
+            throw new Exception();
+        }
     }
 
     public static QuicheLibrary createInstance (@NonNull Context context) {
@@ -109,5 +117,6 @@ public class QuicheLibrary {
 
             cursor.close();
         }
+
     }
 }

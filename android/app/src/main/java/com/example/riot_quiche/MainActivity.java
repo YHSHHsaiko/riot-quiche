@@ -2,10 +2,12 @@ package com.example.riot_quiche;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -18,6 +20,7 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
+import io.flutter.Log;
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
@@ -159,7 +162,14 @@ public class MainActivity extends FlutterActivity {
         );
 
         mediaBrowser.connect();
+    }
 
+    @Override
+    protected void onDestroy () {
+        Intent intent = new Intent(this, QuicheMediaService.class);
+        stopService(intent);
+
+        super.onDestroy();
     }
 
     public void playFromMediaId (String mediaId) {
