@@ -37,7 +37,6 @@ public class QuicheLibrary {
     private int duration_index = 5;
     private int track_index = 6;
     private int title_index = 7;
-    private int data_index = 8;
 
     private ContentResolver contentResolver;
 
@@ -49,16 +48,6 @@ public class QuicheLibrary {
     private QuicheLibrary (Context context) {
         contentResolver = context.getContentResolver();
         initializeMetadataMap();
-    }
-    public static QuicheLibrary createInstance (@NonNull Context context) {
-        return _instance = new QuicheLibrary(context);
-    }
-    public static QuicheLibrary getInstance () throws Exception {
-        if (_instance != null) {
-            return _instance;
-        } else {
-            throw new Exception();
-        }
     }
 
     public static QuicheLibrary createInstance (@NonNull Context context) {
@@ -88,7 +77,7 @@ public class QuicheLibrary {
 
     private void initializeMetadataMap () {
         metadataMap = new LinkedHashMap<>();
-        Uri source = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
+        Uri source = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor cursor = contentResolver.query(
                 source,
                 projection, MediaStore.Audio.Media.IS_MUSIC + " != 0", null, null

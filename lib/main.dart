@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:riot_quiche/AndroidInvoker.dart';
 
 import 'package:riot_quiche/Settings.dart';
@@ -29,9 +30,37 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: Scaffold(
-        body: Test()
+        body: EventChannelTest()
       )
     );
+  }
+}
+
+class EventChannelTest extends StatelessWidget {
+  static const EventChannel _eventChannel = const EventChannel(
+      'event_channel'
+  );
+
+  @override
+  Widget build (BuildContext context) {
+    return FutureBuilder(
+      future: _future(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        return Text("*event*");
+      },
+    );
+  }
+
+  Future<Null> _future () async {
+    _eventChannel.receiveBroadcastStream("test").listen(
+      (dynamic event) {
+        print('dart: received event: $event');
+      },
+      onError: (dynamic error) {
+        print('dart: received error: $error');
+      }
+    );
+    await AndroidInvoker.requestPermissions();
   }
 }
 

@@ -10,6 +10,7 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -119,7 +120,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                     Util.getUserAgent(getApplicationContext(), "riot-quiche")
             );
             Uri uri = targetItem.getDescription().getMediaUri();
-            System.out.println(uri.getPath());
             MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(uri);
 

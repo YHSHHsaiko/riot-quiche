@@ -8,6 +8,12 @@ class AndroidInvoker {
     'test_channel'
   );
 
+  static Future<bool> requestPermissions () async {
+    bool res = await _methodChannel.invokeMethod('requestPermissions', <dynamic>[]);
+
+    return res;
+  }
+
   static Future<List<String>> butterflyEffect () async {
     List<dynamic> res = await _methodChannel.invokeMethod('butterflyEffect', <dynamic>[]);
 

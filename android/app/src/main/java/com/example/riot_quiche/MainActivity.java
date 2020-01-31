@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
-import io.flutter.Log;
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
@@ -110,6 +109,9 @@ public class MainActivity extends FlutterActivity {
                 this.registrarFor("com.example.riot_quiche.QuicheMusicPlayerPlugin")
         );
 
+        // start service and bind to media controller
+        startServiceAndConnect();
+
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -123,8 +125,6 @@ public class MainActivity extends FlutterActivity {
                     MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
             // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
             // app-defined int constant that should be quite unique
-        } else {
-            startServiceAndConnect();
         }
     }
 
@@ -139,10 +139,17 @@ public class MainActivity extends FlutterActivity {
     @Override
     public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
 
-        for (String permission : permissions) {
+        for (int i = 0; i < permissions.length; ++i) {
+            String permission = permissions[i];
+            int grantResult = grantResults[i];
+
             switch (permission) {
                 case Manifest.permission.READ_EXTERNAL_STORAGE: {
-                    startServiceAndConnect();
+                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                        // TODO: [権限付与]なんかやる
+                    } else {
+                        // TODO: エラー
+                    }
                     break;
                 }
             }
@@ -162,14 +169,6 @@ public class MainActivity extends FlutterActivity {
         );
 
         mediaBrowser.connect();
-    }
-
-    @Override
-    protected void onDestroy () {
-        Intent intent = new Intent(this, QuicheMediaService.class);
-        stopService(intent);
-
-        super.onDestroy();
     }
 
     public void playFromMediaId (String mediaId) {

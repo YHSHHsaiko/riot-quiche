@@ -6,39 +6,56 @@ import android.content.Intent;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.flutter.Log;
+import io.flutter.plugin.common.EventChannel;
+import io.flutter.plugin.common.EventChannel.StreamHandler;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-import static androidx.core.content.ContextCompat.startForegroundService;
 
-
-public class QuicheMusicPlayerPlugin implements MethodCallHandler {
+public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler  {
 
     private MainActivity _activity;
 
     private String _currentMediaId;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 820ac9b4a39bf7bb1d71896b639b39ae55e2f616
     private QuicheMusicPlayerPlugin(Activity activity) {
         _activity = (MainActivity)activity;
     }
 
+    private static final String METHOD_CHANNEL = "test_channel";
+    private static final String EVENT_CHANNEL = "event_channel";
+
     /** Plugin registration. */
     public static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "test_channel");
-        channel.setMethodCallHandler(new QuicheMusicPlayerPlugin(registrar.activity()));
+        QuicheMusicPlayerPlugin instance = new QuicheMusicPlayerPlugin(registrar.activity());
+
+        final MethodChannel methodChannel = new MethodChannel(registrar.messenger(), METHOD_CHANNEL);
+        methodChannel.setMethodCallHandler(instance);
+
+        final EventChannel eventChannel = new EventChannel(registrar.messenger(), EVENT_CHANNEL);
+        eventChannel.setStreamHandler(instance);
     }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         if (call.method != null) {
             switch (call.method) {
+                case "requestPermissions": {
+                    Log.d("plugin", "requestPermissions: onMethodCall");
+                    boolean res = false;
+                    try {
+                        res = requestPermissions();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    result.success(res);
+                    break;
+                }
                 case "butterflyEffect": {
                     ArrayList<String> res = new ArrayList<>();
                     try {
@@ -79,6 +96,27 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler {
                 }
             }
         }
+    }
+
+    @Override
+    public void onListen (Object obj, EventChannel.EventSink sink) {
+        Object _obj = (obj == null) ? "null" : obj;
+        Log.d("plugin", "on listen: StreamHandler");
+        Log.d("plugin", _obj.toString());
+
+        sink.success(_obj);
+    }
+
+    @Override
+    public void onCancel (Object obj) {
+        Object _obj = (obj == null) ? "null" : obj;
+        Log.d("plugin", "on cancel: StreamHandler");
+        Log.d("plugin", _obj.toString());
+    }
+
+    private boolean requestPermissions() {
+        // TODO: request permission
+        return true;
     }
 
     private ArrayList<String> butterflyEffect (MethodCall call) {
