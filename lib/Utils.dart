@@ -16,5 +16,6 @@ abstract class Utils {
   static double screenWidth;
   // entire screen height
   static double screenHeight;
+
 }
 

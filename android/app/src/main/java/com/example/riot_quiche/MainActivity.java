@@ -1,6 +1,5 @@
 package com.example.riot_quiche;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,14 +17,21 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 
 public class MainActivity extends FlutterActivity {
-    public int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
+    public PlayerAPI playerAPI = new PlayerAPI();
+    public PluginAPI pluginAPI = new PluginAPI();
+
+    private QuicheMusicPlayerPlugin.EventAPI eventAPI;
 
     private MediaBrowserCompat mediaBrowser;
     private MediaControllerCompat mediaController;
@@ -105,27 +111,10 @@ public class MainActivity extends FlutterActivity {
         GeneratedPluginRegistrant.registerWith(this);
 
         /* register QuicheMusicPlayerPlugin */
-        QuicheMusicPlayerPlugin.registerWith(
+        eventAPI = QuicheMusicPlayerPlugin.registerWith(
                 this.registrarFor("com.example.riot_quiche.QuicheMusicPlayerPlugin")
-        );
+        ).eventAPI;
 
-        // start service and bind to media controller
-        startServiceAndConnect();
-
-        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            if (false && shouldShowRequestPermissionRationale(
-                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                // Explain to the user why we need to read the contacts
-            }
-
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-            // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
-            // app-defined int constant that should be quite unique
-        }
     }
 
     @Override
@@ -138,22 +127,20 @@ public class MainActivity extends FlutterActivity {
 
     @Override
     public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
+        HashMap<String, Boolean> result = new HashMap<String, Boolean>();
 
         for (int i = 0; i < permissions.length; ++i) {
             String permission = permissions[i];
             int grantResult = grantResults[i];
 
-            switch (permission) {
-                case Manifest.permission.READ_EXTERNAL_STORAGE: {
-                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                        // TODO: [権限付与]なんかやる
-                    } else {
-                        // TODO: エラー
-                    }
-                    break;
-                }
+            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                result.put(permission, true);
+            } else {
+                result.put(permission, false);
             }
         }
+
+        pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.requestPermissions, result);
     }
 
     private void startServiceAndConnect () {
@@ -171,8 +158,52 @@ public class MainActivity extends FlutterActivity {
         mediaBrowser.connect();
     }
 
-    public void playFromMediaId (String mediaId) {
-        mediaController.getTransportControls().playFromMediaId(mediaId, null);
+    // Player APIs
+    public class PlayerAPI {
+        public void playFromMediaId (String mediaId) {
+            mediaController.getTransportControls().playFromMediaId(mediaId, null);
+        }
+    }
+
+    // plugin APIs
+    public class PluginAPI {
+        public void requestPermissions (ArrayList<String> permissionIdentifiers) {
+            int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
+
+            ArrayList<String> notGrantedPermissionIdentifiers = new ArrayList<>();
+            for (String permissionIdentifier : permissionIdentifiers) {
+                if (checkSelfPermission(permissionIdentifier) != PackageManager.PERMISSION_GRANTED) {
+                    notGrantedPermissionIdentifiers.add(permissionIdentifier);
+                }
+            }
+
+            if (notGrantedPermissionIdentifiers.size() == 0) {
+                HashMap<String, Boolean> result = new HashMap<String, Boolean>();
+                for (String permissionIdentifier : permissionIdentifiers) {
+                    result.put(permissionIdentifier, true);
+                }
+                sendResult(QuicheMusicPlayerPlugin.EventCalls.requestPermissions, result);
+            } else {
+
+                // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+                // app-defined int constant that should be quite unique
+                String[] requestedPermissions = new String[notGrantedPermissionIdentifiers.size()];
+                notGrantedPermissionIdentifiers.toArray(requestedPermissions);
+                MainActivity.this.requestPermissions(
+                        requestedPermissions,
+                        MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE
+                );
+            }
+        }
+
+        public void sendResult (String id, Object obj) {
+            eventAPI.receiveResult(id, obj);
+        }
+
+        public void trigger () {
+            startServiceAndConnect();
+        }
+
     }
 
 }

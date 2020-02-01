@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:riot_quiche/AndroidInvoker.dart';
+import 'package:riot_quiche/Permissions.dart';
 
 import 'package:riot_quiche/Settings.dart';
 import 'package:riot_quiche/Utils.dart';
@@ -37,30 +38,39 @@ class MyApp extends StatelessWidget {
 }
 
 class EventChannelTest extends StatelessWidget {
-  static const EventChannel _eventChannel = const EventChannel(
-      'event_channel'
-  );
 
   @override
   Widget build (BuildContext context) {
     return FutureBuilder(
       future: _future(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return Text("*event*");
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting: {
+            return Text("*wait*");
+          }
+          case ConnectionState.done: {
+            if (snapshot.hasError) {
+              return Center(child: Text("*error*"));
+            }
+            return Center(child: Text("*done*"));
+          }
+          default: {
+            return Text("*default*");
+          }
+        }
       },
     );
   }
 
   Future<Null> _future () async {
-    _eventChannel.receiveBroadcastStream("test").listen(
-      (dynamic event) {
-        print('dart: received event: $event');
-      },
-      onError: (dynamic error) {
-        print('dart: received error: $error');
-      }
+    // TODO: permission 考えようね～
+    List<bool> res = await AndroidInvoker.requestPermissions(
+      <Permissions>[
+        Permissions.READ_EXTERNAL_STORAGE
+      ]
     );
-    await AndroidInvoker.requestPermissions();
+
+    print(res);
   }
 }
 
