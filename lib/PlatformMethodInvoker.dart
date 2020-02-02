@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 
-import 'package:riot_quiche/Permissions.dart';
+import 'package:riot_quiche/Enumerates/Permission.dart';
 
 
-class AndroidInvoker {
+class PlatformMethodInvoker {
   static const MethodChannel _methodChannel = const MethodChannel(
     'test_channel'
   );
@@ -13,9 +13,9 @@ class AndroidInvoker {
       'event_channel'
   );
 
-  static Future<List<bool>> requestPermissions (List<Permissions> permissions) async {
+  static Future<List<bool>> requestPermissions (List<Permission> permissions) async {
     List<int> arguments = permissions.map((element) {
-      return Permissions.values.indexOf(element);
+      return Permission.values.indexOf(element);
     }).toList();
     var stream = _eventChannel.receiveBroadcastStream(<dynamic>[
       "requestPermissions", ...arguments
