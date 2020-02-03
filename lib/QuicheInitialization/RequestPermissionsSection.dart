@@ -9,6 +9,13 @@ import 'package:riot_quiche/QuicheOracle.dart';
 
 class RequestPermissionsSection extends IQuicheInitialization {
 
+  RequestPermissionsSection ({
+    @required void Function() onSuccess,
+    @required void Function() onError,
+    Key key,
+  })
+  : super(key: key, onSuccess: onSuccess, onError: onError);
+
   @override
   _RequestPermissionsSectionState createState () {
     return _RequestPermissionsSectionState();
@@ -39,7 +46,7 @@ class _RequestPermissionsSectionState extends State<RequestPermissionsSection> {
             for (int i = 0; i < Permission.values.length; ++i) {
               if (isGranted[i]) {
                 print('permission is granted: ${Permission.values[i]}');
-                QuicheOracleVariables.grantedPermission.add(Permission.values[i]);
+                QuicheOracleVariables.permissionInformation[Permission.values[i]] = true;
 
                 switch (Permission.values[i]) {
                   case Permission.READ_EXTERNAL_STORAGE: {
@@ -51,6 +58,7 @@ class _RequestPermissionsSectionState extends State<RequestPermissionsSection> {
                 }
               } else {
                 print('permission is not granted: ${Permission.values[i]}');
+                QuicheOracleVariables.permissionInformation[Permission.values[i]] = false;
 
                 switch (Permission.values[i]) {
                   case Permission.READ_EXTERNAL_STORAGE: {
@@ -74,6 +82,7 @@ class _RequestPermissionsSectionState extends State<RequestPermissionsSection> {
         ),
               FlatButton(
           onPressed: () async {
+            print('permission is all not granted');
             widget.onError();
           },
           child: Text("cancel")

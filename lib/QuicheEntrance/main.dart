@@ -16,11 +16,13 @@ class _QuicheEntranceState extends State<QuicheEntrance> {
 
   @override
   Widget build (BuildContext context) {
-    return FutureBuilder(
-      future: _decideRoad(context),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return Center(child: Text("loading..."));
-      }
+    return Scaffold(
+      body: FutureBuilder(
+        future: _decideRoad(context),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          return Center(child: Text("loading..."));
+        }
+      )
     );
   }
 

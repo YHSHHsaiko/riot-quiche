@@ -14,6 +14,7 @@ import android.support.v4.media.MediaMetadataCompat;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 
@@ -67,6 +68,16 @@ public class QuicheLibrary {
     public MediaMetadataCompat getMetadataFromMediaId (String mediaId) {
         return metadataMap.get(mediaId);
     }
+    public ArrayList<MediaBrowserCompat.MediaItem> getMediaItemList () {
+        ArrayList<MediaBrowserCompat.MediaItem> result = new ArrayList<MediaBrowserCompat.MediaItem>();
+
+
+        for (String mediaId : metadataMap.keySet()) {
+            result.add(getMediaItemFromMediaId(mediaId));
+        }
+
+        return result;
+    }
     public MediaBrowserCompat.MediaItem getMediaItemFromMediaId (String mediaId) {
         return new MediaBrowserCompat.MediaItem(
                 metadataMap.get(mediaId).getDescription(),
@@ -101,7 +112,7 @@ public class QuicheLibrary {
                         .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, mediaAlbumArtUri.toString())
                         .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUri.toString())
                         .build();
-                metadataMap.put(cursor.getString(id_index), metadata);
+                metadataMap.put(mediaUri.toString(), metadata);
             } while (cursor.moveToNext());
 
             cursor.close();

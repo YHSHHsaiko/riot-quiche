@@ -16,9 +16,16 @@ extension QuicheOracleVariables on QuicheOracle {
   // entire screen height
   static double screenHeight;
 
+  // media ID List
+  static List<String> mediaIdList;
+
 
   // permission information
-  static final List<Permission> grantedPermission = List<Permission>();
+  static final Map<Permission, bool> permissionInformation = Map<Permission, bool>.fromIterable(
+    Permission.values,
+    key: (key) => key as Permission,
+    value: (_) => false,
+  );
 }
 
 

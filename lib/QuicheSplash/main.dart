@@ -31,17 +31,19 @@ class _QuicheSplashState extends State<QuicheSplash> {
   
   @override
   Widget build (BuildContext context) {
-    return FutureBuilder(
-      future: _animateUntil(context),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        /**
-        * TODO:
-        * set a fixed time animation.
-        */
-        return Center(
-          child: FlutterLogo()
-        );
-      },
+    return Scaffold(
+      body: FutureBuilder(
+        future: _animateUntil(context),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          /**
+          * TODO:
+          * set a fixed time animation.
+          */
+          return Center(
+            child: FlutterLogo()
+          );
+        },
+      )
     );
   }
 

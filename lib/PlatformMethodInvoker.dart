@@ -29,6 +29,11 @@ class PlatformMethodInvoker {
     return res;
   }
 
+  static Future<bool> trigger () async {
+    bool res = await _methodChannel.invokeMethod('trigger', <dynamic>[]);
+    return res;
+  }
+
   static Future<List<String>> butterflyEffect () async {
     List<dynamic> res = await _methodChannel.invokeMethod('butterflyEffect', <dynamic>[]);
 

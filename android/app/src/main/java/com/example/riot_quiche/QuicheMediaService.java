@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import io.flutter.Log;
+
 
 public class QuicheMediaService extends MediaBrowserServiceCompat {
     private static final String MEDIA_ROOT_ID = "quiche";
@@ -126,6 +128,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             // prepare exoPlayer
             exoPlayer.prepare(mediaSource);
 
+
+            Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
             onPlay();
 
             mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
@@ -328,8 +332,10 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(
                     NOTIFICAION_CHANNEL_ID,  NOTIFICATION_ID,
-                    NotificationManager.IMPORTANCE_HIGH
+                    NotificationManager.IMPORTANCE_LOW
             );
+
+            notificationChannel.setSound(null, null);
 
             NotificationManager notificationManager =
                     (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
@@ -352,7 +358,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                         this, PlaybackStateCompat.ACTION_STOP))
 
                 .setVisibility(notificationVisibility)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
 
                 .setSmallIcon(R.drawable.exo_controls_play)
 

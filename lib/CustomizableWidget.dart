@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:riot_quiche/Utils.dart';
+import 'package:riot_quiche/QuicheOracle.dart';
 
 
 abstract class CustomizableWidget {
