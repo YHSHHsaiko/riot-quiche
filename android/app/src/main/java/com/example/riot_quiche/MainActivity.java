@@ -119,10 +119,11 @@ public class MainActivity extends FlutterActivity {
 
     @Override
     protected void onDestroy () {
-        Intent intent = new Intent(this, QuicheMediaService.class);
-        stopService(intent);
-
+        Log.d("activity", "onDestroy()");
         super.onDestroy();
+
+        // unbind service
+        mediaBrowser.disconnect();
     }
 
     @Override
@@ -145,7 +146,7 @@ public class MainActivity extends FlutterActivity {
 
     private void startServiceAndConnect () {
         // start media foreground service
-        startService(new Intent(this, QuicheMediaService.class));
+        startService(new Intent(getApplicationContext(), QuicheMediaService.class));
 
         // initialize media browser
         mediaBrowser = new MediaBrowserCompat(

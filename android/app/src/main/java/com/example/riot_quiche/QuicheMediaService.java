@@ -56,7 +56,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private static final String MEDIA_ROOT_ID = "quiche";
     private static final String MEDIA_EMPTY_ROOT_ID = "nirvana";
     private static final String LOG_TAG = "quiche_log";
-    private static final String NOTIFICAION_CHANNEL_ID = "riot-quiche";
+    private static final String NOTIFICATION_CHANNEL_ID = "riot-quiche";
     private static final String NOTIFICATION_ID = "media-play";
 
     private int notificationVisibility = NotificationCompat.VISIBILITY_PUBLIC;
@@ -139,10 +139,16 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         @Override
         public void onPlay () {
             if (audioManager.requestAudioFocus(audioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                startService(new Intent(getApplicationContext(), QuicheMediaService.class));
                 // activate media session
                 mediaSession.setActive(true);
                 exoPlayer.setPlayWhenReady(true);
             }
+        }
+
+        @Override
+        public void onStop () {
+            stopSelf();
         }
 
         @Override
@@ -218,8 +224,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
-        super.onStartCommand(intent, flags, startId);
+    public void onCreate () {
+        super.onCreate();
 
         System.out.println("QuicheMediaService: onCreate()");
         // create an AudioManager
@@ -275,11 +281,21 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                     updatePlaybackState(true, state);
                 }
 
-                handler.postDelayed(this, 500);
+                handler.postDelayed(this, 1000);
             }
-        }, 500);
+        }, 1000);
+    }
 
-        return START_NOT_STICKY;
+    @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy () {
+        super.onDestroy();
     }
 
     @Nullable
@@ -331,7 +347,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(
-                    NOTIFICAION_CHANNEL_ID,  NOTIFICATION_ID,
+                    NOTIFICATION_CHANNEL_ID,  NOTIFICATION_ID,
                     NotificationManager.IMPORTANCE_LOW
             );
 
@@ -344,7 +360,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                getApplicationContext(), NOTIFICAION_CHANNEL_ID);
+                getApplicationContext(), NOTIFICATION_CHANNEL_ID);
 
         // TODO: intent作る　いらない気もする．．．タップして開きたいなら必要
         builder
