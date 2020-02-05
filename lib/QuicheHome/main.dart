@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Music.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 
@@ -29,7 +30,7 @@ class _QuicheHomeState extends State<QuicheHome> {
               break;
             }
             case ConnectionState.done: {
-              if (QuicheOracleVariables.mediaIdList == null) {
+              if (QuicheOracleVariables.musicList == null) {
                 return Center(child: Text('こんにちはー'));
               } else {
                 /**
@@ -37,14 +38,14 @@ class _QuicheHomeState extends State<QuicheHome> {
                  * main stack widget?
                  */
                 return ListView.builder(
-                  itemCount: QuicheOracleVariables.mediaIdList.length,
+                  itemCount: QuicheOracleVariables.musicList.length,
                   itemBuilder: (BuildContext context, int index) {
                     return FlatButton(
                       onPressed: () async {
-                        await PlatformMethodInvoker.init(QuicheOracleVariables.mediaIdList[index]);
+                        await PlatformMethodInvoker.init(QuicheOracleVariables.musicList[index].id);
                         PlatformMethodInvoker.play();
                       },
-                      child: Center(child: Text('こんにちはー： ${QuicheOracleVariables.mediaIdList[index]}'))
+                      child: Center(child: Text('こんにちはー： ${QuicheOracleVariables.musicList[index].title}'))
                     );
                   },
                 );
@@ -72,8 +73,9 @@ class _QuicheHomeState extends State<QuicheHome> {
 
   Future<dynamic> _buildPlayer () async {
     await PlatformMethodInvoker.trigger();
-    List<String> mediaIdList = await PlatformMethodInvoker.butterflyEffect();
-    QuicheOracleVariables.mediaIdList = mediaIdList;
+    List<Music> musicList = await PlatformMethodInvoker.butterflyEffect();
+    QuicheOracleVariables.musicList = musicList;
+    print(musicList);
 
     return null;
   }

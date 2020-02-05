@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
+import 'package:riot_quiche/Music.dart';
 
 
 abstract class QuicheOracle {
@@ -17,7 +18,7 @@ extension QuicheOracleVariables on QuicheOracle {
   static double screenHeight;
 
   // media ID List
-  static List<String> mediaIdList;
+  static List<Music> musicList;
 
 
   // permission information

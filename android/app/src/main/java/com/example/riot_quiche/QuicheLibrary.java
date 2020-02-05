@@ -15,9 +15,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import io.flutter.Log;
 
@@ -92,42 +90,37 @@ public class QuicheLibrary {
 
     private void initializeMetadataMap () {
         metadataMap = new LinkedHashMap<>();
-        Cursor externalCursor = null;
-        Cursor internalCursor = null;
-        try {
-            externalCursor = contentResolver.query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    projection, MediaStore.Audio.Media.IS_MUSIC + " != 0",
-                    null, MediaStore.Audio.AudioColumns.TITLE + " ASC"
-            );
-        } catch (Exception e) {}
 
-        try {
-            internalCursor = contentResolver.query(
-                    MediaStore.Audio.Media.INTERNAL_CONTENT_URI,
-                    projection, MediaStore.Audio.Media.IS_MUSIC + " != 0",
-                    null, MediaStore.Audio.AudioColumns.TITLE + " ASC"
-            );
-        } catch (Exception e) {}
-
-
-        Cursor[] cursors = {
-                externalCursor, internalCursor
-        };
         Uri[] sources = {
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, MediaStore.Audio.Media.INTERNAL_CONTENT_URI
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                MediaStore.Audio.Media.INTERNAL_CONTENT_URI
         };
-        for (int i = 0; i < cursors.length; ++i) {
-            Cursor cursor = cursors[i];
+
+        for (int i = 0; i < sources.length; ++i) {
+            Cursor cursor = null;
             Uri source = sources[i];
+
+            try {
+                cursor = contentResolver.query(
+                        source,
+                        projection, MediaStore.Audio.Media.IS_MUSIC + " != 0",
+                        null, null
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Log.d("library", "" + (cursor != null));
 
             if (cursor != null) {
                 cursor.moveToFirst();
 
                 do {
                     Uri mediaUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
-                    Uri mediaArtUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
-                    Uri mediaAlbumArtUri = ContentUris.withAppendedId(source, cursor.getLong(album_id_index));
+                    Uri mediaArtUri = getMediaArtUri(cursor.getLong(album_id_index));
+
+                    String mediaUriString = mediaUri.toString();
+                    String mediaArtUriString = (mediaArtUri == null) ? null : mediaArtUri.toString();
 
                     MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
                             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(id_index))
@@ -135,9 +128,8 @@ public class QuicheLibrary {
                             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artist_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, cursor.getString(album_index))
                             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, cursor.getLong(duration_index))
-                            .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUri.toString())
-                            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, mediaAlbumArtUri.toString())
-                            .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUri.toString())
+                            .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUriString)
+                            .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUriString)
                             .build();
                     Log.d("library", "media URI: " + mediaUri.toString());
                     metadataMap.put(mediaUri.toString(), metadata);
@@ -147,5 +139,18 @@ public class QuicheLibrary {
             }
         }
 
+    }
+
+    private Uri getMediaArtUri (Long albumId) {
+        Uri mediaArtUri = null;
+
+        try {
+            mediaArtUri = ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), albumId);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return mediaArtUri;
     }
 }

@@ -33,9 +33,15 @@ import androidx.media.AudioManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
+import com.google.android.exoplayer2.BaseRenderer;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.Renderer;
+import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
+import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -265,9 +271,22 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         });
 
         // initialize exoPlayer
-        exoPlayer = ExoPlayerFactory.newSimpleInstance(
+        int bufferUnit = 1024;
+        DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                        32*bufferUnit,
+                        64*bufferUnit,
+                        bufferUnit,
+                        bufferUnit
+                ).createDefaultLoadControl();
+        MediaCodecAudioRenderer renderer = new MediaCodecAudioRenderer(
                 getApplicationContext(),
-                new DefaultTrackSelector()
+                MediaCodecSelector.DEFAULT
+        );
+        exoPlayer = ExoPlayerFactory.newInstance(
+                new Renderer[]{renderer},
+                new DefaultTrackSelector(),
+                loadControl
         );
         exoPlayer.addListener(exoPlayerEventListener);
 
@@ -362,7 +381,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 getApplicationContext(), NOTIFICATION_CHANNEL_ID);
 
-        // TODO: intent作る　いらない気もする．．．タップして開きたいなら必要
         builder
                 .setContentTitle(description.getTitle())
                 .setSubText(description.getDescription())

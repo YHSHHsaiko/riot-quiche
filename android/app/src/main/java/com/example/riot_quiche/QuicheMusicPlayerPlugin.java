@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.app.usage.UsageEvents;
 import android.content.Intent;
 import android.os.Handler;
+import android.support.v4.media.MediaMetadataCompat;
 import android.util.EventLog;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,14 +82,27 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     break;
                 }
                 case MethodCalls.butterflyEffect: {
-                    ArrayList<String> res = new ArrayList<>();
+                    ArrayList<Music> res = new ArrayList<>();
                     try {
                         res = methodAPI.butterflyEffect(call);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
-                    result.success(res);
+                    ArrayList<ArrayList<Object>> butterfly = new ArrayList<>();
+                    for (Music music : res) {
+                        ArrayList<Object> musicObject = new ArrayList<>();
+
+                        musicObject.add(music.getId());
+                        musicObject.add(music.getTitle());
+                        musicObject.add(music.getArtist());
+                        musicObject.add(music.getAlbum());
+                        musicObject.add(music.getDuration());
+                        musicObject.add(music.getArtUri());
+
+                        butterfly.add(musicObject);
+                    }
+                    result.success(butterfly);
                     break;
                 }
                 case MethodCalls.init: {
@@ -167,12 +183,34 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     }
 
     public class MethodAPI {
-        public ArrayList<String> butterflyEffect (MethodCall call) {
+        public ArrayList<Music> butterflyEffect (MethodCall call) {
             try {
-                return new ArrayList<String>(QuicheLibrary.getInstance().getMetadataMap().keySet());
+                ArrayList<MediaMetadataCompat> musics =
+                        new ArrayList<MediaMetadataCompat>(QuicheLibrary.getInstance().getMetadataMap().values());
+                ArrayList<Music> res = new ArrayList<Music>();
+
+                Log.d("plugin", musics.toString());
+
+                for (MediaMetadataCompat metadata : musics) {
+
+                    String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI);
+                    String title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+                    String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
+                    String album = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM);
+                    Long duration = metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+                    String artUri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ART_URI);
+
+                    Log.d("plugin", title);
+
+                    Music music = new Music(id, title, artist, album, duration, artUri);
+                    res.add(music);
+                }
+
+                return res;
+
             } catch (Exception e) {
                 e.printStackTrace();
-                return new ArrayList<String>();
+                return null;
             }
         }
 

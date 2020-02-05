@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
+import 'package:riot_quiche/Music.dart';
 
 
 class PlatformMethodInvoker {
@@ -34,10 +35,29 @@ class PlatformMethodInvoker {
     return res;
   }
 
-  static Future<List<String>> butterflyEffect () async {
-    List<dynamic> res = await _methodChannel.invokeMethod('butterflyEffect', <dynamic>[]);
+  static Future<List<Music>> butterflyEffect () async {
+    List<dynamic> butterfly = await _methodChannel.invokeMethod('butterflyEffect', <dynamic>[]);
 
-    return List<String>.from(res);
+    List<Music> musicList = List<Music>();
+    for (List<dynamic> musicObject in butterfly) {
+      String id = musicObject[0] as String;
+      String title = musicObject[1] as String;
+      String artist = musicObject[2] as String;
+      String album = musicObject[3] as String;
+      int duration = musicObject[4] as int;
+      String artUri = musicObject[5] as String;
+
+      Music music = Music(
+        id,
+        title,
+        artist,
+        album,
+        duration,
+        artUri
+      );
+      musicList.add(music);
+    }
+    return musicList;
   }
 
   static Future<Null> init (String mediaId) async {
