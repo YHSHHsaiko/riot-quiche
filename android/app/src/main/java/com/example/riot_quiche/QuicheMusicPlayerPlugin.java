@@ -7,8 +7,11 @@ import android.os.Handler;
 import android.support.v4.media.MediaMetadataCompat;
 import android.util.EventLog;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,7 +48,8 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     public static class MethodCalls {
         public static final String trigger = "trigger";
         public static final String butterflyEffect = "butterflyEffect";
-        public static final String init = "init";
+        public static final String setQueue = "setQueue";
+        public static final String setCurrentMediaId = "setCurrentMediaId";
         public static final String play = "play";
     }
     public static class EventCalls {
@@ -82,15 +86,15 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     break;
                 }
                 case MethodCalls.butterflyEffect: {
-                    ArrayList<Music> res = new ArrayList<>();
+                    ArrayList<Music> pupa = new ArrayList<>();
                     try {
-                        res = methodAPI.butterflyEffect(call);
+                        pupa = methodAPI.butterflyEffect(call);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
                     ArrayList<ArrayList<Object>> butterfly = new ArrayList<>();
-                    for (Music music : res) {
+                    for (Music music : pupa) {
                         ArrayList<Object> musicObject = new ArrayList<>();
 
                         musicObject.add(music.getId());
@@ -105,10 +109,22 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     result.success(butterfly);
                     break;
                 }
-                case MethodCalls.init: {
+                case MethodCalls.setQueue: {
                     boolean res = false;
                     try {
-                        res = methodAPI.init(call);
+                        res = methodAPI.setQueue(call);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    result.success(res);
+                    break;
+                }
+
+                case MethodCalls.setCurrentMediaId: {
+                    boolean res = false;
+                    try {
+                        res = methodAPI.setCurrentMediaId(call);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -185,13 +201,13 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     public class MethodAPI {
         public ArrayList<Music> butterflyEffect (MethodCall call) {
             try {
-                ArrayList<MediaMetadataCompat> musics =
+                ArrayList<MediaMetadataCompat> metadatas =
                         new ArrayList<MediaMetadataCompat>(QuicheLibrary.getInstance().getMetadataMap().values());
-                ArrayList<Music> res = new ArrayList<Music>();
+                ArrayList<Music> musics = new ArrayList<Music>();
 
-                Log.d("plugin", musics.toString());
+                Log.d("plugin", metadatas.toString());
 
-                for (MediaMetadataCompat metadata : musics) {
+                for (MediaMetadataCompat metadata : metadatas) {
 
                     String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI);
                     String title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
@@ -200,13 +216,11 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     Long duration = metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
                     String artUri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ART_URI);
 
-                    Log.d("plugin", title);
-
                     Music music = new Music(id, title, artist, album, duration, artUri);
-                    res.add(music);
+                    musics.add(music);
                 }
 
-                return res;
+                return musics;
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -214,11 +228,25 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
             }
         }
 
-        public boolean init (MethodCall call) {
+        public boolean setQueue (MethodCall call) {
             List<Object> arguments = call.arguments();
-            String mediaId = (String)arguments.get(0);
 
+            ArrayList<String> mediaIdList = new ArrayList<>();
+            for (int i = 0; i < arguments.size(); ++i) {
+                String mediaId = (String)arguments.get(i);
+                mediaIdList.add(mediaId);
+            }
+            playerAPI.setQueue(mediaIdList);
+
+            return true;
+        }
+
+        public boolean setCurrentMediaId (MethodCall call) {
+            List<Object> arguments = call.arguments();
+
+            String mediaId = (String)arguments.get(0);
             _currentMediaId = mediaId;
+
             return true;
         }
 
@@ -289,7 +317,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                                 eventResults.remove(EventCalls.requestPermissions);
                                 cancel(permissions);
                             } else {
-                                handler.postDelayed(this, 100);
+                                handler.postDelayed(this, 1000);
                             }
                         }
                     } catch (Exception e) {
@@ -298,7 +326,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 }
             });
 
-            handler.postDelayed(listeners.get(permissions), 100);
+            handler.postDelayed(listeners.get(permissions), 1000);
         }
 
         public void cancelEvent (ArrayList<Object> objects, EventChannel.EventSink sink) {

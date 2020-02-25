@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:riot_quiche/Music.dart';
+import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 
@@ -42,7 +42,7 @@ class _QuicheHomeState extends State<QuicheHome> {
                   itemBuilder: (BuildContext context, int index) {
                     return FlatButton(
                       onPressed: () async {
-                        await PlatformMethodInvoker.init(QuicheOracleVariables.musicList[index].id);
+                        PlatformMethodInvoker.setCurrentMediaId(QuicheOracleVariables.musicList[index].id);
                         PlatformMethodInvoker.play();
                       },
                       child: Center(child: Text('こんにちはー： ${QuicheOracleVariables.musicList[index].title}'))
@@ -75,7 +75,9 @@ class _QuicheHomeState extends State<QuicheHome> {
     await PlatformMethodInvoker.trigger();
     List<Music> musicList = await PlatformMethodInvoker.butterflyEffect();
     QuicheOracleVariables.musicList = musicList;
-    print(musicList);
+    await PlatformMethodInvoker.setQueue(List<String>.from(QuicheOracleVariables.musicList.map((music) {
+      return music.id;
+    })));
 
     return null;
   }

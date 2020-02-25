@@ -111,9 +111,10 @@ public class MainActivity extends FlutterActivity {
         GeneratedPluginRegistrant.registerWith(this);
 
         /* register QuicheMusicPlayerPlugin */
-        eventAPI = QuicheMusicPlayerPlugin.registerWith(
+        QuicheMusicPlayerPlugin plugin = QuicheMusicPlayerPlugin.registerWith(
                 this.registrarFor("com.example.riot_quiche.QuicheMusicPlayerPlugin")
-        ).eventAPI;
+        );
+        eventAPI = plugin.eventAPI;
 
     }
 
@@ -163,6 +164,28 @@ public class MainActivity extends FlutterActivity {
     public class PlayerAPI {
         public void playFromMediaId (String mediaId) {
             mediaController.getTransportControls().playFromMediaId(mediaId, null);
+        }
+
+        public void setQueue (ArrayList<String> mediaIdList) {
+            Bundle extras = new Bundle();
+            extras.putStringArrayList("mediaIdList", mediaIdList);
+
+            MediaBrowserCompat.CustomActionCallback customActionCallback = new MediaBrowserCompat.CustomActionCallback (){
+                @Override
+                public void onResult(String action, Bundle extras, Bundle resultData) {
+                    super.onResult(action, extras, resultData);
+                }
+
+                @Override
+                public void onError(String action, Bundle extras, Bundle data) {
+                    super.onError(action, extras, data);
+                }
+            };
+
+            mediaController.getTransportControls().sendCustomAction(
+                    QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_QUEUE,
+                    extras
+            );
         }
     }
 

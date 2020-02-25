@@ -1,0 +1,8 @@
+enum SortType {
+  TITLE_ASC,
+  ARTIST_ASC,
+  ALBUM_ASC,
+  TITLE_DESC,
+  ARTIST_DESC,
+  ALBUM_DESC
+}

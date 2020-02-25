@@ -51,6 +51,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import java.io.FileDescriptor;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,124 +66,18 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private static final String NOTIFICATION_CHANNEL_ID = "riot-quiche";
     private static final String NOTIFICATION_ID = "media-play";
 
+    public QuicheMediaSessionCallback mediaSessionCallback = new QuicheMediaSessionCallback();
+    public QuicheLibrary library;
+
     private int notificationVisibility = NotificationCompat.VISIBILITY_PUBLIC;
+
+    private ArrayList<MediaSessionCompat.QueueItem> queueItems = new ArrayList<>();
+    private int queueIndex = 0;
     private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder stateBuilder;
-    public QuicheLibrary library;
     private ExoPlayer exoPlayer;
     private AudioManager audioManager;
     private Handler handler;
-    private MediaSessionCompat.Callback mediaSessionCallback = new MediaSessionCompat.Callback() {
-        private AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener =
-            new AudioManager.OnAudioFocusChangeListener() {
-                @Override
-                public void onAudioFocusChange(int focusChange) {
-                    switch (focusChange) {
-                        // on focus lost
-                        case AudioManager.AUDIOFOCUS_LOSS: {
-                            mediaSession.getController().getTransportControls().pause();
-                            break;
-                        }
-                        // on focus lost temporary
-                        case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT: {
-                            mediaSession.getController().getTransportControls().pause();
-                            break;
-                        }
-                        // on ducking
-                        case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
-                            /* TODO: volume 下げる　おそらくducking終わったら戻さないと
-                            *   audioManager.setVolume(volume_level, AudioManager.STREAM_MUSIC)*/
-                            break;
-                        }
-                        case AudioManager.AUDIOFOCUS_GAIN: {
-                            mediaSession.getController().getTransportControls().play();
-                            break;
-                        }
-                        default: {
-                            break;
-                        }
-                    }
-                }
-        };
-        private AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .build();
-        private AudioFocusRequest audioFocusRequest =
-            new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                .setAudioAttributes(audioAttributes)
-                .setAcceptsDelayedFocusGain(true)
-                .setWillPauseWhenDucked(true)
-                .setOnAudioFocusChangeListener(onAudioFocusChangeListener)
-                .build();
-
-        @Override
-        public void onPlayFromMediaId (String mediaId, Bundle extras) {
-            /*
-            On played from local media ID (not an external network URI or others).
-            */
-            MediaBrowserCompat.MediaItem targetItem = library.getMediaItemFromMediaId(mediaId);
-
-            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
-                    getApplicationContext(),
-                    Util.getUserAgent(getApplicationContext(), "riot-quiche")
-            );
-            Uri uri = targetItem.getDescription().getMediaUri();
-            MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(uri);
-
-            // prepare exoPlayer
-            exoPlayer.prepare(mediaSource);
-
-
-            Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
-            onPlay();
-
-            mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
-
-        }
-
-        @Override
-        public void onPlay () {
-            if (audioManager.requestAudioFocus(audioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                startService(new Intent(getApplicationContext(), QuicheMediaService.class));
-                // activate media session
-                mediaSession.setActive(true);
-                exoPlayer.setPlayWhenReady(true);
-            }
-        }
-
-        @Override
-        public void onStop () {
-            stopSelf();
-        }
-
-        @Override
-        public void onPause () {
-            exoPlayer.setPlayWhenReady(false);
-            audioManager.abandonAudioFocusRequest(audioFocusRequest);
-        }
-
-        @Override
-        public void onSeekTo (long position) {
-            exoPlayer.seekTo(position);
-        }
-
-        @Override
-        public void onSkipToNext () {
-            // TODO: 次の曲をリクエスト．．．？次の曲って？
-        }
-
-        @Override
-        public void onSkipToPrevious () {
-            // TODO: 前の曲をリクエスト・・・？前の曲って？
-        }
-
-        @Override
-        public void onSkipToQueueItem (long i) {
-            // TODO: キューの存在をまず調べなければならない．．．
-        }
-    };
     private Player.EventListener exoPlayerEventListener = new Player.EventListener() {
 
         @Override
@@ -434,5 +329,160 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             stopForeground(false);
         }
 
+    }
+
+    public class QuicheMediaSessionCallback extends MediaSessionCompat.Callback {
+        public static final String CUSTOM_ACTION_SET_QUEUE = "SET_QUEUE";
+
+        private AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener =
+                new AudioManager.OnAudioFocusChangeListener() {
+                    @Override
+                    public void onAudioFocusChange(int focusChange) {
+                        switch (focusChange) {
+                            // on focus lost
+                            case AudioManager.AUDIOFOCUS_LOSS: {
+                                mediaSession.getController().getTransportControls().pause();
+                                break;
+                            }
+                            // on focus lost temporary
+                            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT: {
+                                mediaSession.getController().getTransportControls().pause();
+                                break;
+                            }
+                            // on ducking
+                            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
+                                /* TODO: volume 下げる　おそらくducking終わったら戻さないと
+                                 *   audioManager.setVolume(volume_level, AudioManager.STREAM_MUSIC)*/
+                                break;
+                            }
+                            case AudioManager.AUDIOFOCUS_GAIN: {
+                                mediaSession.getController().getTransportControls().play();
+                                break;
+                            }
+                            default: {
+                                break;
+                            }
+                        }
+                    }
+                };
+        private AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build();
+        private AudioFocusRequest audioFocusRequest =
+                new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(audioAttributes)
+                        .setAcceptsDelayedFocusGain(true)
+                        .setWillPauseWhenDucked(true)
+                        .setOnAudioFocusChangeListener(onAudioFocusChangeListener)
+                        .build();
+
+        @Override
+        public void onPlayFromMediaId (String mediaId, Bundle extras) {
+            /*
+            On played from local media ID (not an external network URI or others).
+            */
+            MediaBrowserCompat.MediaItem targetItem = library.getMediaItemFromMediaId(mediaId);
+
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
+                    getApplicationContext(),
+                    Util.getUserAgent(getApplicationContext(), "riot-quiche")
+            );
+            Uri uri = targetItem.getDescription().getMediaUri();
+            MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(uri);
+
+            // prepare exoPlayer
+            exoPlayer.prepare(mediaSource);
+
+
+            Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
+            onPlay();
+
+            mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
+
+        }
+
+        @Override
+        public void onPlay () {
+            if (audioManager.requestAudioFocus(audioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                startService(new Intent(getApplicationContext(), QuicheMediaService.class));
+                // activate media session
+                mediaSession.setActive(true);
+                exoPlayer.setPlayWhenReady(true);
+            }
+        }
+
+        @Override
+        public void onStop () {
+            stopSelf();
+        }
+
+        @Override
+        public void onPause () {
+            exoPlayer.setPlayWhenReady(false);
+            audioManager.abandonAudioFocusRequest(audioFocusRequest);
+        }
+
+        @Override
+        public void onSeekTo (long position) {
+            exoPlayer.seekTo(position);
+        }
+
+        @Override
+        public void onSkipToNext () {
+            // TODO: 次の曲をリクエスト．．．？次の曲って？
+            queueIndex++;
+            if (queueIndex >= queueItems.size()) {
+                queueIndex = 0;
+            }
+            Log.d("next", queueItems.toString());
+
+
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), null);
+        }
+
+        @Override
+        public void onSkipToPrevious () {
+            // TODO: 前の曲をリクエスト・・・？前の曲って？
+            queueIndex--;
+            if (queueIndex < 0) {
+                queueIndex = queueItems.size() - 1;
+            }
+            Log.d("previous", queueItems.toString());
+
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), null);
+        }
+
+        @Override
+        public void onSkipToQueueItem (long i) {
+            // TODO: キューの存在をまず調べなければならない．．．
+            onPlayFromMediaId(queueItems.get((int)i).getDescription().getMediaId(), null);
+        }
+
+        @Override
+        public void onCustomAction (String action, Bundle extras) {
+            switch (action) {
+                case QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_QUEUE: {
+                    setQueue(extras.getStringArrayList("mediaIdList"));
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+
+        private void setQueue (ArrayList<String> mediaIdList) {
+            queueItems.clear();
+            queueIndex = 0;
+
+            for (int i = 0; i < mediaIdList.size(); ++i) {
+                String mediaId = mediaIdList.get(i);
+                queueItems.add(new MediaSessionCompat.QueueItem(library.getMediaItemFromMediaId(mediaId).getDescription(), i));
+            }
+
+            mediaSession.setQueue(queueItems);
+        }
     }
 }

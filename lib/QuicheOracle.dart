@@ -4,7 +4,8 @@ import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
-import 'package:riot_quiche/Music.dart';
+import 'package:riot_quiche/Enumerates/SortType.dart';
+import 'package:riot_quiche/Music/Music.dart';
 
 
 abstract class QuicheOracle {
@@ -46,5 +47,30 @@ extension QuicheOracleFunctions on QuicheOracle {
      */
     
     return Future.value(false);
+  }
+
+  static List<Music> getSortedMusicList (SortType sortType) {
+    List<Music> sortedList;
+    
+    switch (sortType) {
+      case SortType.TITLE_ASC: {
+        break;
+      }
+      case SortType.ARTIST_ASC: {
+        break;
+      }
+      case SortType.ALBUM_ASC: {
+        break;
+      }
+      case SortType.TITLE_DESC: {
+        break;
+      }
+      case SortType.ARTIST_DESC: {
+        break;
+      }
+      case SortType.ALBUM_DESC: {
+        break;
+      }
+    }
   }
 }

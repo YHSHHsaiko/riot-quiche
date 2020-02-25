@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
-import 'package:riot_quiche/Music.dart';
+import 'package:riot_quiche/Music/Music.dart';
 
 
 class PlatformMethodInvoker {
@@ -48,20 +48,24 @@ class PlatformMethodInvoker {
       String artUri = musicObject[5] as String;
 
       Music music = Music(
-        id,
-        title,
-        artist,
-        album,
-        duration,
-        artUri
+        id: id,
+        title: title,
+        artist: artist,
+        album: album,
+        duration: duration,
+        artUri: artUri
       );
       musicList.add(music);
     }
     return musicList;
   }
 
-  static Future<Null> init (String mediaId) async {
-    await _methodChannel.invokeMethod('init', <dynamic>[mediaId]);
+  static Future<Null> setQueue (List<String> mediaIdList) async {
+    await _methodChannel.invokeMethod('setQueue', mediaIdList);
+  }
+
+  static Future<Null> setCurrentMediaId (String mediaId) async {
+    await _methodChannel.invokeMethod('setCurrentMediaId', <dynamic>[mediaId]);
   }
 
   static Future<Null> play () async {

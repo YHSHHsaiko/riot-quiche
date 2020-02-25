@@ -131,7 +131,7 @@ public class QuicheLibrary {
                             .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUriString)
                             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUriString)
                             .build();
-                    Log.d("library", "media URI: " + mediaUri.toString());
+                    Log.d("library", "media URI: " + cursor.getString(title_index));
                     metadataMap.put(mediaUri.toString(), metadata);
                 } while (cursor.moveToNext());
 
