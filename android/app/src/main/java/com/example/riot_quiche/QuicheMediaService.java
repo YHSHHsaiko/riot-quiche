@@ -128,7 +128,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     public void onCreate () {
         super.onCreate();
 
-        System.out.println("QuicheMediaService: onCreate()");
         // create an AudioManager
         audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
@@ -306,8 +305,10 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         ));
         builder.addAction(new NotificationCompat.Action(
                 R.drawable.exo_controls_next, "next",
-                MediaButtonReceiver.buildMediaButtonPendingIntent(this,
-                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT))
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        this,
+                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT)
+                )
         );
         if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
             builder.addAction(new NotificationCompat.Action(
@@ -395,7 +396,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             // prepare exoPlayer
             exoPlayer.prepare(mediaSource);
 
-
             Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
             onPlay();
 
@@ -438,8 +438,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             }
             Log.d("next", queueItems.toString());
 
-
-            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), null);
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaUri().toString(), null);
         }
 
         @Override
@@ -451,13 +450,13 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             }
             Log.d("previous", queueItems.toString());
 
-            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), null);
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaUri().toString(), null);
         }
 
         @Override
         public void onSkipToQueueItem (long i) {
             // TODO: キューの存在をまず調べなければならない．．．
-            onPlayFromMediaId(queueItems.get((int)i).getDescription().getMediaId(), null);
+            onPlayFromMediaId(queueItems.get((int)i).getDescription().getMediaUri().toString(), null);
         }
 
         @Override
@@ -481,6 +480,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 String mediaId = mediaIdList.get(i);
                 queueItems.add(new MediaSessionCompat.QueueItem(library.getMediaItemFromMediaId(mediaId).getDescription(), i));
             }
+
+            Log.d("setQueue", queueItems.toString());
 
             mediaSession.setQueue(queueItems);
         }

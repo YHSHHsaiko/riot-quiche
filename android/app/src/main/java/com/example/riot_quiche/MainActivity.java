@@ -38,6 +38,9 @@ public class MainActivity extends FlutterActivity {
     private MediaBrowserCompat.ConnectionCallback connectionCallback = new MediaBrowserCompat.ConnectionCallback() {
         @Override
         public void onConnected () {
+            Log.d("onConnected", "trying to startService");
+            boolean connectionResult = false;
+
             try {
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
                 mediaController.registerCallback(controllerCallback);
@@ -48,9 +51,14 @@ public class MainActivity extends FlutterActivity {
                     controllerCallback.onMetadataChanged(mediaController.getMetadata());
                     controllerCallback.onPlaybackStateChanged(mediaController.getPlaybackState());
                 }
+
+                connectionResult = true;
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+
+            // send result to plugin
+            pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.trigger, connectionResult);
 
             mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallback);
         }
@@ -124,7 +132,9 @@ public class MainActivity extends FlutterActivity {
         super.onDestroy();
 
         // unbind service
-        mediaBrowser.disconnect();
+        if (mediaBrowser != null) {
+            mediaBrowser.disconnect();
+        }
     }
 
     @Override
@@ -220,14 +230,19 @@ public class MainActivity extends FlutterActivity {
             }
         }
 
+        public void trigger () {
+            try {
+                startServiceAndConnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        ////////////////////////////////////////////////////////
         public void sendResult (String id, Object obj) {
             eventAPI.receiveResult(id, obj);
         }
-
-        public void trigger () {
-            startServiceAndConnect();
-        }
-
+        ////////////////////////////////////////////////////////
     }
 
 }

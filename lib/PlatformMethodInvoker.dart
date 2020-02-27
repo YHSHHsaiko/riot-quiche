@@ -19,7 +19,7 @@ class PlatformMethodInvoker {
       return Permission.values.indexOf(element);
     }).toList();
     var stream = _eventChannel.receiveBroadcastStream(<dynamic>[
-      "requestPermissions", ...arguments
+      'requestPermissions', ...arguments
     ]).map<List<bool>>((res) {
       return (res as List<int>).map((element) {
         return element == 1;
@@ -31,7 +31,18 @@ class PlatformMethodInvoker {
   }
 
   static Future<bool> trigger () async {
-    bool res = await _methodChannel.invokeMethod('trigger', <dynamic>[]);
+    var stream = _eventChannel.receiveBroadcastStream(<dynamic>[
+      'trigger'
+    ]).map<bool>((res) {
+      return (res as bool);
+    });
+
+    bool res = await stream.first;
+    if (res) {
+      print('start service: riot-quiche');
+    } else {
+      print('start service failed: *ERROR*');
+    }
     return res;
   }
 

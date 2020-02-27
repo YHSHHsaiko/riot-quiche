@@ -46,7 +46,6 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
     // function names
     public static class MethodCalls {
-        public static final String trigger = "trigger";
         public static final String butterflyEffect = "butterflyEffect";
         public static final String setQueue = "setQueue";
         public static final String setCurrentMediaId = "setCurrentMediaId";
@@ -54,6 +53,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     }
     public static class EventCalls {
         public static final String requestPermissions = "requestPermissions";
+        public static final String trigger = "trigger";
         public static final String cancelEvent = "cancelEvent";
     }
     //
@@ -80,11 +80,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     public void onMethodCall(MethodCall call, Result result) {
         if (call.method != null) {
             switch (call.method) {
-                case MethodCalls.trigger: {
-                    pluginAPI.trigger();
-                    result.success(true);
-                    break;
-                }
+
                 case MethodCalls.butterflyEffect: {
                     ArrayList<Music> pupa = new ArrayList<>();
                     try {
@@ -171,6 +167,15 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 } catch (Exception e) {
                     e.printStackTrace();
                     sink.error(EventCalls.requestPermissions, "", null);
+                }
+                break;
+            }
+            case EventCalls.trigger: {
+                try {
+                    eventAPI.trigger(sink);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    sink.error(EventCalls.trigger, "", null);
                 }
                 break;
             }
@@ -317,7 +322,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                                 eventResults.remove(EventCalls.requestPermissions);
                                 cancel(permissions);
                             } else {
-                                handler.postDelayed(this, 1000);
+                                handler.postDelayed(this, 100);
                             }
                         }
                     } catch (Exception e) {
@@ -326,7 +331,37 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 }
             });
 
-            handler.postDelayed(listeners.get(permissions), 1000);
+            handler.postDelayed(listeners.get(permissions), 100);
+        }
+
+        public void trigger (EventChannel.EventSink sink) {
+            pluginAPI.trigger();
+
+            final Handler handler = new Handler();
+            String triggerObject = "triggerObject";
+            listeners.put(triggerObject, new Runnable() {
+                @Override
+                public void run () {
+                    try {
+                        Log.d("runnable", EventCalls.trigger);
+                        if (listeners.containsKey(triggerObject)) {
+                            if (eventResults.containsKey(EventCalls.trigger)) {
+                                boolean connectionResult = (boolean)eventResults.get(EventCalls.trigger);
+
+                                sink.success(connectionResult);
+                                eventResults.remove(EventCalls.trigger);
+                                cancel(triggerObject);
+                            } else {
+                                handler.postDelayed(this, 100);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            handler.postDelayed(listeners.get(triggerObject), 100);
         }
 
         public void cancelEvent (ArrayList<Object> objects, EventChannel.EventSink sink) {
