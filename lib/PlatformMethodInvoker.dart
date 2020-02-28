@@ -79,8 +79,22 @@ class PlatformMethodInvoker {
     await _methodChannel.invokeMethod('setCurrentMediaId', <dynamic>[mediaId]);
   }
 
+  /**
+   * TODO:
+   */
+  static Future<Null> setCurrentQueueIndex (int index) async {
+    await _methodChannel.invokeMethod('setCurrentQueueIndex', <dynamic>[index]);
+  }
+
   static Future<Null> play () async {
     await _methodChannel.invokeMethod('play', <dynamic>[]);
+  }
+
+  /**
+   * TODO:
+   */
+  static Future<Null> pause () async {
+    await _methodChannel.invokeMethod('pause', <dynamic>[]);
   }
 
 }

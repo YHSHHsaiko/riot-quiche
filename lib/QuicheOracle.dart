@@ -28,17 +28,17 @@ extension QuicheOracleVariables on QuicheOracle {
     key: (key) => key as Permission,
     value: (_) => false,
   );
-}
 
-
-extension QuicheOracleFunctions on QuicheOracle {
   // serialized widget's json file path
   static Future<Directory> get serializedJsonDirectory async {
     Directory localDirectory = await pp.getApplicationDocumentsDirectory();
 
     return Directory(p.absolute(localDirectory.path, "widgets"));
   }
+}
 
+
+extension QuicheOracleFunctions on QuicheOracle {
   // whether to app is initialized
   static Future<bool> checkInitialization () {
     /**
@@ -50,6 +50,11 @@ extension QuicheOracleFunctions on QuicheOracle {
   }
 
   static List<Music> getSortedMusicList (SortType sortType) {
+    /**
+     * TODO:
+     * return the sorted Music List according to sortType.
+     */
+    
     List<Music> sortedList;
     
     switch (sortType) {
