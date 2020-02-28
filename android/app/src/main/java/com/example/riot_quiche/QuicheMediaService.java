@@ -82,14 +82,14 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPlayerStateChanged (boolean playWhenReady, int playbackState) {
-            updatePlaybackState(playWhenReady, playbackState);
+            updatePlaybackState();
         }
     };
 
-    private void updatePlaybackState (boolean playWhenReady, int playbackState) {
+    private void updatePlaybackState () {
         int state;
 
-        switch (playbackState) {
+        switch (exoPlayer.getPlaybackState()) {
             case Player.STATE_IDLE: {
                 state = PlaybackStateCompat.STATE_NONE;
                 break;
@@ -99,7 +99,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 break;
             }
             case Player.STATE_READY: {
-                if (playWhenReady) {
+                if (exoPlayer.getPlayWhenReady()) {
                     state = PlaybackStateCompat.STATE_PLAYING;
                 } else {
                     state = PlaybackStateCompat.STATE_PAUSED;
@@ -193,14 +193,13 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         handler.postDelayed(new Runnable () {
             @Override
             public void run () {
-                int state = exoPlayer.getPlaybackState();
-                if (state == Player.STATE_READY && exoPlayer.getPlayWhenReady()) {
-                    updatePlaybackState(true, state);
+                if (exoPlayer.getPlaybackState() == Player.STATE_READY && exoPlayer.getPlayWhenReady()) {
+                    updatePlaybackState();
                 }
 
-                handler.postDelayed(this, 1000);
+                handler.postDelayed(this, 500);
             }
-        }, 1000);
+        }, 500);
     }
 
     @Override
@@ -326,10 +325,10 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                             PlaybackStateCompat.ACTION_PLAY)));
         }
 
-        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
-            // foreground notification (cannot delete)
-            startForeground(1, builder.build());
-        } else {
+        // foreground notification (cannot delete)
+        startForeground(1, builder.build());
+
+        if (mediaController.getPlaybackState().getState() != PlaybackStateCompat.STATE_PLAYING) {
             // when not playing, background notification (can delete)
             stopForeground(false);
         }
