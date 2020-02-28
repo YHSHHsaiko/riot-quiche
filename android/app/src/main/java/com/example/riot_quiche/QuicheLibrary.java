@@ -93,7 +93,7 @@ public class QuicheLibrary {
 
         Uri[] sources = {
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                MediaStore.Audio.Media.INTERNAL_CONTENT_URI
+//                MediaStore.Audio.Media.INTERNAL_CONTENT_URI
         };
 
         for (int i = 0; i < sources.length; ++i) {
@@ -101,9 +101,15 @@ public class QuicheLibrary {
             Uri source = sources[i];
 
             try {
+                String selection =
+                        MediaStore.Audio.Media.IS_MUSIC + " != 0 AND " +
+                        MediaStore.Audio.Media.IS_ALARM + " = 0 AND " +
+                        MediaStore.Audio.Media.IS_RINGTONE + " = 0 AND " +
+                        MediaStore.Audio.Media.IS_NOTIFICATION + " = 0 AND " +
+                        MediaStore.Audio.Media.IS_PODCAST + " = 0";
                 cursor = contentResolver.query(
                         source,
-                        projection, MediaStore.Audio.Media.IS_MUSIC + " != 0",
+                        projection, selection,
                         null, null
                 );
             } catch (Exception e) {
@@ -115,7 +121,7 @@ public class QuicheLibrary {
             if (cursor != null) {
                 cursor.moveToFirst();
 
-                do {
+                while (!cursor.isAfterLast()) {
                     Uri mediaUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
                     Uri mediaArtUri = getMediaArtUri(cursor.getLong(album_id_index));
 
@@ -133,7 +139,9 @@ public class QuicheLibrary {
                             .build();
                     Log.d("library", "media URI: " + cursor.getString(title_index));
                     metadataMap.put(mediaUri.toString(), metadata);
-                } while (cursor.moveToNext());
+
+                    cursor.moveToNext();
+                }
 
                 cursor.close();
             }
