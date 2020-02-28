@@ -97,4 +97,18 @@ class PlatformMethodInvoker {
     await _methodChannel.invokeMethod('pause', <dynamic>[]);
   }
 
+  /**
+   * TODO:
+   */
+  static Future<Null> skipToNext () async {
+    await _methodChannel.invokeMethod('skipToNext', <dynamic>[]);
+  }
+
+  /**
+   * TODO:
+   */
+  static Future<Null> skipToPrevious () async {
+    await _methodChannel.invokeMethod('skipToPrevious', <dynamic>[]);
+  }
+
 }
