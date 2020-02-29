@@ -1,5 +1,6 @@
 <!-- TOC -->
 
+    - [<font size=5 color="red">* Widgetのリビルド最適化メモ *</font>](#font-size5-colorred-widgetのリビルド最適化メモ-font)
 - [アプリの流れ](#アプリの流れ)
 - [Splash](#splash)
   - [フォルダ](#フォルダ)
@@ -21,16 +22,19 @@
   - [概要](#概要-3)
   - [説明](#説明-3)
   - [どうすればええの？](#どうすればええの-3)
+  - [CustomizableWidget](#customizablewidget)
+    - [説明](#説明-4)
+    - [overrideが必要なメソッド](#overrideが必要なメソッド)
 - [QuicheOracle](#quicheoracle)
   - [ファイル](#ファイル)
   - [概要](#概要-4)
-  - [説明](#説明-4)
+  - [説明](#説明-5)
     - [QuicheOracleVariables](#quicheoraclevariables)
     - [QuicheOracleFunctions](#quicheoraclefunctions)
 - [PlatformMethodInvoker](#platformmethodinvoker)
   - [ファイル](#ファイル-1)
   - [概要](#概要-5)
-  - [説明](#説明-5)
+  - [説明](#説明-6)
     - [](#)
       - [どうすればええの？](#どうすればええの-4)
     - [](#-1)
@@ -54,6 +58,13 @@
   - [SortType](#sorttype)
 
 <!-- /TOC -->
+
+
+
+### <font size=5 color="red">* Widgetのリビルド最適化メモ *</font>
+* O(1)でデータにアクセスできる[InheritedWidget](https://medium.com/flutter-jp/inherited-widget-37495200d965)
+* Widgetの[const指定(Widgetのキャッシュ)](https://medium.com/flutter-jp/state-performance-7a5f67d62edd)
+* [Performance considerations(Flutter.dev)](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html#performance-considerations)
 
 # アプリの流れ
 ![この画像を見ÿと](image/app_flow.png)
@@ -116,11 +127,25 @@ QuicheHome
 <font size="5">**今のところ，何も考えてません！**</font>
 
 ## どうすればええの？
-* **ここでアプリの本気の見せどころ**
+* **曲リストとか再生画面とか**
+* **ここがアプリの見せどころ**
 * ``QuicheOracle``([これです](#quicheoracle))や``PlatformMethodInvoker``([これです](#platformmethodinvoker))を駆使して頑張ってください！
+* **``CurstomizableWidget``(再生画面にてStackするWidget)を作る場合は，``CurstomizableWidget``([これです](#customizablewidget))を継承してください！**
 
+## CustomizableWidget
+### 説明
+* 再生画面にてLayerするWidgetの基底クラス．
+### overrideが必要なメソッド
+```dart
+// return a serialized setting
+Map<String, dynamic> get setting;
+```
+Layerを表現する設定をJSON形式で取得できるゲッター．
 
-
+```dart
+set setting (Map<String, dynamic> importedSetting);
+```
+Layerを表現する設定をインポートするためのセッター．
 
 # QuicheOracle
 ## ファイル
