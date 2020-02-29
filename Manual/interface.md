@@ -43,6 +43,10 @@
       - [どうすればええの？](#どうすればええの-8)
     - [](#-5)
       - [どうすればええの？](#どうすればええの-9)
+    - [](#-6)
+      - [どうすればええの？](#どうすればええの-10)
+    - [](#-7)
+      - [どうすればええの？](#どうすればええの-11)
 - [Enumerates](#enumerates)
   - [InitializationSection](#initializationsection)
   - [Permission](#permission)
@@ -76,9 +80,9 @@ QuicheEntrance
 アプリの玄関．
 
 ## 説明
-``QuicheOracleFunctions.checkInitialization``([ここで定義する](#QuicheOracleFunctions))関数でアプリ既に初期化されたか(初回起動時かどうか，もしくは正常に初期化されたか，のほうが安全？)を見て，
-* ``true``なら[Home](#Home)に行き，
-* ``false``なら[Initialization](#Initialization)に行く．
+``QuicheOracleFunctions.checkInitialization``([ここで定義する](#quicheoraclefunctions))関数でアプリ既に初期化されたか(初回起動時かどうか，もしくは正常に初期化されたか，のほうが安全？)を見て，
+* ``true``なら[Home](#home)に行き，
+* ``false``なら[Initialization](#initialization)に行く．
 
 ## どうすればええの？
 ``QuicheOracleFunctions.checkInitialization``の中身を頑張る．
@@ -113,7 +117,7 @@ QuicheHome
 
 ## どうすればええの？
 * **ここでアプリの本気の見せどころ**
-* ``QuicheOracle``([これです](#QuicheOracle))や``PlatformMethodInvoker``([これです](#PlatformMethodInvoker))を駆使して頑張ってください！
+* ``QuicheOracle``([これです](#quicheoracle))や``PlatformMethodInvoker``([これです](#platformmethodinvoker))を駆使して頑張ってください！
 
 
 
@@ -127,29 +131,45 @@ QuicheHome
 
 ## 説明
 ### QuicheOracleVariables
-* ``screenWidth``
+```dart
+static double screenWidth;
+```
 今は何も考えてない
-* ``screenHeight``
+```dart
+static double screenHeight:
+```
 今は何も考えてない
-* ``musicList``
+```dart
+static List<Music> musicList;
+```
 ここにネイティブから取得したメディアの情報を保持する``Music``クラスが詰まっています．
-* ``permissionInformation``
+```dart
+static final Map<Permission, bool> permissionInformation;
+```
 パーミッション情報です．**触れるな危険**
-* ``serializedJsonDirectory``
+```dart
+static Future<Directory> get serializedJsonDirectory async
+```
 今は何も考えてない．ここに``CustomizableWidget``のセッティングJSONを入れたい
 
 
 ### QuicheOracleFunctions
-* ``checkInitialization()``
+```dart
+static Future<bool> checkInitialization ()
+```
 アプリが初回起動かどうか(アプリが正常に初期化されたかどうか)を判定する関数．
-* ``getSortedMusicList(SortType sortType)``
-``SortType``enumに応じてソートした``List<Music>``を返します．
+```dart
+static List<dynamic> getSortedMusicList (SortType sortType)
+```
+``SortType``enumに応じてソートしたミュージックのリストを返します．
   - **考えなければならないこと**
   ``Music``クラスは現状**1曲単位**です．例としてアルバムソートの場合，多数の
   ``Music``クラスをhasした``Album``クラス等を考えてみると酔うかもしれません．
 
 
 # PlatformMethodInvoker
+![pdfです](image/methods_fig.jpg)
+
 ## ファイル
 ``PlatformMethodInvoker.dart``
 
@@ -199,16 +219,34 @@ static Future<Null> setQueue (List<String> mediaIdList) async
 ```dart
 static Future<Null> setCurrentMediaId (String mediaId) async
 ```
-``play``を呼び出す前に，この関数を呼び出して準備します．引数には``Music``クラスの``id``を指定します．
+``playFromCurrentMediaId``を呼び出す前に，この関数を呼び出して準備します．引数には``Music``クラスの``id``を指定します．
 #### どうすればええの？
 正しく使ってください．
 
 * * *
 ### 
 ```dart
-static Future<Null> play () async
+static Future<Null> setCurrentQueueIndex (int index) async
 ```
-現在セットされているメディアを再生します．
+``playFromCurrentQueueIndex``を呼び出す前に，この関数を呼び出して準備します．引数には用意したキューのインデックスを指定します．
+#### どうすればええの？
+当然``setQueue``でキューを指定していなければ，エラーとなります．気をつけてください．
+
+* * *
+### 
+```dart
+static Future<Null> playFromCurrentMediaId () async
+```
+現在セットされている``id``に対応するメディアを再生します．
+#### どうすればええの？
+正しく使ってください．
+
+* * *
+### 
+```dart
+static Future<Null> playFromCurrentQueueIndex () async
+```
+現在セットされているキューのインデックスに対応するメディアを再生します．
 #### どうすればええの？
 正しく使ってください．
 

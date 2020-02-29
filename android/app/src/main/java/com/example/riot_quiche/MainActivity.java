@@ -176,26 +176,19 @@ public class MainActivity extends FlutterActivity {
             mediaController.getTransportControls().playFromMediaId(mediaId, null);
         }
 
+        public void playFromQueueIndex (long index) {
+            mediaController.getTransportControls().skipToQueueItem(index);
+        }
+
         public void setQueue (ArrayList<String> mediaIdList) {
             Bundle extras = new Bundle();
             extras.putStringArrayList("mediaIdList", mediaIdList);
-
-            MediaBrowserCompat.CustomActionCallback customActionCallback = new MediaBrowserCompat.CustomActionCallback (){
-                @Override
-                public void onResult(String action, Bundle extras, Bundle resultData) {
-                    super.onResult(action, extras, resultData);
-                }
-
-                @Override
-                public void onError(String action, Bundle extras, Bundle data) {
-                    super.onError(action, extras, data);
-                }
-            };
 
             mediaController.getTransportControls().sendCustomAction(
                     QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_QUEUE,
                     extras
             );
+
         }
     }
 

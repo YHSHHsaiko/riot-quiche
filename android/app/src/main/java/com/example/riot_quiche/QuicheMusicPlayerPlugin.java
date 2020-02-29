@@ -48,8 +48,11 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     public static class MethodCalls {
         public static final String butterflyEffect = "butterflyEffect";
         public static final String setQueue = "setQueue";
+        public static final String setCurrentQueueIndex = "setCurrentQueueIndex";
         public static final String setCurrentMediaId = "setCurrentMediaId";
-        public static final String play = "play";
+        public static final String playFromCurrentMediaId = "playFromCurrentMediaId";
+        public static final String playFromCurrentQueueIndex = "playFromCurrentQueueIndex";
+
     }
     public static class EventCalls {
         public static final String requestPermissions = "requestPermissions";
@@ -60,6 +63,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
     // variables: take _ the head of the variable name
     private String _currentMediaId;
+    private long _currentQueueIndex;
     //
 
 
@@ -117,6 +121,18 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     break;
                 }
 
+                case MethodCalls.setCurrentQueueIndex: {
+                    boolean res = false;
+                    try {
+                        res = methodAPI.setCurrentQueueIndex(call);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    result.success(res);
+                    break;
+                }
+
                 case MethodCalls.setCurrentMediaId: {
                     boolean res = false;
                     try {
@@ -129,10 +145,22 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     break;
                 }
 
-                case MethodCalls.play: {
+                case MethodCalls.playFromCurrentMediaId: {
                     boolean res = false;
                     try {
-                        res = methodAPI.play(call);
+                        res = methodAPI.playFromCurrentMediaId(call);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    result.success(res);
+                    break;
+                }
+
+                case MethodCalls.playFromCurrentQueueIndex: {
+                    boolean res = false;
+                    try {
+                        res = methodAPI.playFromCurrentQueueIndex(call);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -246,6 +274,15 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
             return true;
         }
 
+        public boolean setCurrentQueueIndex (MethodCall call) {
+            List<Object> arguments = call.arguments();
+
+            long index = (long)arguments.get(0);
+            _currentQueueIndex = (int)index;
+
+            return true;
+        }
+
         public boolean setCurrentMediaId (MethodCall call) {
             List<Object> arguments = call.arguments();
 
@@ -255,9 +292,18 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
             return true;
         }
 
-        public boolean play (MethodCall call) {
+        public boolean playFromCurrentMediaId (MethodCall call) {
             if (_currentMediaId != null) {
                 playerAPI.playFromMediaId(_currentMediaId);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public boolean playFromCurrentQueueIndex (MethodCall call) {
+            if (_currentMediaId != null) {
+                playerAPI.playFromQueueIndex(_currentQueueIndex);
                 return true;
             } else {
                 return false;

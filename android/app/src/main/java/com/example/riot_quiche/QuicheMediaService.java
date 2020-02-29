@@ -434,7 +434,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToNext () {
-            // TODO: 次の曲をリクエスト．．．？次の曲って？
             queueIndex++;
             if (queueIndex >= queueItems.size()) {
                 queueIndex = 0;
@@ -446,7 +445,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToPrevious () {
-            // TODO: 前の曲をリクエスト・・・？前の曲って？
             queueIndex--;
             if (queueIndex < 0) {
                 queueIndex = queueItems.size() - 1;
@@ -458,8 +456,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToQueueItem (long i) {
-            // TODO: キューの存在をまず調べなければならない．．．
-            onPlayFromMediaId(queueItems.get((int)i).getDescription().getMediaUri().toString(), null);
+            queueIndex = (int)i;
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaUri().toString(), null);
         }
 
         @Override

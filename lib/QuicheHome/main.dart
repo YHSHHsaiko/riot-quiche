@@ -43,7 +43,7 @@ class _QuicheHomeState extends State<QuicheHome> {
                     return FlatButton(
                       onPressed: () async {
                         PlatformMethodInvoker.setCurrentMediaId(QuicheOracleVariables.musicList[index].id);
-                        PlatformMethodInvoker.play();
+                        PlatformMethodInvoker.playFromCurrentMediaId();
                       },
                       child: Center(child: Text('こんにちはー： ${QuicheOracleVariables.musicList[index].title}'))
                     );
