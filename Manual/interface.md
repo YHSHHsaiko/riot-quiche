@@ -1,153 +1,153 @@
 <!-- TOC -->
 
-    - [<font size=5 color="red">* Widgetのリビルド最適化メモ *</font>](#font-size5-colorred-widgetのリビルド最適化メモ-font)
-- [アプリの流れ](#アプリの流れ)
-- [Splash](#splash)
-  - [フォルダ](#フォルダ)
-  - [概要](#概要)
-  - [説明](#説明)
-  - [どうすればええの？](#どうすればええの)
-- [Entrance](#entrance)
-  - [フォルダ](#フォルダ-1)
-  - [概要](#概要-1)
-  - [説明](#説明-1)
-  - [どうすればええの？](#どうすればええの-1)
-- [Initialization](#initialization)
-  - [フォルダ](#フォルダ-2)
-  - [概要](#概要-2)
-  - [説明](#説明-2)
-  - [どうすればええの？](#どうすればええの-2)
-- [Home](#home)
-  - [フォルダ](#フォルダ-3)
-  - [概要](#概要-3)
-  - [説明](#説明-3)
-  - [どうすればええの？](#どうすればええの-3)
-  - [CustomizableWidget クラス](#customizablewidget-クラス)
-    - [説明](#説明-4)
-    - [overrideが必要なメソッド](#overrideが必要なメソッド)
-- [QuicheOracle](#quicheoracle)
-  - [ファイル](#ファイル)
-  - [概要](#概要-4)
-  - [説明](#説明-5)
-    - [QuicheOracleVariables](#quicheoraclevariables)
-    - [QuicheOracleFunctions](#quicheoraclefunctions)
-- [PlatformMethodInvoker](#platformmethodinvoker)
-  - [ファイル](#ファイル-1)
-  - [概要](#概要-5)
-  - [説明](#説明-6)
-    - [](#)
-      - [どうすればええの？](#どうすればええの-4)
-    - [](#-1)
-      - [どうすればええの？](#どうすればええの-5)
-    - [](#-2)
-      - [どうすればええの？](#どうすればええの-6)
-    - [](#-3)
-      - [どうすればええの？](#どうすればええの-7)
-    - [](#-4)
-      - [どうすればええの？](#どうすればええの-8)
-    - [](#-5)
-      - [どうすればええの？](#どうすればええの-9)
-    - [](#-6)
-      - [どうすればええの？](#どうすればええの-10)
-    - [](#-7)
-      - [どうすればええの？](#どうすればええの-11)
-- [Music クラス](#music-クラス)
-  - [概要](#概要-6)
-  - [説明](#説明-7)
-    - [プロパティ](#プロパティ)
-      - [``String id``](#string-id)
-      - [``String title``](#string-title)
-      - [``String artist``](#string-artist)
-      - [``String album``](#string-album)
-      - [``int duration``](#int-duration)
-      - [``String artUri``](#string-arturi)
-      - [``String path``](#string-path)
-    - [メソッド](#メソッド)
-- [Enumerates](#enumerates)
-  - [InitializationSection](#initializationsection)
-  - [Permission](#permission)
-  - [RouteName](#routename)
-  - [SortType](#sorttype)
+    - [0.0.1. <font size=5 color="red">* Widgetのリビルド最適化メモ *</font>](#001-font-size5-colorred-widgetのリビルド最適化メモ-font)
+- [1. アプリの流れ](#1-アプリの流れ)
+- [2. Splash](#2-splash)
+  - [2.1. フォルダ](#21-フォルダ)
+  - [2.2. 概要](#22-概要)
+  - [2.3. 説明](#23-説明)
+  - [2.4. どうすればええの？](#24-どうすればええの)
+- [3. Entrance](#3-entrance)
+  - [3.1. フォルダ](#31-フォルダ)
+  - [3.2. 概要](#32-概要)
+  - [3.3. 説明](#33-説明)
+  - [3.4. どうすればええの？](#34-どうすればええの)
+- [4. Initialization](#4-initialization)
+  - [4.1. フォルダ](#41-フォルダ)
+  - [4.2. 概要](#42-概要)
+  - [4.3. 説明](#43-説明)
+  - [4.4. どうすればええの？](#44-どうすればええの)
+- [5. Home](#5-home)
+  - [5.1. フォルダ](#51-フォルダ)
+  - [5.2. 概要](#52-概要)
+  - [5.3. 説明](#53-説明)
+  - [5.4. どうすればええの？](#54-どうすればええの)
+  - [5.5. CustomizableWidget クラス](#55-customizablewidget-クラス)
+    - [5.5.1. 説明](#551-説明)
+    - [5.5.2. overrideが必要なメソッド](#552-overrideが必要なメソッド)
+- [6. QuicheOracle](#6-quicheoracle)
+  - [6.1. ファイル](#61-ファイル)
+  - [6.2. 概要](#62-概要)
+  - [6.3. 説明](#63-説明)
+    - [6.3.1. QuicheOracleVariables](#631-quicheoraclevariables)
+    - [6.3.2. QuicheOracleFunctions](#632-quicheoraclefunctions)
+- [7. PlatformMethodInvoker](#7-platformmethodinvoker)
+  - [7.1. ファイル](#71-ファイル)
+  - [7.2. 概要](#72-概要)
+  - [7.3. 説明](#73-説明)
+    - [7.3.1.](#731)
+      - [7.3.1.1. どうすればええの？](#7311-どうすればええの)
+    - [7.3.2.](#732)
+      - [7.3.2.1. どうすればええの？](#7321-どうすればええの)
+    - [7.3.3.](#733)
+      - [7.3.3.1. どうすればええの？](#7331-どうすればええの)
+    - [7.3.4.](#734)
+      - [7.3.4.1. どうすればええの？](#7341-どうすればええの)
+    - [7.3.5.](#735)
+      - [7.3.5.1. どうすればええの？](#7351-どうすればええの)
+    - [7.3.6.](#736)
+      - [7.3.6.1. どうすればええの？](#7361-どうすればええの)
+    - [7.3.7.](#737)
+      - [7.3.7.1. どうすればええの？](#7371-どうすればええの)
+    - [7.3.8.](#738)
+      - [7.3.8.1. どうすればええの？](#7381-どうすればええの)
+- [8. Music クラス](#8-music-クラス)
+  - [8.1. 概要](#81-概要)
+  - [8.2. 説明](#82-説明)
+    - [8.2.1. プロパティ](#821-プロパティ)
+      - [8.2.1.1. ``String id``](#8211-string-id)
+      - [8.2.1.2. ``String title``](#8212-string-title)
+      - [8.2.1.3. ``String artist``](#8213-string-artist)
+      - [8.2.1.4. ``String album``](#8214-string-album)
+      - [8.2.1.5. ``int duration``](#8215-int-duration)
+      - [8.2.1.6. ``String artUri``](#8216-string-arturi)
+      - [8.2.1.7. ``String path``](#8217-string-path)
+    - [8.2.2. メソッド](#822-メソッド)
+- [9. Enumerates](#9-enumerates)
+  - [9.1. InitializationSection](#91-initializationsection)
+  - [9.2. Permission](#92-permission)
+  - [9.3. RouteName](#93-routename)
+  - [9.4. SortType](#94-sorttype)
 
 <!-- /TOC -->
 
 
 
-### <font size=5 color="red">* Widgetのリビルド最適化メモ *</font>
+### 0.0.1. <font size=5 color="red">* Widgetのリビルド最適化メモ *</font>
 * O(1)でデータにアクセスできる[InheritedWidget](https://medium.com/flutter-jp/inherited-widget-37495200d965)
 * Widgetの[const指定(Widgetのキャッシュ)](https://medium.com/flutter-jp/state-performance-7a5f67d62edd)
 * [Performance considerations(Flutter.dev)](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html#performance-considerations)
 
-# アプリの流れ
+# 1. アプリの流れ
 ![この画像を見ÿと](image/app_flow.png)
 
-# Splash
-## フォルダ
+# 2. Splash
+## 2.1. フォルダ
 QuicheSplash
 
-## 概要
+## 2.2. 概要
 アプリの印象をよくするためのアニメー朱恩．
 
-## 説明
+## 2.3. 説明
 ``main.dart``の``_animateUntil``関数にて，Futureとして``delayed``とコンストラクタの引数である``someFuture``([ここで渡す](#main.dart))が両方とも終わるまでスプラッシュアニメーションを繰り返す．
-## どうすればええの？
+## 2.4. どうすればええの？
 * ``someFuture``を渡して，
 * Futureが両方終わるまでのアニメーションを``build``関数に定義すればよい．
 
 
-# Entrance
-## フォルダ
+# 3. Entrance
+## 3.1. フォルダ
 QuicheEntrance
 
-## 概要
+## 3.2. 概要
 アプリの玄関．
 
-## 説明
+## 3.3. 説明
 ``QuicheOracleFunctions.checkInitialization``([ここで定義する](#quicheoraclefunctions))関数でアプリ既に初期化されたか(初回起動時かどうか，もしくは正常に初期化されたか，のほうが安全？)を見て，
 * ``true``なら[Home](#home)に行き，
 * ``false``なら[Initialization](#initialization)に行く．
 
-## どうすればええの？
+## 3.4. どうすればええの？
 ``QuicheOracleFunctions.checkInitialization``の中身を頑張る．
 
 
 
-# Initialization
-## フォルダ
+# 4. Initialization
+## 4.1. フォルダ
 QuicheInitialization
 
-## 概要
+## 4.2. 概要
 アプリの初期化．
 
-## 説明
+## 4.3. 説明
 ``IQuicheInitialization``の継承クラスを``_sectionMap``に挿入し，``onSuccess``や``onError``等に基づき初期化が構成される．
 
-## どうすればええの？
+## 4.4. どうすればええの？
 * 現状``RequestPermissionsSection``だけなので，
 * なにも考えなくてよいで宇s．
 
 
 
-# Home
-## フォルダ
+# 5. Home
+## 5.1. フォルダ
 QuicheHome
 
-## 概要
+## 5.2. 概要
 アプリのメイン画面．
 
-## 説明
+## 5.3. 説明
 <font size="5">**今のところ，何も考えてません！**</font>
 
-## どうすればええの？
+## 5.4. どうすればええの？
 * **曲リストとか再生画面とか**
 * **ここがアプリの見せどころ**
 * ``QuicheOracle``([これです](#quicheoracle))や``PlatformMethodInvoker``([これです](#platformmethodinvoker))を駆使して頑張ってください！
 * **``CurstomizableWidget``(再生画面にてStackするWidget)を作る場合は，``CurstomizableWidget``([これです](#customizablewidget))を継承してください！**
 
-## CustomizableWidget クラス
-### 説明
+## 5.5. CustomizableWidget クラス
+### 5.5.1. 説明
 * 再生画面にてLayerするWidgetの基底クラス．
-### overrideが必要なメソッド
+### 5.5.2. overrideが必要なメソッド
 ```dart
 // return a serialized setting
 Map<String, dynamic> get setting;
@@ -159,15 +159,15 @@ set setting (Map<String, dynamic> importedSetting);
 ```
 Layerを表現する設定をインポートするためのセッター．
 
-# QuicheOracle
-## ファイル
+# 6. QuicheOracle
+## 6.1. ファイル
 ``QuicheOracle.dart``
 
-## 概要
+## 6.2. 概要
 アプリの汎用インターフェース．
 
-## 説明
-### QuicheOracleVariables
+## 6.3. 説明
+### 6.3.1. QuicheOracleVariables
 ```dart
 static double screenWidth;
 ```
@@ -190,7 +190,7 @@ static Future<Directory> get serializedJsonDirectory async
 今は何も考えてない．ここに``CustomizableWidget``のセッティングJSONを入れたい
 
 
-### QuicheOracleFunctions
+### 6.3.2. QuicheOracleFunctions
 ```dart
 static Future<bool> checkInitialization ()
 ```
@@ -204,91 +204,91 @@ static List<dynamic> getSortedMusicList (SortType sortType)
   ``Music``クラスをhasした``Album``クラス等を考えてみると酔うかもしれません．
 
 
-# PlatformMethodInvoker
+# 7. PlatformMethodInvoker
 ![pdfです](image/methods_fig.jpg)
 
-## ファイル
+## 7.1. ファイル
 ``PlatformMethodInvoker.dart``
 
-## 概要
+## 7.2. 概要
 androidネイティブAPIを呼び出す関数が多数勢ぞろい
 
-## 説明
+## 7.3. 説明
 * * *
-### 
+### 7.3.1.  
 ```dart
 static Future<List<bool>> requestPermissions (List<Permission> permissions) async
 ```
 パーミッションを要求します．acceptされれば``true``，denyされれば``false``がそれぞれ戻り値のリストに格納されます．
-#### どうすればええの？
+#### 7.3.1.1. どうすればええの？
 パーミッションを必要としない限り，呼ぶ必要はありません．
 
 * * *
-### 
+### 7.3.2.  
 ```dart
 static Future<bool> trigger () async
 ```
 MediaBrowserServiceをアプリにバインドします．
-#### どうすればええの？
+#### 7.3.2.1. どうすればええの？
 Homeの起動時に呼ばれるものです．気にする必要はありません．
 
 * * *
-### 
+### 7.3.3.  
 ```dart
 static Future<List<Music>> butterflyEffect () async
 ```
 ネイティブから再生できるミュージックを全て取得します．
-#### どうすればええの？
+#### 7.3.3.1. どうすればええの？
 Homeに来た時点で既に``QuicheOracleFunctions.musicList``に全て格納されています．気にする必要はありません．
 **取得する属性を追加したい場合は，Javaコードを変更する必要があります．！**
 
 * * *
-### 
+### 7.3.4.  
 ```dart
 static Future<Null> setQueue (List<String> mediaIdList) async
 ```
 ``Music``クラスの``id``プロパティのリストを引数にして，それに対応するキューをネイティブで作成します．
-#### どうすればええの？
+#### 7.3.4.1. どうすればええの？
 たとえば，アルバムをクリックした場合，キューにアルバム内の``Music``の``id``を順番に入れる必要があります．
 
 * * *
-### 
+### 7.3.5.  
 ```dart
 static Future<Null> setCurrentMediaId (String mediaId) async
 ```
 ``playFromCurrentMediaId``を呼び出す前に，この関数を呼び出して準備します．引数には``Music``クラスの``id``を指定します．
-#### どうすればええの？
+#### 7.3.5.1. どうすればええの？
 正しく使ってください．
 
 * * *
-### 
+### 7.3.6.  
 ```dart
 static Future<Null> setCurrentQueueIndex (int index) async
 ```
 ``playFromCurrentQueueIndex``を呼び出す前に，この関数を呼び出して準備します．引数には用意したキューのインデックスを指定します．
-#### どうすればええの？
+#### 7.3.6.1. どうすればええの？
 当然``setQueue``でキューを指定していなければ，エラーとなります．気をつけてください．
 
 * * *
-### 
+### 7.3.7.  
 ```dart
 static Future<Null> playFromCurrentMediaId () async
 ```
 現在セットされている``id``に対応するメディアを再生します．
-#### どうすればええの？
+#### 7.3.7.1. どうすればええの？
 正しく使ってください．
 
 * * *
-### 
+### 7.3.8.  
 ```dart
 static Future<Null> playFromCurrentQueueIndex () async
 ```
 現在セットされているキューのインデックスに対応するメディアを再生します．
-#### どうすればええの？
+#### 7.3.8.1. どうすればええの？
 正しく使ってください．
 
 
-# Music クラス
+# 8. Music クラス
 ```dart
   Music ({
     @required String id,
@@ -300,27 +300,27 @@ static Future<Null> playFromCurrentQueueIndex () async
     @required String path
   })
 ```
-## 概要
+## 8.1. 概要
 **1曲分**の情報が入っているクラス．
 
-## 説明
-### プロパティ
-#### ``String id``
+## 8.2. 説明
+### 8.2.1. プロパティ
+#### 8.2.1.1. ``String id``
 再生する際に用いる，一意なIDです．
-#### ``String title``
+#### 8.2.1.2. ``String title``
 タイトルです．
-#### ``String artist``
+#### 8.2.1.3. ``String artist``
 アーティスト名です．
-#### ``String album``
+#### 8.2.1.4. ``String album``
 アルバム名です．
-#### ``int duration``
+#### 8.2.1.5. ``int duration``
 曲の長さ(ミリ秒)です．
-#### ``String artUri``
+#### 8.2.1.6. ``String artUri``
 ジャケット画像のパスです．**ない場合は，nullです.**``chooseArtUri``を使用して下さい．
-#### ``String path``
+#### 8.2.1.7. ``String path``
 曲ファイルのパスです．
 
-### メソッド
+### 8.2.2. メソッド
 ```dart
 String chooseArtUri ({String format = 'png'})
 ```
@@ -331,17 +331,17 @@ String chooseArtUri ({String format = 'png'})
 * それでもなければ**null**を返します．
 
 
-# Enumerates
-## InitializationSection
+# 9. Enumerates
+## 9.1. InitializationSection
 ```dart
   RequestPermissions,
   None
 ```
-## Permission
+## 9.2. Permission
 ```dart
   READ_EXTERNAL_STORAGE
 ```
-## RouteName
+## 9.3. RouteName
 ```dart
   Splash,
   Entrance,
@@ -367,7 +367,7 @@ String chooseArtUri ({String format = 'png'})
     }
   }
 ```
-## SortType
+## 9.4. SortType
 ```dart
   TITLE_ASC,
   ARTIST_ASC,
