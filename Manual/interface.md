@@ -22,7 +22,7 @@
   - [概要](#概要-3)
   - [説明](#説明-3)
   - [どうすればええの？](#どうすればええの-3)
-  - [CustomizableWidget](#customizablewidget)
+  - [CustomizableWidget クラス](#customizablewidget-クラス)
     - [説明](#説明-4)
     - [overrideが必要なメソッド](#overrideが必要なメソッド)
 - [QuicheOracle](#quicheoracle)
@@ -51,6 +51,18 @@
       - [どうすればええの？](#どうすればええの-10)
     - [](#-7)
       - [どうすればええの？](#どうすればええの-11)
+- [Music クラス](#music-クラス)
+  - [概要](#概要-6)
+  - [説明](#説明-7)
+    - [プロパティ](#プロパティ)
+      - [``String id``](#string-id)
+      - [``String title``](#string-title)
+      - [``String artist``](#string-artist)
+      - [``String album``](#string-album)
+      - [``int duration``](#int-duration)
+      - [``String artUri``](#string-arturi)
+      - [``String path``](#string-path)
+    - [メソッド](#メソッド)
 - [Enumerates](#enumerates)
   - [InitializationSection](#initializationsection)
   - [Permission](#permission)
@@ -132,7 +144,7 @@ QuicheHome
 * ``QuicheOracle``([これです](#quicheoracle))や``PlatformMethodInvoker``([これです](#platformmethodinvoker))を駆使して頑張ってください！
 * **``CurstomizableWidget``(再生画面にてStackするWidget)を作る場合は，``CurstomizableWidget``([これです](#customizablewidget))を継承してください！**
 
-## CustomizableWidget
+## CustomizableWidget クラス
 ### 説明
 * 再生画面にてLayerするWidgetの基底クラス．
 ### overrideが必要なメソッド
@@ -276,6 +288,47 @@ static Future<Null> playFromCurrentQueueIndex () async
 正しく使ってください．
 
 
+# Music クラス
+```dart
+  Music ({
+    @required String id,
+    @required String title,
+    @required String artist,
+    @required String album,
+    @required int duration,
+    @required String artUri,
+    @required String path
+  })
+```
+## 概要
+**1曲分**の情報が入っているクラス．
+
+## 説明
+### プロパティ
+#### ``String id``
+再生する際に用いる，一意なIDです．
+#### ``String title``
+タイトルです．
+#### ``String artist``
+アーティスト名です．
+#### ``String album``
+アルバム名です．
+#### ``int duration``
+曲の長さ(ミリ秒)です．
+#### ``String artUri``
+ジャケット画像のパスです．**ない場合は，nullです.**``chooseArtUri``を使用して下さい．
+#### ``String path``
+曲ファイルのパスです．
+
+### メソッド
+```dart
+String chooseArtUri ({String format = 'png'})
+```
+* ``artUri != null``なら``artUri``を返し，
+* 曲名に対応する画像があればそのパスを返し，
+* アルバム名に対応する画像があればそのパスを返し，
+* ファイル名に対する画像があればそのパスを返し，
+* それでもなければ**null**を返します．
 
 
 # Enumerates
