@@ -57,6 +57,7 @@ class PlatformMethodInvoker {
       String album = musicObject[3] as String;
       int duration = musicObject[4] as int;
       String artUri = musicObject[5] as String;
+      String path = musicObject[6] as String;
 
       Music music = Music(
         id: id,
@@ -64,8 +65,11 @@ class PlatformMethodInvoker {
         artist: artist,
         album: album,
         duration: duration,
-        artUri: artUri
+        artUri: artUri,
+        path: path
       );
+
+      print(music.chooseArtUri(format: 'png'));
       musicList.add(music);
     }
     return musicList;

@@ -124,6 +124,10 @@ public class MainActivity extends FlutterActivity {
         );
         eventAPI = plugin.eventAPI;
 
+        try {
+            QuicheLibrary library = QuicheLibrary.getInstance();
+            library.initialize(getApplicationContext());
+        } catch (Exception e) {}
     }
 
     @Override

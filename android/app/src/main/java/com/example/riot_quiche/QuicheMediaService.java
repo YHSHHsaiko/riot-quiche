@@ -482,8 +482,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 queueItems.add(new MediaSessionCompat.QueueItem(library.getMediaItemFromMediaId(mediaId).getDescription(), i));
             }
 
-            Log.d("setQueue", queueItems.toString());
-
             mediaSession.setQueue(queueItems);
         }
     }

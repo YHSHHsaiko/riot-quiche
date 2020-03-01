@@ -3,6 +3,7 @@ package com.example.riot_quiche;
 import android.app.Activity;
 import android.app.usage.UsageEvents;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.v4.media.MediaMetadataCompat;
 import android.util.EventLog;
@@ -94,17 +95,19 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     }
 
                     ArrayList<ArrayList<Object>> butterfly = new ArrayList<>();
-                    for (Music music : pupa) {
-                        ArrayList<Object> musicObject = new ArrayList<>();
+                    if (pupa != null) {
+                        for (Music music : pupa) {
+                            ArrayList<Object> musicObject = new ArrayList<>();
 
-                        musicObject.add(music.getId());
-                        musicObject.add(music.getTitle());
-                        musicObject.add(music.getArtist());
-                        musicObject.add(music.getAlbum());
-                        musicObject.add(music.getDuration());
-                        musicObject.add(music.getArtUri());
+                            musicObject.add(music.getId());
+                            musicObject.add(music.getTitle());
+                            musicObject.add(music.getArtist());
+                            musicObject.add(music.getAlbum());
+                            musicObject.add(music.getDuration());
+                            musicObject.add(music.getArtUri());
 
-                        butterfly.add(musicObject);
+                            butterfly.add(musicObject);
+                        }
                     }
                     result.success(butterfly);
                     break;
@@ -238,8 +241,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                         new ArrayList<MediaMetadataCompat>(QuicheLibrary.getInstance().getMetadataMap().values());
                 ArrayList<Music> musics = new ArrayList<Music>();
 
-                Log.d("plugin", metadatas.toString());
-
+                QuicheLibrary library = QuicheLibrary.getInstance();
                 for (MediaMetadataCompat metadata : metadatas) {
 
                     String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI);
@@ -248,6 +250,10 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     String album = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM);
                     Long duration = metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
                     String artUri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ART_URI);
+
+                    Uri.Builder uriBuilder = new Uri.Builder();
+                    Uri uri = uriBuilder.scheme("content").path(artUri).build();
+                    artUri = library.getFilePathFromUri(uri);
 
                     Music music = new Music(id, title, artist, album, duration, artUri);
                     musics.add(music);
@@ -309,6 +315,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 return false;
             }
         }
+
     }
 
     public class EventAPI {

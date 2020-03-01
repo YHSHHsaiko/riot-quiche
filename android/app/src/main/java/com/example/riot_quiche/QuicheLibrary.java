@@ -14,6 +14,7 @@ import android.support.v4.media.MediaMetadataCompat;
 
 import androidx.annotation.NonNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -49,8 +50,7 @@ public class QuicheLibrary {
 
 
     private QuicheLibrary (Context context) {
-        contentResolver = context.getContentResolver();
-        initializeMetadataMap();
+        initialize(context);
     }
 
     public static QuicheLibrary createInstance (@NonNull Context context) {
@@ -62,6 +62,11 @@ public class QuicheLibrary {
         } else {
             throw new Exception("no instance for QuicheLibrary");
         }
+    }
+
+    public void initialize (Context context) {
+        contentResolver = context.getContentResolver();
+        initializeMetadataMap();
     }
 
     public LinkedHashMap<String, MediaMetadataCompat> getMetadataMap () {
@@ -160,5 +165,44 @@ public class QuicheLibrary {
         }
 
         return mediaArtUri;
+    }
+
+    public String getFilePathFromUri (Uri uri) {
+        String scheme = uri.getScheme();
+        String filePath = null;
+
+        switch (scheme) {
+            case "content": {
+                String[] projection = {MediaStore.Images.ImageColumns.DATA};
+                Cursor cursor = contentResolver.query(
+                        uri, projection, null, null, null
+                );
+                try {
+                    if (cursor != null) {
+                        if (cursor.moveToFirst()) {
+                            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                            filePath = cursor.getString(column_index);
+                        }
+                    }
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+
+                break;
+            }
+
+            case "file": {
+                filePath = uri.getPath();
+                break;
+            }
+
+            default: {
+                break;
+            }
+        }
+
+        return filePath;
     }
 }
