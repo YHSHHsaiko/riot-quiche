@@ -217,7 +217,7 @@ androidネイティブAPIを呼び出す関数が多数勢ぞろい
 * * *
 ### 7.3.1.  
 ```dart
-static Future<List<bool>> requestPermissions (List<Permission> permissions) async
+static Future<List<bool>> PlatformMethodInvoker.requestPermissions (List<Permission> permissions) async
 ```
 パーミッションを要求します．acceptされれば``true``，denyされれば``false``がそれぞれ戻り値のリストに格納されます．
 #### 7.3.1.1. どうすればええの？
@@ -226,7 +226,7 @@ static Future<List<bool>> requestPermissions (List<Permission> permissions) asyn
 * * *
 ### 7.3.2.  
 ```dart
-static Future<bool> trigger () async
+static Future<bool> PlatformMethodInvoker.trigger () async
 ```
 MediaBrowserServiceをアプリにバインドします．
 #### 7.3.2.1. どうすればええの？
@@ -235,7 +235,7 @@ Homeの起動時に呼ばれるものです．気にする必要はありませ�
 * * *
 ### 7.3.3.  
 ```dart
-static Future<List<Music>> butterflyEffect () async
+static Future<List<Music>> PlatformMethodInvoker.butterflyEffect () async
 ```
 ネイティブから再生できるミュージックを全て取得します．
 #### 7.3.3.1. どうすればええの？
@@ -245,7 +245,7 @@ Homeに来た時点で既に``QuicheOracleFunctions.musicList``に全て格納�
 * * *
 ### 7.3.4.  
 ```dart
-static Future<Null> setQueue (List<String> mediaIdList) async
+static Future<Null> PlatformMethodInvoker.setQueue (List<String> mediaIdList) async
 ```
 ``Music``クラスの``id``プロパティのリストを引数にして，それに対応するキューをネイティブで作成します．
 #### 7.3.4.1. どうすればええの？
@@ -254,7 +254,7 @@ static Future<Null> setQueue (List<String> mediaIdList) async
 * * *
 ### 7.3.5.  
 ```dart
-static Future<Null> setCurrentMediaId (String mediaId) async
+static Future<Null> PlatformMethodInvoker.setCurrentMediaId (String mediaId) async
 ```
 ``playFromCurrentMediaId``を呼び出す前に，この関数を呼び出して準備します．引数には``Music``クラスの``id``を指定します．
 #### 7.3.5.1. どうすればええの？
@@ -263,7 +263,7 @@ static Future<Null> setCurrentMediaId (String mediaId) async
 * * *
 ### 7.3.6.  
 ```dart
-static Future<Null> setCurrentQueueIndex (int index) async
+static Future<Null> PlatformMethodInvoker.setCurrentQueueIndex (int index) async
 ```
 ``playFromCurrentQueueIndex``を呼び出す前に，この関数を呼び出して準備します．引数には用意したキューのインデックスを指定します．
 #### 7.3.6.1. どうすればええの？
@@ -272,7 +272,7 @@ static Future<Null> setCurrentQueueIndex (int index) async
 * * *
 ### 7.3.7.  
 ```dart
-static Future<Null> playFromCurrentMediaId () async
+static Future<Null> PlatformMethodInvoker.playFromCurrentMediaId () async
 ```
 現在セットされている``id``に対応するメディアを再生します．
 #### 7.3.7.1. どうすればええの？
@@ -281,7 +281,7 @@ static Future<Null> playFromCurrentMediaId () async
 * * *
 ### 7.3.8.  
 ```dart
-static Future<Null> playFromCurrentQueueIndex () async
+static Future<Null> PlatformMethodInvoker.playFromCurrentQueueIndex () async
 ```
 現在セットされているキューのインデックスに対応するメディアを再生します．
 #### 7.3.8.1. どうすればええの？
