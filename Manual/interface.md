@@ -169,34 +169,34 @@ Layerを表現する設定をインポートするためのセッター．
 ## 6.3. 説明
 ### 6.3.1. QuicheOracleVariables
 ```dart
-static double screenWidth;
+static double QuicheOracleVariables.screenWidth;
 ```
 今は何も考えてない
 ```dart
-static double screenHeight:
+static double QuicheOracleVariables.screenHeight:
 ```
 今は何も考えてない
 ```dart
-static List<Music> musicList;
+static List<Music> QuicheOracleVariables.musicList;
 ```
 ここにネイティブから取得したメディアの情報を保持する``Music``クラスが詰まっています．
 ```dart
-static final Map<Permission, bool> permissionInformation;
+static final Map<Permission, bool> QuicheOracleVariables.permissionInformation;
 ```
 パーミッション情報です．**触れるな危険**
 ```dart
-static Future<Directory> get serializedJsonDirectory async
+static Future<Directory> get QuicheOracleVariables.serializedJsonDirectory async
 ```
 今は何も考えてない．ここに``CustomizableWidget``のセッティングJSONを入れたい
 
 
 ### 6.3.2. QuicheOracleFunctions
 ```dart
-static Future<bool> checkInitialization ()
+static Future<bool> QuicheOracleFunctions.checkInitialization ()
 ```
 アプリが初回起動かどうか(アプリが正常に初期化されたかどうか)を判定する関数．
 ```dart
-static List<dynamic> getSortedMusicList (SortType sortType)
+static List<dynamic> QuicheOracleFunctions.getSortedMusicList (SortType sortType)
 ```
 ``SortType``enumに応じてソートしたミュージックのリストを返します．
   - **考えなければならないこと**
