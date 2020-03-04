@@ -31,6 +31,7 @@ public class QuicheLibrary {
         MediaStore.Audio.Media.DURATION,
         MediaStore.Audio.Media.TRACK,
         MediaStore.Audio.Media.TITLE,
+        MediaStore.Audio.Media.DATA
     };
 
     private int id_index = 0;
@@ -41,6 +42,7 @@ public class QuicheLibrary {
     private int duration_index = 5;
     private int track_index = 6;
     private int title_index = 7;
+    private int data_index = 8;
 
     private ContentResolver contentResolver;
 
@@ -141,9 +143,11 @@ public class QuicheLibrary {
                             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, cursor.getLong(duration_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUriString)
                             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUriString)
+                            // TODO: 仕方なく，METADATA_KEY_GENREをキーとして使用している
+                            .putString(MediaMetadataCompat.METADATA_KEY_GENRE, cursor.getString(data_index))
                             .build();
                     Log.d("library", "media URI: " + cursor.getString(title_index));
-                    metadataMap.put(mediaUri.toString(), metadata);
+                    metadataMap.put(cursor.getString(id_index), metadata);
 
                     cursor.moveToNext();
                 }

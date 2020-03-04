@@ -69,7 +69,6 @@ class PlatformMethodInvoker {
         path: path
       );
 
-      print(music.chooseArtUri(format: 'png'));
       musicList.add(music);
     }
     return musicList;
@@ -95,25 +94,51 @@ class PlatformMethodInvoker {
     await _methodChannel.invokeMethod('playFromCurrentQueueIndex', <dynamic>[]);
   }
 
-  /**
-   * TODO:
-   */
   static Future<Null> pause () async {
     await _methodChannel.invokeMethod('pause', <dynamic>[]);
   }
 
-  /**
-   * TODO:
-   */
-  static Future<Null> skipToNext () async {
-    await _methodChannel.invokeMethod('skipToNext', <dynamic>[]);
+  static Future<Null> seekTo (int position) async {
+    await _methodChannel.invokeListMethod('seekTo', <dynamic>[]);
+  }
+
+  static Stream<dynamic> redShift (
+    void Function(int position, int state) onData,
+    {void Function(dynamic) onError, void Function() onDone}) {
+
+    var stream = _eventChannel.receiveBroadcastStream(<dynamic>[
+      'redShift'
+    ]);
+
+    final void Function(dynamic) _onData = (dynamic playbackInformationObject) {
+      if (playbackInformationObject != null) {
+        List<dynamic> playbackinformationList = playbackInformationObject as List<dynamic>;
+        int position = playbackinformationList[0] as int;
+        int state = playbackinformationList[1] as int;
+
+        onData(position, state);
+      } else {
+        print('info: play back state is null.');
+      }
+    };
+
+    return stream..listen(
+      _onData,
+      onError: onError,
+      onDone: onDone
+    );
   }
 
   /**
-   * TODO:
+   * NOTE:
+   * This two methods are omitted because of existance for [setCurrentQueueIndex] method.
    */
-  static Future<Null> skipToPrevious () async {
-    await _methodChannel.invokeMethod('skipToPrevious', <dynamic>[]);
-  }
+  // static Future<Null> skipToNext () async {
+  //   await _methodChannel.invokeMethod('skipToNext', <dynamic>[]);
+  // }
+
+  // static Future<Null> skipToPrevious () async {
+  //   await _methodChannel.invokeMethod('skipToPrevious', <dynamic>[]);
+  // }
 
 }

@@ -1,29 +1,28 @@
 package com.example.riot_quiche;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.EventLog;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import io.flutter.app.FlutterActivity;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 
@@ -53,14 +52,15 @@ public class MainActivity extends FlutterActivity {
                 }
 
                 connectionResult = true;
+
+                // send result to plugin
+                pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.trigger, connectionResult);
+
+                mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallback);
+
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-
-            // send result to plugin
-            pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.trigger, connectionResult);
-
-            mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallback);
         }
 
         @Override
@@ -137,6 +137,7 @@ public class MainActivity extends FlutterActivity {
 
         // unbind service
         if (mediaBrowser != null) {
+            eventAPI.blueShift();
             mediaBrowser.disconnect();
         }
     }
@@ -194,6 +195,31 @@ public class MainActivity extends FlutterActivity {
             );
 
         }
+
+        public boolean pause () {
+            boolean res = false;
+            try {
+                mediaController.getTransportControls().pause();
+                res = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return res;
+        }
+
+        public boolean seekTo (long position) {
+            boolean res = false;
+            try {
+                mediaController.getTransportControls().seekTo(position);
+                res = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return res;
+        }
+
     }
 
     // plugin APIs

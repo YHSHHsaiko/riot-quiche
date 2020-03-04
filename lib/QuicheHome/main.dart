@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/ExoPlayerPlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
@@ -78,6 +79,20 @@ class _QuicheHomeState extends State<QuicheHome> {
     await PlatformMethodInvoker.setQueue(List<String>.from(QuicheOracleVariables.musicList.map((music) {
       return music.id;
     })));
+
+    void Function(int position, int state) onData = (int position, int state) {
+        print('position: ${Duration(milliseconds: position).inSeconds}');
+        print('state: ${ExoPlayerPlaybackStateExtension.of(state)}');
+    };
+    PlatformMethodInvoker.redShift(
+      onData,
+      onError: (dynamic) {
+        print('ERROR!');
+      },
+      onDone: () {
+        print('end of .:<RedShift>:-^');
+      }
+    );
 
     return null;
   }
