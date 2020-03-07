@@ -129,6 +129,10 @@ class PlatformMethodInvoker {
     );
   }
 
+  static Future<Null> blueShift () async {
+    await _methodChannel.invokeMethod('blueShift', <dynamic>[]);
+  }
+
   /**
    * NOTE:
    * This two methods are omitted because of existance for [setCurrentQueueIndex] method.

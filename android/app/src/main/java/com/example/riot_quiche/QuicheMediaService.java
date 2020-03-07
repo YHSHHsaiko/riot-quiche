@@ -234,6 +234,9 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     @Override
     public void onDestroy () {
         super.onDestroy();
+
+        // TODO:　これいる？
+        handler = null;
     }
 
     @Nullable

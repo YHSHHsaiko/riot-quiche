@@ -51,6 +51,14 @@
       - [7.3.7.1. どうすればええの？](#7371-どうすればええの)
     - [7.3.8.](#738)
       - [7.3.8.1. どうすればええの？](#7381-どうすればええの)
+    - [](#)
+      - [どうすればええの？](#どうすればええの)
+    - [](#-1)
+      - [どうすればええの？](#どうすればええの-1)
+    - [](#-2)
+      - [どうすればええの？](#どうすればええの-2)
+  - [](#-3)
+      - [どうすればええの？](#どうすればええの-3)
 - [8. Music クラス](#8-music-クラス)
   - [8.1. 概要](#81-概要)
   - [8.2. 説明](#82-説明)
@@ -169,34 +177,34 @@ Layerを表現する設定をインポートするためのセッター．
 ## 6.3. 説明
 ### 6.3.1. QuicheOracleVariables
 ```dart
-static double screenWidth;
+static double QuicheOracleVariables.screenWidth;
 ```
 今は何も考えてない
 ```dart
-static double screenHeight:
+static double QuicheOracleVariables.screenHeight:
 ```
 今は何も考えてない
 ```dart
-static List<Music> musicList;
+static List<Music> QuicheOracleVariables.musicList;
 ```
 ここにネイティブから取得したメディアの情報を保持する``Music``クラスが詰まっています．
 ```dart
-static final Map<Permission, bool> permissionInformation;
+static final Map<Permission, bool> QuicheOracleVariables.permissionInformation;
 ```
 パーミッション情報です．**触れるな危険**
 ```dart
-static Future<Directory> get serializedJsonDirectory async
+static Future<Directory> get QuicheOracleVariables.serializedJsonDirectory async
 ```
 今は何も考えてない．ここに``CustomizableWidget``のセッティングJSONを入れたい
 
 
 ### 6.3.2. QuicheOracleFunctions
 ```dart
-static Future<bool> checkInitialization ()
+static Future<bool> QuicheOracleFunctions.checkInitialization ()
 ```
 アプリが初回起動かどうか(アプリが正常に初期化されたかどうか)を判定する関数．
 ```dart
-static List<dynamic> getSortedMusicList (SortType sortType)
+static List<dynamic> QuicheOracleFunctions.getSortedMusicList (SortType sortType)
 ```
 ``SortType``enumに応じてソートしたミュージックのリストを返します．
   - **考えなければならないこと**
@@ -217,7 +225,7 @@ androidネイティブAPIを呼び出す関数が多数勢ぞろい
 * * *
 ### 7.3.1.  
 ```dart
-static Future<List<bool>> requestPermissions (List<Permission> permissions) async
+static Future<List<bool>> PlatformMethodInvoker.requestPermissions (List<Permission> permissions) async
 ```
 パーミッションを要求します．acceptされれば``true``，denyされれば``false``がそれぞれ戻り値のリストに格納されます．
 #### 7.3.1.1. どうすればええの？
@@ -226,7 +234,7 @@ static Future<List<bool>> requestPermissions (List<Permission> permissions) asyn
 * * *
 ### 7.3.2.  
 ```dart
-static Future<bool> trigger () async
+static Future<bool> PlatformMethodInvoker.trigger () async
 ```
 MediaBrowserServiceをアプリにバインドします．
 #### 7.3.2.1. どうすればええの？
@@ -235,7 +243,7 @@ Homeの起動時に呼ばれるものです．気にする必要はありませ�
 * * *
 ### 7.3.3.  
 ```dart
-static Future<List<Music>> butterflyEffect () async
+static Future<List<Music>> PlatformMethodInvoker.butterflyEffect () async
 ```
 ネイティブから再生できるミュージックを全て取得します．
 #### 7.3.3.1. どうすればええの？
@@ -245,7 +253,7 @@ Homeに来た時点で既に``QuicheOracleFunctions.musicList``に全て格納�
 * * *
 ### 7.3.4.  
 ```dart
-static Future<Null> setQueue (List<String> mediaIdList) async
+static Future<Null> PlatformMethodInvoker.setQueue (List<String> mediaIdList) async
 ```
 ``Music``クラスの``id``プロパティのリストを引数にして，それに対応するキューをネイティブで作成します．
 #### 7.3.4.1. どうすればええの？
@@ -254,7 +262,7 @@ static Future<Null> setQueue (List<String> mediaIdList) async
 * * *
 ### 7.3.5.  
 ```dart
-static Future<Null> setCurrentMediaId (String mediaId) async
+static Future<Null> PlatformMethodInvoker.setCurrentMediaId (String mediaId) async
 ```
 ``playFromCurrentMediaId``を呼び出す前に，この関数を呼び出して準備します．引数には``Music``クラスの``id``を指定します．
 #### 7.3.5.1. どうすればええの？
@@ -263,7 +271,7 @@ static Future<Null> setCurrentMediaId (String mediaId) async
 * * *
 ### 7.3.6.  
 ```dart
-static Future<Null> setCurrentQueueIndex (int index) async
+static Future<Null> PlatformMethodInvoker.setCurrentQueueIndex (int index) async
 ```
 ``playFromCurrentQueueIndex``を呼び出す前に，この関数を呼び出して準備します．引数には用意したキューのインデックスを指定します．
 #### 7.3.6.1. どうすればええの？
@@ -272,7 +280,7 @@ static Future<Null> setCurrentQueueIndex (int index) async
 * * *
 ### 7.3.7.  
 ```dart
-static Future<Null> playFromCurrentMediaId () async
+static Future<Null> PlatformMethodInvoker.playFromCurrentMediaId () async
 ```
 現在セットされている``id``に対応するメディアを再生します．
 #### 7.3.7.1. どうすればええの？
@@ -281,11 +289,56 @@ static Future<Null> playFromCurrentMediaId () async
 * * *
 ### 7.3.8.  
 ```dart
-static Future<Null> playFromCurrentQueueIndex () async
+static Future<Null> PlatformMethodInvoker.playFromCurrentQueueIndex () async
 ```
 現在セットされているキューのインデックスに対応するメディアを再生します．
 #### 7.3.8.1. どうすればええの？
 正しく使ってください．
+
+### 
+```dart
+static Future<Null>　PlatformMethodInvoker.pause () async
+```
+現在再生しているメディアをポーズします．
+#### どうすればええの？
+正しく使ってください．
+
+
+### 
+```dart
+static Future<Null>　PlatformMethodInvoker.seekTo (int position) async
+```
+現在再生しているメディアを``position``(ミリ秒)に対応する位置にシークします．
+#### どうすればええの？
+正しく使ってください．
+
+### 
+```dart
+static Stream<dynamic> PlatFormMethodInvoker.redShift (
+  void Function(int position, int state) onData,
+  {
+    void Function(dynamic) onError,
+    void Function() onDone
+  }) async
+```
+現在のメディア情報を取得するストリームを返します．
+#### どうすればええの？
+ストリームは現在の再生位置をミリ秒で表す``position``と，現在のプレイヤーの状態を表す``state``を返します．``state``は，Enumerateクラスの``ExoPlayerPlaybackState``の``id``プロパティに対応しています．
+* **引数について**
+  - ``void Function(int position, int state) onData``
+    ストリームからデータが渡った際に起こすアクションを定義します．
+  - ``void Function(dynamic) onError``(オプショナル)
+    ストリームにエラーが起きた際に起こすアクションを定義します．
+  - ``void Function() onDone``(オプショナル)
+    ストリームが閉じた際に起こすアクションを定義します．
+
+###
+```dart
+static Future<Null> PlatFormMethodInvoker.blueShift () async
+```
+``redShift``にて開いたストリームを閉じます．
+#### どうすればええの？
+正しく使ってください．注意をしますと，**これによって``redShift``の``onDone``が呼ばれるかどうかは，確認していません！**
 
 
 # 8. Music クラス

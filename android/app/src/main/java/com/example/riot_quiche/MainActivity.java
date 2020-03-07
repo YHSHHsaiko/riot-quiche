@@ -135,9 +135,11 @@ public class MainActivity extends FlutterActivity {
         Log.d("activity", "onDestroy()");
         super.onDestroy();
 
+        // blueShift
+        PublicSink.getInstance().setSink(null);
+
         // unbind service
         if (mediaBrowser != null) {
-            eventAPI.blueShift();
             mediaBrowser.disconnect();
         }
     }

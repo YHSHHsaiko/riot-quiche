@@ -47,6 +47,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         public static final String playFromCurrentQueueIndex = "playFromCurrentQueueIndex";
         public static final String pause = "pause";
         public static final String seekTo = "seekTo";
+        public static final String blueShift = "blueShift";
 
     }
     public static class EventCalls {
@@ -189,6 +190,16 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     }
 
                     result.success(res);
+                    break;
+                }
+
+                case MethodCalls.blueShift: {
+                    try {
+                        methodAPI.blueShift(call);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                     break;
                 }
 
@@ -371,6 +382,10 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
             return res;
         }
 
+        public void blueShift (MethodCall call) {
+            PublicSink.getInstance().setSink(null);
+        }
+
     }
 
     public class EventAPI {
@@ -474,10 +489,6 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
         public void redShift (EventChannel.EventSink sink) {
             PublicSink.getInstance().setSink(sink);
-        }
-
-        public void blueShift () {
-            PublicSink.getInstance().setSink(null);
         }
 
         public void cancelEvent (ArrayList<Object> objects, EventChannel.EventSink sink) {
