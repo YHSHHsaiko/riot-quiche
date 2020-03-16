@@ -295,24 +295,24 @@ static Future<Null> PlatformMethodInvoker.playFromCurrentQueueIndex () async
 #### 7.3.8.1. どうすればええの？
 正しく使ってください．
 
-### 
+### 7.3.9.  
 ```dart
 static Future<Null>　PlatformMethodInvoker.pause () async
 ```
 現在再生しているメディアをポーズします．
-#### どうすればええの？
+#### 7.3.9.1. どうすればええの？
 正しく使ってください．
 
 
-### 
+### 7.3.10.  
 ```dart
 static Future<Null>　PlatformMethodInvoker.seekTo (int position) async
 ```
 現在再生しているメディアを``position``(ミリ秒)に対応する位置にシークします．
-#### どうすればええの？
+#### 7.3.10.1. どうすればええの？
 正しく使ってください．
 
-### 
+### 7.3.11.  
 ```dart
 static Stream<dynamic> PlatFormMethodInvoker.redShift (
   void Function(int position, int state) onData,
@@ -322,7 +322,7 @@ static Stream<dynamic> PlatFormMethodInvoker.redShift (
   }) async
 ```
 現在のメディア情報を取得するストリームを返します．
-#### どうすればええの？
+#### 7.3.11.1. どうすればええの？
 ストリームは現在の再生位置をミリ秒で表す``position``と，現在のプレイヤーの状態を表す``state``を返します．``state``は，Enumerateクラスの``ExoPlayerPlaybackState``の``id``プロパティに対応しています．
 * **引数について**
   - ``void Function(int position, int state) onData``
@@ -332,12 +332,12 @@ static Stream<dynamic> PlatFormMethodInvoker.redShift (
   - ``void Function() onDone``(オプショナル)
     ストリームが閉じた際に起こすアクションを定義します．
 
-###
+## 7.4. #
 ```dart
 static Future<Null> PlatFormMethodInvoker.blueShift () async
 ```
 ``redShift``にて開いたストリームを閉じます．
-#### どうすればええの？
+#### 7.4.0.2. どうすればええの？
 正しく使ってください．注意をしますと，**これによって``redShift``の``onDone``が呼ばれるかどうかは，確認していません！**
 
 
