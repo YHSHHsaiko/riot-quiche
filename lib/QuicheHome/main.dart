@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayer.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 
 
@@ -26,39 +27,30 @@ class _QuicheHomeState extends State<QuicheHome> {
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.waiting: {
-              return Center(child: Text('こんにちはー'));
+              return Center(child: Text('こんにちはーwait'));
               break;
             }
             case ConnectionState.done: {
-              if (QuicheOracleVariables.musicList == null) {
-                return Center(child: Text('こんにちはー'));
+              if (QuicheOracleVariables.musicList == null) {// || QuicheOracleVariables.musicList.length == 0
+                return Center(child: Text('こんにちはーdone1'));
               } else {
                 /**
                  * TODO:
                  * main stack widget?
+                 * ここで呼び出されるから画面遷移の度に音楽が再生され直す。
                  */
-                return ListView.builder(
-                  itemCount: QuicheOracleVariables.musicList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return FlatButton(
-                      onPressed: () async {
-                        PlatformMethodInvoker.setCurrentMediaId(QuicheOracleVariables.musicList[index].id);
-                        PlatformMethodInvoker.play();
-                      },
-                      child: Center(child: Text('こんにちはー： ${QuicheOracleVariables.musicList[index].title}'))
-                    );
-                  },
-                );
+                print('ここか？');
+                return MusicPlayer("newplay", null);
               }
               
               break;
             }
             case ConnectionState.none: {
-              return Center(child: Text('こんにちはー'));
+              return Center(child: Text('こんにちはーnone'));
               break;
             }
             case ConnectionState.active: {
-              return Center(child: Text('こんにちはー'));
+              return Center(child: Text('こんにちはーactive'));
               break;
             }
             default: {
