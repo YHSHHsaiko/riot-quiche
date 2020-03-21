@@ -6,19 +6,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
-import android.media.AudioDeviceInfo;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
-import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.IInterface;
 import android.os.Parcel;
-import android.os.RemoteException;
-import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -29,12 +23,9 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.media.AudioManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
-import com.google.android.exoplayer2.BaseRenderer;
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -46,17 +37,14 @@ import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DataSchemeDataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
-import java.io.FileDescriptor;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import io.flutter.Log;
+import io.flutter.plugin.common.EventChannel;
 
 
 public class QuicheMediaService extends MediaBrowserServiceCompat {
@@ -85,6 +73,19 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             updatePlaybackState();
         }
     };
+
+    /*
+     * [stateInformationObject]
+     * storing playback information
+     * = ======================
+     * index 0: [long]
+     *   The current position
+     * index 1: [int]
+     *   The current playback state
+     * */
+    int playbackStateInformationSize = 2;
+    private ArrayList<Object> playbackStateInformationObject;
+
 
     private void updatePlaybackState () {
         int state;
@@ -129,6 +130,12 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     @Override
     public void onCreate () {
         super.onCreate();
+
+        // initialize properties
+        playbackStateInformationObject = new ArrayList<>();
+        for (int i = 0; i < playbackStateInformationSize; ++i) {
+            playbackStateInformationObject.add(null);
+        }
 
         // create an AudioManager
         audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
@@ -197,6 +204,21 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                     updatePlaybackState();
                 }
 
+                long currentPosition = exoPlayer.getCurrentPosition();
+                int currentState = exoPlayer.getPlaybackState();
+
+                /* retrieve current position */
+                playbackStateInformationObject.set(0, currentPosition);
+
+                /* retrieve current playback state */
+                playbackStateInformationObject.set(1, currentState);
+
+                /* call red shift-taste function */
+                EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();
+                if (redShiftSink != null) {
+                    redShiftSink.success(playbackStateInformationObject);
+                }
+
                 handler.postDelayed(this, 500);
             }
         }, 500);
@@ -212,6 +234,9 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     @Override
     public void onDestroy () {
         super.onDestroy();
+
+        // TODO:　これいる？
+        handler = null;
     }
 
     @Nullable
@@ -338,6 +363,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     public class QuicheMediaSessionCallback extends MediaSessionCompat.Callback {
         public static final String CUSTOM_ACTION_SET_QUEUE = "SET_QUEUE";
 
+
         private AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener =
                 new AudioManager.OnAudioFocusChangeListener() {
                     @Override
@@ -434,36 +460,36 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToNext () {
-            // TODO: 次の曲をリクエスト．．．？次の曲って？
             queueIndex++;
             if (queueIndex >= queueItems.size()) {
                 queueIndex = 0;
             }
-            Log.d("next", queueItems.toString());
+            Log.d("next", queueItems.get(queueIndex).getDescription().toString());
 
-            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaUri().toString(), null);
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), null);
         }
 
         @Override
         public void onSkipToPrevious () {
-            // TODO: 前の曲をリクエスト・・・？前の曲って？
             queueIndex--;
             if (queueIndex < 0) {
                 queueIndex = queueItems.size() - 1;
             }
-            Log.d("previous", queueItems.toString());
+            Log.d("previous", queueItems.get(queueIndex).getDescription().toString());
 
-            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaUri().toString(), null);
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), null);
         }
 
         @Override
         public void onSkipToQueueItem (long i) {
-            // TODO: キューの存在をまず調べなければならない．．．
-            onPlayFromMediaId(queueItems.get((int)i).getDescription().getMediaUri().toString(), null);
+            queueIndex = (int)i;
+            onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), null);
         }
 
         @Override
         public void onCustomAction (String action, Bundle extras) {
+            Log.d("on CustomAction", action);
+
             switch (action) {
                 case QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_QUEUE: {
                     setQueue(extras.getStringArrayList("mediaIdList"));
@@ -483,8 +509,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 String mediaId = mediaIdList.get(i);
                 queueItems.add(new MediaSessionCompat.QueueItem(library.getMediaItemFromMediaId(mediaId).getDescription(), i));
             }
-
-            Log.d("setQueue", queueItems.toString());
 
             mediaSession.setQueue(queueItems);
         }

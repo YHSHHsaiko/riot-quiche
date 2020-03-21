@@ -49,13 +49,13 @@ extension QuicheOracleFunctions on QuicheOracle {
     return Future.value(false);
   }
 
-  static List<Music> getSortedMusicList (SortType sortType) {
+  static List<dynamic> getSortedMusicList (SortType sortType) {
     /**
      * TODO:
      * return the sorted Music List according to sortType.
      */
     
-    List<Music> sortedList;
+    List<dynamic> sortedList;
     
     switch (sortType) {
       case SortType.TITLE_ASC: {

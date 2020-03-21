@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/ExoPlayerPlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayer.dart';
@@ -39,8 +40,23 @@ class _QuicheHomeState extends State<QuicheHome> {
                  * main stack widget?
                  * ここで呼び出されるから画面遷移の度に音楽が再生され直す。
                  */
+<<<<<<< HEAD
                 print('ここか？');
                 return MusicPlayer("newplay", null);
+=======
+                return ListView.builder(
+                  itemCount: QuicheOracleVariables.musicList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return FlatButton(
+                      onPressed: () async {
+                        PlatformMethodInvoker.setCurrentMediaId(QuicheOracleVariables.musicList[index].id);
+                        PlatformMethodInvoker.playFromCurrentMediaId();
+                      },
+                      child: Center(child: Text('こんにちはー： ${QuicheOracleVariables.musicList[index].title}'))
+                    );
+                  },
+                );
+>>>>>>> 6e443ae781bcc30d256f0b5aed9120e30f5cade5
               }
               
               break;
@@ -70,6 +86,20 @@ class _QuicheHomeState extends State<QuicheHome> {
     await PlatformMethodInvoker.setQueue(List<String>.from(QuicheOracleVariables.musicList.map((music) {
       return music.id;
     })));
+
+    void Function(int position, int state) onData = (int position, int state) {
+        print('position: ${Duration(milliseconds: position).inSeconds}');
+        print('state: ${ExoPlayerPlaybackStateExtension.of(state)}');
+    };
+    PlatformMethodInvoker.redShift(
+      onData,
+      onError: (dynamic) {
+        print('ERROR!');
+      },
+      onDone: () {
+        print('end of .:<RedShift>:-^');
+      }
+    );
 
     return null;
   }

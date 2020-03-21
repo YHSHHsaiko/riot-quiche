@@ -48,20 +48,8 @@ class _QuicheSplashState extends State<QuicheSplash> {
   }
 
   Future<Null> _animateUntil (BuildContext context) async {
-    Future.delayed(widget.minDuration).then((_) {
-      if (_isFinished) {
-        Navigator.of(context).pushReplacementNamed(RouteName.Entrance.name);
-      } else {
-        _isFinished = true;
-      }
-    });
+    await Future.wait([Future.delayed(widget.minDuration), widget.someFuture]);
 
-    widget.someFuture.then((_) {
-      if (_isFinished) {
-        Navigator.of(context).pushReplacementNamed(RouteName.Entrance.name);
-      } else {
-        _isFinished = true;
-      }
-    });
+    Navigator.of(context).pushReplacementNamed(RouteName.Entrance.name);
   }
 }
