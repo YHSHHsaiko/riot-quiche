@@ -87,32 +87,38 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private ArrayList<Object> playbackStateInformationObject;
 
 
-    private void updatePlaybackState () {
+    private int updatePlaybackState () {
         int state;
 
         switch (exoPlayer.getPlaybackState()) {
             case Player.STATE_IDLE: {
                 state = PlaybackStateCompat.STATE_NONE;
+                Log.d("updatePlaybackState", "state: PlaybackStateCompat.STATE_NONE");
                 break;
             }
             case Player.STATE_BUFFERING: {
                 state = PlaybackStateCompat.STATE_BUFFERING;
+                Log.d("updatePlaybackState", "state: PlaybackStateCompat.STATE_BUFFERING");
                 break;
             }
             case Player.STATE_READY: {
                 if (exoPlayer.getPlayWhenReady()) {
                     state = PlaybackStateCompat.STATE_PLAYING;
+                    Log.d("updatePlaybackState", "state: PlaybackStateCompat.STATE_PLAYING");
                 } else {
                     state = PlaybackStateCompat.STATE_PAUSED;
+                    Log.d("updatePlaybackState", "state: PlaybackStateCompat.STATE_PAUSED");
                 }
                 break;
             }
             case Player.STATE_ENDED: {
                 state = PlaybackStateCompat.STATE_STOPPED;
+                Log.d("updatePlaybackState", "state: PlaybackStateCompat.STATE_STOPPED");
                 break;
             }
             default: {
                 state = PlaybackStateCompat.STATE_NONE;
+                Log.d("updatePlaybackState", "state: PlaybackStateCompat.STATE_NONE");
                 break;
             }
         }
@@ -125,6 +131,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 .setState(state, exoPlayer.getCurrentPosition(), exoPlayer.getPlaybackParameters().speed)
                 .build()
         );
+
+        return state;
     }
 
     @Override
@@ -200,12 +208,11 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         handler.postDelayed(new Runnable () {
             @Override
             public void run () {
-                if (exoPlayer.getPlaybackState() == Player.STATE_READY && exoPlayer.getPlayWhenReady()) {
-                    updatePlaybackState();
-                }
-
+//                if (exoPlayer.getPlaybackState() == Player.STATE_READY && exoPlayer.getPlayWhenReady()) {
+//                    updatePlaybackState();
+//                }
+                int currentState = updatePlaybackState();
                 long currentPosition = exoPlayer.getCurrentPosition();
-                int currentState = exoPlayer.getPlaybackState();
 
                 /* retrieve current position */
                 playbackStateInformationObject.set(0, currentPosition);

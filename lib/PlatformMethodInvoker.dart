@@ -11,7 +11,7 @@ class PlatformMethodInvoker {
     'test_channel'
   );
   static const EventChannel _eventChannel = const EventChannel(
-      'event_channel'
+    'event_channel'
   );
 
   static Future<List<bool>> requestPermissions (List<Permission> permissions) async {
@@ -41,8 +41,9 @@ class PlatformMethodInvoker {
     if (res) {
       print('start service: riot-quiche');
     } else {
-      print('start service failed: *ERROR*');
+      throw Exception('start service failed.');
     }
+
     return res;
   }
 
@@ -71,6 +72,7 @@ class PlatformMethodInvoker {
 
       musicList.add(music);
     }
+    
     return musicList;
   }
 

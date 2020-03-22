@@ -1,29 +1,28 @@
-enum ExoPlayerPlaybackState {
+enum PlaybackState {
   	STATE_BUFFERING,
-    STATE_ENDED,
-    STATE_IDLE,
-    STATE_PREPARING,
-    STATE_READY,
+    STATE_PLAYING,
+    STATE_PAUSED,
+    STATE_STOPPED,
     NONE
 }
 
-extension ExoPlayerPlaybackStateExtension on ExoPlayerPlaybackState {
+extension PlaybackStateExt on PlaybackState {
   int get id {
     switch (this) {
-      case ExoPlayerPlaybackState.STATE_BUFFERING: {
+      case PlaybackState.STATE_BUFFERING: {
+        return 6;
+      }
+      case PlaybackState.STATE_PLAYING: {
         return 3;
       }
-      case ExoPlayerPlaybackState.STATE_ENDED: {
-        return 5;
-      }
-      case ExoPlayerPlaybackState.STATE_IDLE: {
-        return 1;
-      }
-      case ExoPlayerPlaybackState.STATE_PREPARING: {
+      case PlaybackState.STATE_PAUSED: {
         return 2;
       }
-      case ExoPlayerPlaybackState.STATE_READY: {
-        return 4;
+      case PlaybackState.STATE_STOPPED: {
+        return 1;
+      }
+      case PlaybackState.NONE: {
+        return 0;
       }
       default: {
         return -1;
@@ -31,8 +30,8 @@ extension ExoPlayerPlaybackStateExtension on ExoPlayerPlaybackState {
     }
   }
 
-  static ExoPlayerPlaybackState of (int id) {
-    for (ExoPlayerPlaybackState value in ExoPlayerPlaybackState.values) {
+  static PlaybackState of (int id) {
+    for (PlaybackState value in PlaybackState.values) {
       if (value.id == id) {
         return value;
       }
