@@ -41,7 +41,7 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
     print(widget._music.title);
 
     PlatformMethodInvoker.setCurrentMediaId(widget._music.id);
-    PlatformMethodInvoker.play();
+    PlatformMethodInvoker.playFromCurrentMediaId();
     print('initState');
 
     _controller = AnimationController(
@@ -475,7 +475,7 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
               PlatformMethodInvoker.pause();
             }else{
               _animatedIconController.reverse();
-              PlatformMethodInvoker.play();
+              PlatformMethodInvoker.playFromCurrentMediaId();
             }
             _animatedIconControllerChecker = !_animatedIconControllerChecker;
 
