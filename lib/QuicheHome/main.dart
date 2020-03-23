@@ -105,6 +105,8 @@ class _QuicheHomeState extends State<QuicheHome> {
       result = err.toString();
     }
 
+    print(result);
+
     return result;
   }
 }

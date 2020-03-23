@@ -127,7 +127,7 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
                           foldControllBar = !foldControllBar;
                         });
                       },
-                      onPanUpdate: (pos){
+                      onPanUpdate: (pos) {
                         setState(() {
                           widget.tagJucket = "playnow";
                         });

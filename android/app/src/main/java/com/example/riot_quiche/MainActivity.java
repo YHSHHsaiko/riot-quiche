@@ -198,6 +198,18 @@ public class MainActivity extends FlutterActivity {
 
         }
 
+        public boolean play () {
+            boolean res = false;
+            try {
+                mediaController.getTransportControls().play();
+                res = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return res;
+        }
+
         public boolean pause () {
             boolean res = false;
             try {
