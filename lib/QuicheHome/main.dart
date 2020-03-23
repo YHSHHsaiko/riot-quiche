@@ -43,7 +43,7 @@ class _QuicheHomeState extends State<QuicheHome> {
                    * ここで呼び出されるから画面遷移の度に音楽が再生され直す。
                    */
                   print('ここか？');
-                  return MusicPlayer("newplay", null);
+                  return MusicPlayer();
                 }
               } else {
                 return Center(

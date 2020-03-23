@@ -13,10 +13,6 @@ import 'package:riot_quiche/PlatformMethodInvoker.dart';
 //曲が一曲もない時のデフォルトを用意していないのでそこでばぐる,もしない時はリストの画面でも呼ぶ？
 
 class MusicPlayer extends StatefulWidget{
-  MusicPlayer(this.tagJucket, this._music);
-  String tagJucket;
-  Music _music;
-
   @override
   State<StatefulWidget> createState() => _MusicPlayerState();
 }
@@ -28,20 +24,16 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
 
   double heightRateHeader, heightRateFooter;
 
+  String _heroTag;
+  Music _music;
+
+
   @override
   void initState() {
     super.initState();
-    //TODO : ない時が回避されていない
-    if (widget._music == null ){
-      print('what null;');
-      widget._music = QuicheOracleVariables.musicList[0];
-    }
+    // TODO ここでPreference使って、曲データを参照する。
+    callbackSetMusic(QuicheOracleVariables.musicList[0], 'default');
 
-    print(widget.tagJucket);
-    print(widget._music.title);
-
-    PlatformMethodInvoker.setCurrentMediaId(widget._music.id);
-    PlatformMethodInvoker.playFromCurrentMediaId();
     print('initState');
 
     _controller = AnimationController(
@@ -82,6 +74,16 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
   void dispose() {
     super.dispose();
     _controller.dispose();
+    print('破棄');
+  }
+
+  void callbackSetMusic(Music music, String tag){
+    setState(() {
+      _music = music;
+      _heroTag = tag;
+      PlatformMethodInvoker.setCurrentMediaId(_music.id);
+      PlatformMethodInvoker.playFromCurrentMediaId();
+    });
   }
 
   @override
@@ -129,15 +131,16 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
                       },
                       onPanUpdate: (pos){
                         setState(() {
-                          widget.tagJucket = "playnow";
+                          _heroTag = "playnow";
                         });
-                        Navigator.push(
-                          context,
-                          new MaterialPageRoute<Null>(
-                            settings: const RouteSettings(name: "/musicList"),
-                            builder: (BuildContext context) => MusicList(),
-                          ),
+
+                        showDialog(
+                          context: context,
+                          builder: (_) {
+                            return MusicList(this.callbackSetMusic);
+                          },
                         );
+
                       },
                       child: Container(
                         height: size.height,
@@ -155,7 +158,7 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
                         print("Tap Jucket Image!");
                       },
                       child: Hero(
-                        tag: widget.tagJucket, // playnow or newplay
+                        tag: _heroTag, // playnow or newplay
                         child: Container(
                           width: jacketSize,
                           height: jacketSize,
@@ -184,7 +187,7 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
                 child: Container(
                   color: Colors.blueGrey.withOpacity(0.0),
                   height: size.height * heightRateHeader,
-                  child: MusicPlayerHeader(widget._music.title),
+                  child: MusicPlayerHeader(_music.title),
                 ),
               ),
             ),
@@ -197,7 +200,7 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
                 child: Container(
                   color: Colors.blueGrey.withOpacity(0.0),
                   height: size.height * heightRateFooter,
-                  child: MusicPlayerFooter(widget._music),
+                  child: MusicPlayerFooter(_music),
                 ),
               ),
             ),
@@ -390,10 +393,13 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
                               sliderValue = value;
                             });
 
+                            print(value.toInt());
+
                             //TODO ここでjava側に再生場所を送る。
+                            PlatformMethodInvoker.seekTo(value.toInt());
                           },
                           value: sliderValue,
-                          max: 12312,
+                          max: 243,
                           min: 0,
                         ),
                       ),
