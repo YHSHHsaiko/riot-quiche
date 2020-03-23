@@ -6,6 +6,9 @@ import 'package:riot_quiche/QuicheHome/MusicPlayer.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 
 class MusicList extends StatefulWidget{
+  MusicList(this.callback);
+  final callback;
+
   @override
   State<StatefulWidget> createState() => _MusicListState();
 }
@@ -33,13 +36,8 @@ class _MusicListState extends State<MusicList> {
                 return GestureDetector(
                   onTap: (){
                     print('$index');
-                    Navigator.pushReplacement(
-                      context,
-                      new MaterialPageRoute<Null>(
-                        settings: const RouteSettings(name: "/musicPlayer"),
-                        builder: (BuildContext context) => MusicPlayer("newplay$index", listItem[index]),
-                      ),
-                    );
+                    widget.callback(listItem[index], 'tag$index');
+                    Navigator.of(context).pop();
                   },
                   child: seclist(index, size),
                 );},
@@ -65,7 +63,7 @@ class _MusicListState extends State<MusicList> {
       ),
       child: ListTile(
         leading: Hero(
-          tag: "newplay$index",
+          tag: "tag$index",
           child: Container(
             height: size.width * 0.1,
             width: size.width * 0.1,
@@ -85,13 +83,7 @@ class _MusicListState extends State<MusicList> {
     return GestureDetector(
       onTap: (){
         print('sub');
-        Navigator.push(
-          context,
-          new MaterialPageRoute<Null>(
-            settings: const RouteSettings(name: "/musicPlayer"),
-            builder: (BuildContext context) => MusicPlayer("playnow", null),
-          ),
-        );
+        Navigator.of(context).pop();
       },
       child: Container(
         color: Colors.amber,
