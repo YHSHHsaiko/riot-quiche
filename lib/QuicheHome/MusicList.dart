@@ -36,7 +36,7 @@ class _MusicListState extends State<MusicList> {
                 return GestureDetector(
                   onTap: (){
                     print('$index');
-                    widget.callback(listItem[index], 'tag$index');
+                    widget.callback(listItem[index]);
                     Navigator.of(context).pop();
                   },
                   child: seclist(index, size),
@@ -55,6 +55,17 @@ class _MusicListState extends State<MusicList> {
   }
 
   Widget seclist(int index, Size size){
+    Music m = listItem[index];
+    var iii = m.chooseArtUri();
+    var jucketImage;
+    if (iii == null){
+      jucketImage = Image.asset("images/dopper.jpg");
+      print('null');
+    } else {
+      jucketImage = Image.file(File(iii));
+      print('');
+    }
+
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -62,13 +73,11 @@ class _MusicListState extends State<MusicList> {
         ),
       ),
       child: ListTile(
-        leading: Hero(
-          tag: "tag$index",
-          child: Container(
-            height: size.width * 0.1,
-            width: size.width * 0.1,
-            child: Image.asset("images/dopper.jpg"),//Image.file(File.fromUri(Uri.file(listItem[index].artUri)))
-          ),
+        leading: Container(
+          height: size.width * 0.1,
+          width: size.width * 0.1,
+          child: jucketImage,
+//            child: Image.asset("images/dopper.jpg"),//Image.file(File.fromUri(Uri.file(listItem[index].artUri)))
         ),
         title: Text(listItem[index].title),
         subtitle: Text(listItem[index].album),
@@ -89,17 +98,14 @@ class _MusicListState extends State<MusicList> {
         color: Colors.amber,
         child: Row(
           children: <Widget>[
-            Hero(
-              tag: "playnow",
-              child: Container(
-                height: size.width * 0.2,
-                width: size.width * 0.2,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    fit: BoxFit.fill,
-                    image: AssetImage(imagePath),
-                  ),
+            Container(
+              height: size.width * 0.2,
+              width: size.width * 0.2,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  fit: BoxFit.fill,
+                  image: AssetImage(imagePath),
                 ),
               ),
             ),

@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class BackGround extends StatelessWidget{
-  var imagePath;
-  BackGround(this.imagePath);
+  ImageProvider img;
+  BackGround(this.img);
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class BackGround extends StatelessWidget{
         width: double.infinity,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(imagePath),
+            image: img,
             fit: BoxFit.cover,
           ),
         ),

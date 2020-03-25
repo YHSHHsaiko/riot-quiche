@@ -101,7 +101,7 @@ class PlatformMethodInvoker {
   }
 
   static Future<Null> seekTo (int position) async {
-    await _methodChannel.invokeListMethod('seekTo', <dynamic>[]);
+    await _methodChannel.invokeMethod('seekTo', <dynamic>[position]);
   }
 
   static Stream<dynamic> redShift (
