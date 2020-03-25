@@ -7,6 +7,7 @@ import android.database.Cursor;
 
 import android.content.ContentResolver;
 
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
@@ -31,7 +32,7 @@ public class QuicheLibrary {
         MediaStore.Audio.Media.DURATION,
         MediaStore.Audio.Media.TRACK,
         MediaStore.Audio.Media.TITLE,
-        MediaStore.Audio.Media.DATA
+        MediaStore.Audio.Media.DATA,
     };
 
     private int id_index = 0;
@@ -43,10 +44,12 @@ public class QuicheLibrary {
     private int track_index = 6;
     private int title_index = 7;
     private int data_index = 8;
+    private int album_art_index = 9;
 
     private ContentResolver contentResolver;
 
     private LinkedHashMap<String, MediaMetadataCompat> metadataMap;
+    private LinkedHashMap<String, byte[]> artMap;
 
     private static QuicheLibrary _instance;
 
@@ -68,6 +71,7 @@ public class QuicheLibrary {
 
     public void initialize (Context context) {
         contentResolver = context.getContentResolver();
+        initializeArtMap();
         initializeMetadataMap();
     }
 
@@ -93,6 +97,9 @@ public class QuicheLibrary {
                 MediaBrowserCompat.MediaItem.FLAG_PLAYABLE |
                     MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
         );
+    }
+    public LinkedHashMap<String, byte[]> getArtMap () {
+        return artMap;
     }
 
     private void initializeMetadataMap () {
@@ -128,18 +135,20 @@ public class QuicheLibrary {
             if (cursor != null) {
                 cursor.moveToFirst();
 
+                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                 while (!cursor.isAfterLast()) {
                     Uri mediaUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
                     Uri mediaArtUri = getMediaArtUri(cursor.getLong(album_id_index));
 
                     String mediaUriString = mediaUri.toString();
-                    String mediaArtUriString = (mediaArtUri == null) ? null : mediaArtUri.toString();
+                    String mediaArtUriString = mediaArtUri.toString();
 
                     MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
                             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(id_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, cursor.getString(title_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artist_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, cursor.getString(album_index))
+//                            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, cursor.getString(album_art_index))
                             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, cursor.getLong(duration_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUriString)
                             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUriString)
@@ -149,6 +158,13 @@ public class QuicheLibrary {
                     Log.d("library", "media URI: " + cursor.getString(title_index));
                     metadataMap.put(cursor.getString(id_index), metadata);
 
+                    String filePath = cursor.getString(data_index);
+                    retriever.setDataSource(filePath);
+                    byte[] artArray = retriever.getEmbeddedPicture();
+                    if (artArray != null) {
+                        artMap.put(cursor.getString(id_index), artArray);
+                    }
+
                     cursor.moveToNext();
                 }
 
@@ -156,6 +172,10 @@ public class QuicheLibrary {
             }
         }
 
+    }
+
+    private void initializeArtMap () {
+        artMap = new LinkedHashMap<>();
     }
 
     private Uri getMediaArtUri (Long albumId) {

@@ -9,6 +9,7 @@ import android.support.v4.media.MediaMetadataCompat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import io.flutter.Log;
@@ -107,6 +108,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                             musicObject.add(music.getDuration());
                             musicObject.add(music.getArtUri());
                             musicObject.add(music.getPath());
+                            musicObject.add(music.getArt());
 
                             butterfly.add(musicObject);
                         }
@@ -301,6 +303,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 ArrayList<Music> musics = new ArrayList<Music>();
 
                 QuicheLibrary library = QuicheLibrary.getInstance();
+                LinkedHashMap<String, byte[]> artMap = library.getArtMap();
                 for (MediaMetadataCompat metadata : metadatas) {
 
                     String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
@@ -311,11 +314,17 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     String artUri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ART_URI);
                     String path = metadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE);
 
-                    Uri.Builder uriBuilder = new Uri.Builder();
-                    Uri uri = uriBuilder.scheme("content").path(artUri).build();
-                    artUri = library.getFilePathFromUri(uri);
+//                    Uri.Builder uriBuilder = new Uri.Builder();
+//                    Uri uri = uriBuilder.scheme("content").path(artUri).build();
+//                    artUri = library.getFilePathFromUri(uri);
+//                    Log.d("plugin", "Media aru URI: " + artUri);
 
-                    Music music = new Music(id, title, artist, album, duration, artUri, path);
+                    byte[] art = null;
+                    if (artMap.containsKey(id)) {
+                        art = artMap.get(id);
+                    }
+
+                    Music music = new Music(id, title, artist, album, duration, artUri, path, art);
                     musics.add(music);
                 }
 

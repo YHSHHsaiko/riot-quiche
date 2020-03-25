@@ -18,6 +18,8 @@ class Music {
   String get artUri => _artUri;
   final String _path;
   String get path => _path;
+  final List<int> _art;
+  List<int> get art => _art;
 
   
   Music ({
@@ -27,7 +29,8 @@ class Music {
     @required String album,
     @required int duration,
     @required String artUri,
-    @required String path
+    @required String path,
+    List<int> art
   })
   : _id = id,
     _title = title,
@@ -35,14 +38,15 @@ class Music {
     _album = album,
     _duration = duration,
     _artUri = artUri,
-    _path = path;
+    _path = path,
+    _art = art;
 
 
-  String chooseArtUri ({String format = 'png'}) {
-    String result;
+  Image getArt ({String format = 'png'}) {
+    Image result;
 
-    if (_artUri != null) {
-      result = _artUri;
+    if (_art != null) {
+      result = Image.memory(_art);
     } else {
       List<String> splitedPath = path.split('/');
       String rawPath = splitedPath.sublist(0, splitedPath.length - 1).join('/');
@@ -51,19 +55,19 @@ class Music {
       String jacketPath = [rawPath, album + '.$format'].join('/');
 
       if (File(jacketPath).existsSync()) {
-        result = jacketPath;
+        result = Image.file(File(jacketPath));
       } else {
         // ジャケットの名前は曲名かな？
         jacketPath = [rawPath, title + '.$format'].join('/');
         if (File(jacketPath).existsSync()) {
           print(jacketPath);
-          result = jacketPath;
+          result = Image.file(File(jacketPath));
         } else {
           // じゃあファイル名かな？
           List<String> tmpSplited = path.split('.');
           jacketPath = tmpSplited.sublist(0, tmpSplited.length - 1).join('/') + '.$format';
           if (File(jacketPath).existsSync()) {
-            result = jacketPath;
+            result = Image.file(File(jacketPath));
           } else {
             // これでだめならもうねえだろ
             result = null;
