@@ -133,15 +133,19 @@ public class MainActivity extends FlutterActivity {
     @Override
     protected void onDestroy () {
         Log.d("activity", "onDestroy()");
-        super.onDestroy();
 
         // blueShift
         PublicSink.getInstance().setSink(null);
+
+        // pause
+        mediaController.getTransportControls().pause();
 
         // unbind service
         if (mediaBrowser != null) {
             mediaBrowser.disconnect();
         }
+
+        super.onDestroy();
     }
 
     @Override
@@ -196,6 +200,18 @@ public class MainActivity extends FlutterActivity {
                     extras
             );
 
+        }
+
+        public boolean play () {
+            boolean res = false;
+            try {
+                mediaController.getTransportControls().play();
+                res = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return res;
         }
 
         public boolean pause () {

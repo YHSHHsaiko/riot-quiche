@@ -13,15 +13,20 @@ class PlatformMethodInvoker {
   static const EventChannel _eventChannel = const EventChannel(
     'event_channel'
   );
+  static const EventChannel _redShiftChannel = const EventChannel(
+    'redshift_channel'
+  );
 
   static Future<List<bool>> requestPermissions (List<Permission> permissions) async {
+    print(permissions);
     List<int> arguments = permissions.map((element) {
       return Permission.values.indexOf(element);
     }).toList();
-    var stream = _eventChannel.receiveBroadcastStream(<dynamic>[
+    Stream<List<bool>> stream = _eventChannel.receiveBroadcastStream(<dynamic>[
       'requestPermissions', ...arguments
     ]).map<List<bool>>((res) {
-      return (res as List<int>).map((element) {
+      print('permission results: $res');
+      return List<int>.from(res).map((element) {
         return element == 1;
       }).toList();
     });
@@ -59,6 +64,9 @@ class PlatformMethodInvoker {
       int duration = musicObject[4] as int;
       String artUri = musicObject[5] as String;
       String path = musicObject[6] as String;
+      List<int> art = musicObject[7] as List<int>;
+
+      print(art);
 
       Music music = Music(
         id: id,
@@ -67,7 +75,8 @@ class PlatformMethodInvoker {
         album: album,
         duration: duration,
         artUri: artUri,
-        path: path
+        path: path,
+        art: art
       );
 
       musicList.add(music);
@@ -96,6 +105,10 @@ class PlatformMethodInvoker {
     await _methodChannel.invokeMethod('playFromCurrentQueueIndex', <dynamic>[]);
   }
 
+  static Future<Null> play () async {
+    await _methodChannel.invokeMethod('play', <dynamic>[]);
+  }
+  
   static Future<Null> pause () async {
     await _methodChannel.invokeMethod('pause', <dynamic>[]);
   }
@@ -108,7 +121,7 @@ class PlatformMethodInvoker {
     void Function(int position, int state) onData,
     {void Function(dynamic) onError, void Function() onDone}) {
 
-    var stream = _eventChannel.receiveBroadcastStream(<dynamic>[
+    var stream = _redShiftChannel.receiveBroadcastStream(<dynamic>[
       'redShift'
     ]);
 
@@ -132,6 +145,7 @@ class PlatformMethodInvoker {
   }
 
   static Future<Null> blueShift () async {
+    print('<blueShift>: end of redShift.');
     await _methodChannel.invokeMethod('blueShift', <dynamic>[]);
   }
 

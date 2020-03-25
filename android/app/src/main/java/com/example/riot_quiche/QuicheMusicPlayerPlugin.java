@@ -9,6 +9,7 @@ import android.support.v4.media.MediaMetadataCompat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import io.flutter.Log;
@@ -36,6 +37,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
     private static final String METHOD_CHANNEL = "test_channel";
     private static final String EVENT_CHANNEL = "event_channel";
+    private static final String REDSHIFT_CHANNEL = "redshift_channel";
 
     // function names
     public static class MethodCalls {
@@ -45,6 +47,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         public static final String setCurrentMediaId = "setCurrentMediaId";
         public static final String playFromCurrentMediaId = "playFromCurrentMediaId";
         public static final String playFromCurrentQueueIndex = "playFromCurrentQueueIndex";
+        public static final String play = "play";
         public static final String pause = "pause";
         public static final String seekTo = "seekTo";
         public static final String blueShift = "blueShift";
@@ -74,6 +77,9 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         final EventChannel eventChannel = new EventChannel(registrar.messenger(), EVENT_CHANNEL);
         eventChannel.setStreamHandler(instance);
 
+        final EventChannel redShiftChannel = new EventChannel(registrar.messenger(), REDSHIFT_CHANNEL);
+        redShiftChannel.setStreamHandler(instance);
+
         return instance;
     }
 
@@ -102,6 +108,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                             musicObject.add(music.getDuration());
                             musicObject.add(music.getArtUri());
                             musicObject.add(music.getPath());
+                            musicObject.add(music.getArt());
 
                             butterfly.add(musicObject);
                         }
@@ -169,6 +176,18 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     break;
                 }
 
+                case MethodCalls.play: {
+                    boolean res = false;
+                    try {
+                        res = methodAPI.play(call);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    result.success(res);
+                    break;
+                }
+
                 case MethodCalls.pause: {
                     boolean res = false;
                     try {
@@ -194,12 +213,14 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 }
 
                 case MethodCalls.blueShift: {
+                    boolean res = false;
                     try {
-                        methodAPI.blueShift(call);
+                        res = methodAPI.blueShift(call);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
+                    result.success(res);
                     break;
                 }
 
@@ -282,6 +303,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 ArrayList<Music> musics = new ArrayList<Music>();
 
                 QuicheLibrary library = QuicheLibrary.getInstance();
+                LinkedHashMap<String, byte[]> artMap = library.getArtMap();
                 for (MediaMetadataCompat metadata : metadatas) {
 
                     String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
@@ -292,11 +314,17 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     String artUri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ART_URI);
                     String path = metadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE);
 
-                    Uri.Builder uriBuilder = new Uri.Builder();
-                    Uri uri = uriBuilder.scheme("content").path(artUri).build();
-                    artUri = library.getFilePathFromUri(uri);
+//                    Uri.Builder uriBuilder = new Uri.Builder();
+//                    Uri uri = uriBuilder.scheme("content").path(artUri).build();
+//                    artUri = library.getFilePathFromUri(uri);
+//                    Log.d("plugin", "Media aru URI: " + artUri);
 
-                    Music music = new Music(id, title, artist, album, duration, artUri, path);
+                    byte[] art = null;
+                    if (artMap.containsKey(id)) {
+                        art = artMap.get(id);
+                    }
+
+                    Music music = new Music(id, title, artist, album, duration, artUri, path, art);
                     musics.add(music);
                 }
 
@@ -357,6 +385,17 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
             }
         }
 
+        public boolean play (MethodCall call) {
+            boolean res = false;
+            try {
+                res = playerAPI.play();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return res;
+        }
+
         public boolean pause (MethodCall call) {
             boolean res = false;
             try {
@@ -370,7 +409,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
         public boolean seekTo (MethodCall call) {
             List<Object> arguments = call.arguments();
-            long position = (long)arguments.get(0);
+            long position = Long.parseLong(arguments.get(0).toString());
 
             boolean res = false;
             try {
@@ -382,8 +421,23 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
             return res;
         }
 
-        public void blueShift (MethodCall call) {
-            PublicSink.getInstance().setSink(null);
+        public boolean blueShift (MethodCall call) {
+            boolean res = false;
+
+            try {
+                PublicSink instance = PublicSink.getInstance();
+                EventChannel.EventSink sink = instance.getSink();
+                if (sink != null) {
+                    sink.endOfStream();
+                }
+                instance.setSink(null);
+
+                res = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return res;
         }
 
     }
@@ -429,6 +483,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                             if (eventResults.containsKey(EventCalls.requestPermissions)) {
                                 HashMap<String, Boolean> permissionResult =
                                         (HashMap<String, Boolean>) eventResults.get(EventCalls.requestPermissions);
+                                Log.d("permissionResults", permissionResult.toString());
                                 int[] result = new int[permissionResult.size()];
 
                                 for (int i = 0; i < permissionIdentifiers.size(); ++i) {
@@ -441,9 +496,9 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                                     }
                                 }
 
-                                sink.success(result);
                                 eventResults.remove(EventCalls.requestPermissions);
                                 cancel(permissions);
+                                sink.success(result);
                             } else {
                                 handler.postDelayed(this, 100);
                             }
@@ -471,9 +526,9 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                             if (eventResults.containsKey(EventCalls.trigger)) {
                                 boolean connectionResult = (boolean)eventResults.get(EventCalls.trigger);
 
-                                sink.success(connectionResult);
                                 eventResults.remove(EventCalls.trigger);
                                 cancel(triggerObject);
+                                sink.success(connectionResult);
                             } else {
                                 handler.postDelayed(this, 100);
                             }

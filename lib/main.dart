@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:riot_quiche/Enumerates/RouteName.dart';
+import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/QuicheEntrance/main.dart';
 import 'package:riot_quiche/QuicheHome/main.dart';
 import 'package:riot_quiche/QuicheInitialization/main.dart';
@@ -10,7 +11,8 @@ import 'package:riot_quiche/QuicheSplash/main.dart';
 
 void main() => runApp(QuicheMusicPlayer());
 
-class QuicheMusicPlayer extends StatelessWidget {
+class QuicheMusicPlayer extends StatelessWidget with WidgetsBindingObserver {
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -52,6 +54,18 @@ class QuicheMusicPlayer extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
     );
+  }
+
+  @override
+  void didChangeAppLifecycleState (AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.detached: {
+        break;
+      }
+      default: {
+        break;
+      }
+    }
   }
 
 }

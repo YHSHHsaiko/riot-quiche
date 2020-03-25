@@ -9,6 +9,7 @@ public class Music {
     private Long duration;
     private String artUri;
     private String path;
+    private byte[] art;
 
 
     public Music () {}
@@ -20,7 +21,8 @@ public class Music {
             String album,
             Long duration,
             String artUri,
-            String path) {
+            String path,
+            byte[] art) {
 
         this.id = id;
         this.title = title;
@@ -29,6 +31,7 @@ public class Music {
         this.duration = duration;
         this.artUri = artUri;
         this.path = path;
+        this.art = art;
     }
 
     public String getId () {
@@ -50,4 +53,5 @@ public class Music {
         return artUri;
     }
     public String getPath () { return path; }
+    public byte[] getArt () { return art; }
 }

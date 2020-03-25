@@ -89,13 +89,13 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
 
     var imagePath = "images/dopper.jpg";
 
-    var iii = _music.chooseArtUri();
+    var iii = _music.getArt();
     var jucketImage;
     if (iii == null){
       jucketImage = AssetImage(imagePath);
       print('null');
     } else {
-      jucketImage = FileImage(File(iii));
+      jucketImage = iii.image;
       print('');
     }
 
@@ -121,7 +121,6 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
                       screenSize: longSize,
                       isGradient: false,
                     ),
-
 
                     // Gesture Layer
                     Center(

@@ -56,13 +56,13 @@ class _MusicListState extends State<MusicList> {
 
   Widget seclist(int index, Size size){
     Music m = listItem[index];
-    var iii = m.chooseArtUri();
+    var iii = m.getArt();
     var jucketImage;
     if (iii == null){
       jucketImage = Image.asset("images/dopper.jpg");
       print('null');
     } else {
-      jucketImage = Image.file(File(iii));
+      jucketImage = iii.image;
       print('');
     }
 
