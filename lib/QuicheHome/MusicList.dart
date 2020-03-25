@@ -27,11 +27,11 @@ class _MusicListState extends State<MusicList> {
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(title: Text('List Test')),
       body: Column(
         children: <Widget>[
           Expanded(
-            child: ListView.builder(
+            child: ListView.separated(
+
               itemBuilder: (BuildContext context, int index) {
                 return GestureDetector(
                   onTap: (){
@@ -42,6 +42,9 @@ class _MusicListState extends State<MusicList> {
                   child: seclist(index, size),
                 );},
               itemCount: listItem.length,
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider(height: 1);
+              },
             ),
           ),
 
@@ -62,16 +65,11 @@ class _MusicListState extends State<MusicList> {
       jucketImage = Image.asset("images/dopper.jpg");
       print('null');
     } else {
-      jucketImage = iii.image;
+      jucketImage = iii;
       print('');
     }
 
     return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.black38),
-        ),
-      ),
       child: ListTile(
         leading: Container(
           height: size.width * 0.1,

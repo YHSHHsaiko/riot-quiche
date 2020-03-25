@@ -15,7 +15,6 @@ class Album {
   final String _artUri;
   String get artUri => _artUri;
 
-  
   Album ({
     @required String id,
     @required String title,

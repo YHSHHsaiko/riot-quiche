@@ -450,7 +450,12 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
               PlatformMethodInvoker.pause();
             }else{
               _animatedIconController.reverse();
-              PlatformMethodInvoker.playFromCurrentMediaId();
+              if (sliderValue == 0){
+                PlatformMethodInvoker.playFromCurrentMediaId();
+              }else{
+                PlatformMethodInvoker.play();
+              }
+
             }
             _animatedIconControllerChecker = !_animatedIconControllerChecker;
             print(QuicheOracleVariables.musicList.length);
