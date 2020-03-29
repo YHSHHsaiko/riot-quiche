@@ -12,12 +12,23 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import io.flutter.Log;
 
@@ -135,7 +146,12 @@ public class QuicheLibrary {
             if (cursor != null) {
                 cursor.moveToFirst();
 
-                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                Log.d("THREAD_COUNT", Thread.activeCount() + "");
+                int pairListCapacity = 20;
+                ArrayList<Pair<String, String>> PairList_ID_filePath = new ArrayList<Pair<String, String>>(pairListCapacity);
+                HashMap<String, Integer> albumIdMap = new HashMap<>();
+                ExecutorService executorService = Executors.newFixedThreadPool(4);
+                Collection<Future<LinkedHashMap<String, byte[]>>> imageRetrievers = new LinkedList<>();
                 while (!cursor.isAfterLast()) {
                     Uri mediaUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
                     Uri mediaArtUri = getMediaArtUri(cursor.getLong(album_id_index));
@@ -158,17 +174,43 @@ public class QuicheLibrary {
                     Log.d("library", "media URI: " + cursor.getString(title_index));
                     metadataMap.put(cursor.getString(id_index), metadata);
 
+                    String id = cursor.getString(id_index);
                     String filePath = cursor.getString(data_index);
-                    retriever.setDataSource(filePath);
-                    byte[] artArray = retriever.getEmbeddedPicture();
-                    if (artArray != null) {
-                        artMap.put(cursor.getString(id_index), artArray);
+                    PairList_ID_filePath.add(new Pair<String, String>(id, filePath));
+
+                    if (PairList_ID_filePath.size() >= pairListCapacity) {
+                        Future<LinkedHashMap<String, byte[]>> imageRetriever = executorService.submit(
+                                new AsyncImageRetriever(new ArrayList<>(PairList_ID_filePath))
+                        );
+                        imageRetrievers.add(imageRetriever);
+
+                        PairList_ID_filePath.clear();
                     }
 
                     cursor.moveToNext();
                 }
-
                 cursor.close();
+
+                if (PairList_ID_filePath.size() > 0) {
+                    Future<LinkedHashMap<String, byte[]>> imageRetriever = executorService.submit(
+                            new AsyncImageRetriever(new ArrayList<>(PairList_ID_filePath))
+                    );
+                    imageRetrievers.add(imageRetriever);
+                }
+
+                Log.d("get futures", "* start *");
+                for (Future<LinkedHashMap<String, byte[]>> imageRetriever : imageRetrievers) {
+                    try {
+                        LinkedHashMap<String, byte[]> subMap = imageRetriever.get();
+                        Log.d("asyncImageRetriever", "result map size: " + subMap.size());
+                        artMap.putAll(subMap);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("get futures", "* end *");
+
+                executorService.shutdown();
             }
         }
 
@@ -191,42 +233,36 @@ public class QuicheLibrary {
         return mediaArtUri;
     }
 
-    public String getFilePathFromUri (Uri uri) {
-        String scheme = uri.getScheme();
-        String filePath = null;
+    // async Image Retriever
+    class AsyncImageRetriever implements Callable<LinkedHashMap<String, byte[]>> {
+        private ArrayList<Pair<String, String>> id_filePaths;
 
-        switch (scheme) {
-            case "content": {
-                String[] projection = {MediaStore.Images.ImageColumns.DATA};
-                Cursor cursor = contentResolver.query(
-                        uri, projection, null, null, null
-                );
-                try {
-                    if (cursor != null) {
-                        if (cursor.moveToFirst()) {
-                            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                            filePath = cursor.getString(column_index);
-                        }
-                    }
-                } finally {
-                    if (cursor != null) {
-                        cursor.close();
-                    }
-                }
-
-                break;
-            }
-
-            case "file": {
-                filePath = uri.getPath();
-                break;
-            }
-
-            default: {
-                break;
-            }
+        AsyncImageRetriever (ArrayList<Pair<String, String>> PairList_ID_filePath) {
+            id_filePaths = PairList_ID_filePath;
         }
 
-        return filePath;
+        @Override
+        public LinkedHashMap<String, byte[]> call () {
+            Log.d("AsyncImageRetriever", Thread.currentThread().getId() + "");
+
+            LinkedHashMap<String, byte[]> result = new LinkedHashMap<String, byte[]>();
+
+            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+            for (Pair<String, String> Pair_ID_filePath : id_filePaths) {
+                try { // to avoid crash, we must catch exception at this block
+
+                    metadataRetriever.setDataSource(Pair_ID_filePath.second);
+                    byte[] artArray = metadataRetriever.getEmbeddedPicture();
+                    if (artArray != null) {
+                        result.put(Pair_ID_filePath.first, artArray);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return result;
+        }
     }
+
 }

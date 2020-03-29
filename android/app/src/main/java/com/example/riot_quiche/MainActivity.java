@@ -30,6 +30,8 @@ public class MainActivity extends FlutterActivity {
     public PlayerAPI playerAPI = new PlayerAPI();
     public PluginAPI pluginAPI = new PluginAPI();
 
+    private boolean isConnected = false;
+
     private QuicheMusicPlayerPlugin.EventAPI eventAPI;
 
     private MediaBrowserCompat mediaBrowser;
@@ -52,6 +54,7 @@ public class MainActivity extends FlutterActivity {
                 }
 
                 connectionResult = true;
+                isConnected = true;
 
                 // send result to plugin
                 pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.trigger, connectionResult);
@@ -59,13 +62,24 @@ public class MainActivity extends FlutterActivity {
                 mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallback);
 
             } catch (RemoteException e) {
+                isConnected = false;
                 e.printStackTrace();
+            }
+
+            if (isConnected) {
+                Bundle extra = new Bundle();
+                extra.putInt("connection", 1);
+                mediaController.getTransportControls().sendCustomAction(
+                        QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT,
+                        extra
+                );
             }
         }
 
         @Override
         public void onConnectionFailed () {
             Log.e("MainActivity.connectionCallback", "MediaBrowserCompat: connection failed.");
+            isConnected = false;
         }
     };
     private MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback() {
@@ -89,10 +103,10 @@ public class MainActivity extends FlutterActivity {
         @Override
         public void onMetadataChanged (MediaMetadataCompat metadata) {
             // TODO: なんとかしてDartに変更を伝える．もしくは変数に入れておく？
-            MediaDescriptionCompat description = metadata.getDescription();
-
-            String title = (String)description.getTitle();
-            Uri artUri = description.getIconUri();
+//            MediaDescriptionCompat description = metadata.getDescription();
+//
+//            String title = (String)description.getTitle();
+//            Uri artUri = description.getIconUri();
         }
 
         // when the state of the player is changed
@@ -101,6 +115,9 @@ public class MainActivity extends FlutterActivity {
             switch (state.getState()) {
                 case PlaybackStateCompat.STATE_PLAYING: {
                     // TODO: 「プレイしてる」アイコンにするように知らせる
+                    break;
+                }
+                case PlaybackStateCompat.STATE_NONE: {
                     break;
                 }
                 default: {
@@ -135,14 +152,32 @@ public class MainActivity extends FlutterActivity {
         Log.d("activity", "onDestroy()");
 
         // blueShift
-        PublicSink.getInstance().setSink(null);
+        EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();
+        if (redShiftSink != null) {
+            redShiftSink.endOfStream();
+            PublicSink.getInstance().setSink(null);
+        }
 
         // pause
         mediaController.getTransportControls().pause();
+        mediaController.getTransportControls().sendCustomAction(
+                QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_STOP_FOREGROUND,
+                null
+        );
+
+        Bundle extra = new Bundle();
+        extra.putInt("connection", 0);
+        mediaController.getTransportControls().sendCustomAction(
+                QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT,
+                extra
+        );
 
         // unbind service
         if (mediaBrowser != null) {
+            Log.d("activity", "onDestroy::unbindService");
             mediaBrowser.disconnect();
+            mediaController.unregisterCallback(controllerCallback);
+            isConnected = false;
         }
 
         super.onDestroy();

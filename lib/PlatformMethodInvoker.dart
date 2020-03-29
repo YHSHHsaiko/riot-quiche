@@ -66,8 +66,6 @@ class PlatformMethodInvoker {
       String path = musicObject[6] as String;
       List<int> art = musicObject[7] as List<int>;
 
-      print(art);
-
       Music music = Music(
         id: id,
         title: title,

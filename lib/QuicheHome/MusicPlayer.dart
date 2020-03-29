@@ -89,7 +89,7 @@ class _MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderStat
 
     var imagePath = "images/dopper.jpg";
 
-    var iii = _music.getArt();
+    var iii = _music.getArt(formatList: ['png', 'jpg']);
     var jucketImage;
     if (iii == null){
       jucketImage = AssetImage(imagePath);

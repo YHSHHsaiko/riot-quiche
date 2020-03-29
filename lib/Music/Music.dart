@@ -42,37 +42,42 @@ class Music {
     _art = art;
 
 
-  Image getArt ({String format = 'png'}) {
+  Image getArt ({List<String> formatList = const <String>['png']}) {
     Image result;
 
-    if (_art != null) {
-      result = Image.memory(_art);
-    } else {
-      List<String> splitedPath = path.split('/');
-      String rawPath = splitedPath.sublist(0, splitedPath.length - 1).join('/');
-
-      // ジャケットの名前はアルバム名かな？
-      String jacketPath = [rawPath, album + '.$format'].join('/');
-
-      if (File(jacketPath).existsSync()) {
-        result = Image.file(File(jacketPath));
+    for (String format in formatList) {
+      if (_art != null) {
+        result = Image.memory(_art);
       } else {
-        // ジャケットの名前は曲名かな？
-        jacketPath = [rawPath, title + '.$format'].join('/');
+        List<String> splitedPath = path.split('/');
+        String rawPath = splitedPath.sublist(0, splitedPath.length - 1).join('/');
+
+        // ジャケットの名前はアルバム名かな？
+        String jacketPath = [rawPath, album + '.$format'].join('/');
+
         if (File(jacketPath).existsSync()) {
-          print(jacketPath);
           result = Image.file(File(jacketPath));
         } else {
-          // じゃあファイル名かな？
-          List<String> tmpSplited = path.split('.');
-          jacketPath = tmpSplited.sublist(0, tmpSplited.length - 1).join('/') + '.$format';
+          // ジャケットの名前は曲名かな？
+          jacketPath = [rawPath, title + '.$format'].join('/');
           if (File(jacketPath).existsSync()) {
             result = Image.file(File(jacketPath));
           } else {
-            // これでだめならもうねえだろ
-            result = null;
+            // じゃあファイル名かな？
+            List<String> tmpSplited = path.split('.');
+            jacketPath = tmpSplited.sublist(0, tmpSplited.length - 1).join('/') + '.$format';
+            if (File(jacketPath).existsSync()) {
+              result = Image.file(File(jacketPath));
+            } else {
+              // これでだめならもうねえだろ
+              result = null;
+            }
           }
         }
+      }
+
+      if (result != null) {
+        break;
       }
     }
 

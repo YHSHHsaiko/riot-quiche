@@ -60,6 +60,7 @@ class QuicheMusicPlayer extends StatelessWidget with WidgetsBindingObserver {
   void didChangeAppLifecycleState (AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.detached: {
+        print(AppLifecycleState.detached);
         break;
       }
       default: {
