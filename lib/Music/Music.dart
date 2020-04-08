@@ -3,11 +3,23 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 
-class Music {
+abstract class Albatross{
   final String _id;
   String get id => _id;
   final String _title;
   String get title => _title;
+  
+  Albatross(
+    this._id,
+    this._title,
+  );
+}
+
+class Music extends Albatross{
+//  final String _id;
+//  String get id => _id;
+//  final String _title;
+//  String get title => _title;
   final String _artist;
   String get artist => _artist;
   final String _album;
@@ -20,7 +32,6 @@ class Music {
   String get path => _path;
   final List<int> _art;
   List<int> get art => _art;
-
   
   Music ({
     @required String id,
@@ -32,14 +43,13 @@ class Music {
     @required String path,
     List<int> art
   })
-  : _id = id,
-    _title = title,
-    _artist = artist,
+  : _artist = artist,
     _album = album,
     _duration = duration,
     _artUri = artUri,
     _path = path,
-    _art = art;
+    _art = art,
+    super(id, title);
 
 
   Image getArt ({String format = 'png'}) {
