@@ -63,7 +63,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
     // variables: take _ the head of the variable name
     private String _currentMediaId;
-    private long _currentQueueIndex;
+    private long _currentQueueIndex = -1;
     //
 
 
@@ -352,7 +352,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         public boolean setCurrentQueueIndex (MethodCall call) {
             List<Object> arguments = call.arguments();
 
-            long index = (long)arguments.get(0);
+            long index = Long.parseLong(arguments.get(0).toString());
             _currentQueueIndex = (int)index;
 
             return true;
@@ -377,7 +377,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         }
 
         public boolean playFromCurrentQueueIndex (MethodCall call) {
-            if (_currentMediaId != null) {
+            if (_currentQueueIndex != -1) {
                 playerAPI.playFromQueueIndex(_currentQueueIndex);
                 return true;
             } else {

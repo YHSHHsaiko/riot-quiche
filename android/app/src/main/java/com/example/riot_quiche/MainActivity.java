@@ -165,17 +165,18 @@ public class MainActivity extends FlutterActivity {
                 null
         );
 
-        Bundle extra = new Bundle();
-        extra.putInt("connection", 0);
-        mediaController.getTransportControls().sendCustomAction(
-                QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT,
-                extra
-        );
-
         // unbind service
         if (mediaBrowser != null) {
             Log.d("activity", "onDestroy::unbindService");
+            Bundle extra = new Bundle();
+            extra.putInt("connection", 0);
+            mediaController.getTransportControls().sendCustomAction(
+                    QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT,
+                    extra
+            );
+
             mediaBrowser.disconnect();
+
             mediaController.unregisterCallback(controllerCallback);
             isConnected = false;
         }

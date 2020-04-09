@@ -265,10 +265,12 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         library = null;
         exoPlayer.stop();
         exoPlayer.removeListener(exoPlayerEventListener);
+        mediaSession.setActive(false);
         mediaSession.release();
         stopForeground(true);
 
         stopSelf();
+
         super.onDestroy();
     }
 
