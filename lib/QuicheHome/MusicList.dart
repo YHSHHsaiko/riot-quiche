@@ -75,7 +75,8 @@ class _MusicListState extends State<MusicList> {
                         });
                       }else{
                         print('$index');
-                        widget.callback(listItem[index]);
+//                        widget.callback(listItem[index]);
+                        widget.callback(listItem, index);
                         Navigator.of(context).pop();
 
                         //TODO　ここでlistitemを全部追加

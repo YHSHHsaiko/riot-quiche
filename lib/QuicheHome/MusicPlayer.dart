@@ -26,12 +26,18 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
 
   Music _music;
 
+  static int nowPlayIndexOfQueue = 1;
+  List<dynamic> musicList;
+  List<dynamic> moveIndexList;
+  bool shuffleChecker = false;
+
 
   @override
   void initState() {
     super.initState();
     // TODO ここでPreference使って、曲データを参照する。
-    callbackSetMusic(QuicheOracleVariables.musicList[0]);
+    callbackSetMusic([QuicheOracleVariables.musicList[0]], 0);
+    print(QuicheOracleVariables.musicList[0].id);
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -55,7 +61,7 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
     ));
 
     heightRateHeader = 0.1;
-    heightRateFooter  = 0.3;
+    heightRateFooter = 0.3;
 
     var pos = 0.5 - (1 - heightRateFooter - heightRateHeader);
     _offsetAnimation = Tween<Offset>(
@@ -65,6 +71,8 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
       parent: _controller,
       curve: Curves.easeInOut,
     ));
+
+    moveIndexList = List<dynamic>.generate(musicList.length, (i) => (i+1) % musicList.length);
   }
 
   @override
@@ -73,13 +81,90 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
     _controller.dispose();
   }
 
-  void callbackSetMusic(Music music){
+  List<dynamic> shuffleItems(List<dynamic> item){
+    int len = item.length;
+    List<dynamic> res = List.from(item);
+    var list = new List<int>.generate(len, (i) => i);
+    list.shuffle();
+
+    for (int idx = 0; idx < len; idx++){
+      res[list[idx]] = item[list[(idx+1) % len]];
+    }
+    return res;
+  }
+
+  //TODO: footer 用のcallback関数を用意するべきか？
+  // if pattern == shuffle => flag is bool
+  // if pattern == nextAndPrev => flag is String
+  void forFooterCallBack(String pattern, var flag){
+    switch (pattern){
+      case 'shuffle':
+        var listIndex;
+        if (flag){
+          shuffleChecker = true;
+          listIndex = shuffleItems(List<dynamic>.generate(musicList.length, (i) => i));
+        }else{
+          shuffleChecker = false;
+          listIndex = List<dynamic>.generate(musicList.length, (i) => (i+1) % musicList.length);
+        }
+        setState(() {
+          moveIndexList = listIndex;
+        });
+        break;
+      case 'nextAndPrev':
+        int len = musicList.length;
+        print(moveIndexList);
+        if (flag == 'next'){
+          nowPlayIndexOfQueue = moveIndexList[nowPlayIndexOfQueue];
+        }else if (flag == 'prev'){
+          int prevNumber;
+          for (int idx = 0; idx < moveIndexList.length; idx++){
+            if(moveIndexList[idx] == nowPlayIndexOfQueue){
+              prevNumber = idx;
+            }
+          }
+          nowPlayIndexOfQueue = prevNumber;
+        }else if (flag == 'unChange'){
+          //何もしない
+        }
+        setState(() {
+          _music = musicList[nowPlayIndexOfQueue];
+          PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
+          PlatformMethodInvoker.playFromCurrentQueueIndex();
+          MusicPlayerFooterState.animatedIconControllerChecker = true;
+        });
+        break;
+    }
+  }
+
+
+
+  void callbackSetMusic(var music, int playIndex){
+    if (music is Music){
+      setState(() {
+        _music = music;
+        PlatformMethodInvoker.setCurrentMediaId(_music.id);
+        PlatformMethodInvoker.playFromCurrentMediaId();
+      });
+    }else{
+      List<String> idList = [];
+      for (var m in music){
+        idList.add(m.id);
+      }
+      setState(() {
+        _music = music[playIndex];
+        musicList = music;
+        nowPlayIndexOfQueue = playIndex;
+        PlatformMethodInvoker.setQueue(idList);
+        PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
+        PlatformMethodInvoker.playFromCurrentQueueIndex();
+        forFooterCallBack('shuffle', shuffleChecker);
+      });
+    }
     setState(() {
-      _music = music;
-      PlatformMethodInvoker.setCurrentMediaId(_music.id);
-      PlatformMethodInvoker.playFromCurrentMediaId();
       MusicPlayerFooterState.animatedIconControllerChecker = true;
     });
+
   }
 
   @override
@@ -198,7 +283,7 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
                   child: Container(
                     color: Colors.blueGrey.withOpacity(0.0),
                     height: size.height * heightRateFooter,
-                    child: MusicPlayerFooter(_music),
+                    child: MusicPlayerFooter(_music, forFooterCallBack),
                   ),
                 ),
               ),
@@ -228,8 +313,6 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
 
 
 
-//コンストラクタ作って、値渡すだけでできるように。
-//特にタイトル等
 
 //縦のサイズから文字サイズというか縦のサイズを決め打つ。
 
@@ -298,7 +381,8 @@ enum ButtonMenuEnum{
 
 class MusicPlayerFooter extends StatefulWidget{
   final Music _music;
-  MusicPlayerFooter(this._music);
+  final Function _callback;
+  MusicPlayerFooter(this._music, this._callback);
   @override
   State<StatefulWidget> createState() => MusicPlayerFooterState();
 }
@@ -315,8 +399,6 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
 
   @override
   void initState() {
-
-
     _animatedIconController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -332,32 +414,25 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
     setState(() {
       sliderValue = position.toDouble();
       if (position.toDouble() > widget._music.duration.toDouble()){
-        sliderValue = widget._music.duration.toDouble();
+        // 元々はスライダーが範囲を超えてしまうことがあったから回避していた。
+        //なので、もし一回だけ再生ができたとき時、使いまわしてくれ。
+        //        sliderValue = widget._music.duration.toDouble();
+        sliderValue = 0;
+        // 最初に戻る。
+        if (repeatState){ //ただ最初に戻る
+          widget._callback('nextAndPrev', 'next');
+        }else{ //曲を次のものにして最初に戻る。
+          widget._callback('nextAndPrev', 'unchanged');
+        }
       }
       nowSliderPosition = position;
     });
-    //TODO ここでボタンの状態を見てもう一度再生するかとかを判断する
-    print('state');
-    print(state);
-    print(animatedIconControllerChecker);
     //pause:2, play:3.
-    if (animatedIconControllerChecker){
+    if (state == 3){
       _animatedIconController.reverse();
-    }else{
+    }else if (state == 2){
       _animatedIconController.forward();
     }
-
-//    if (animatedIconControllerChecker && state == 2){
-//      print('play & pause');
-//      setState(() {
-//        _animatedIconController.forward();
-//      });
-//    }else if (!animatedIconControllerChecker && state == 3){
-//      print('stop & play');
-//      setState(() {
-//        _animatedIconController.reverse();
-//      });
-//    }
   }
 
   @override
@@ -453,12 +528,17 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
           func = (){
             setState(() {
               shuffleState = !shuffleState;
+              widget._callback('shuffle', shuffleState);
             });
           };
           break;
         case ButtonMenuEnum.prev:
           wid = Icon(Icons.skip_previous, size: s);
-          func = () => print("Call prev event.");
+          func = (){
+            setState(() {
+              widget._callback('nextAndPrev', 'prev');
+            });
+          };
           break;
         case ButtonMenuEnum.play:
           wid = AnimatedIcon(
@@ -488,7 +568,11 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
           break;
         case ButtonMenuEnum.next:
           wid = Icon(Icons.skip_next, size: s);
-          func = () => print("Call next event.");
+          func = (){
+            setState(() {
+              widget._callback('nextAndPrev', 'next');
+            });
+          };
           break;
         case ButtonMenuEnum.repeat:
           wid = Icon(
