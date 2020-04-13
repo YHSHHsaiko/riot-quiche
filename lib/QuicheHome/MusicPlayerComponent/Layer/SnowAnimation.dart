@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 
 
-class SnowAnimation extends StatefulWidget{
+class SnowAnimation extends StatefulWidget implements CustomizableWidget{
   final double snowNumber; // 個数
   final double speed; // 落下速度
   final Size screenSize; // screenSize
@@ -21,6 +22,12 @@ class SnowAnimation extends StatefulWidget{
 
   @override
   _SnowAnimationState createState() => _SnowAnimationState();
+
+  // CustomizableWidget
+  @override
+  LayerType layerType = LayerType.snowAnimation;
+  @override
+  Map<String, dynamic> setting;
 }
 
 class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProviderStateMixin{

@@ -42,8 +42,8 @@ class _QuicheHomeState extends State<QuicheHome> {
                    * main stack widget?
                    * ここで呼び出されるから画面遷移の度に音楽が再生され直す。
                    */
-                  print('ここか？');
-                  return MusicPlayer();
+                  Size screenSize = MediaQuery.of(context).size;
+                  return MusicPlayer(screenSize);
                 }
               } else {
                 return Center(

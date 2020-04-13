@@ -1,10 +1,15 @@
 import 'dart:io';
 import 'dart:ui';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:riot_quiche/Enumerates/ExoPlayerPlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
+import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
+import 'package:riot_quiche/QuicheHome/MusicLayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicList.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/BackGround.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/Circle.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/SnowAnimation.dart';
 import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
@@ -13,6 +18,9 @@ import 'package:riot_quiche/PlatformMethodInvoker.dart';
 
 
 class MusicPlayer extends StatefulWidget{
+  final scSize;
+  MusicPlayer(this.scSize);
+
   @override
   State<StatefulWidget> createState() => MusicPlayerState();
 }
@@ -34,6 +42,10 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
   List<dynamic> musicList, moveIndexList;
   static bool shuffleChecker = false;
   static int repeatChecker = 0;
+
+  // controlls Layers
+  List<Widget> layers = [];
+  List<Widget> mustLayers = [];
 
 
   @override
@@ -77,8 +89,6 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
     moveIndexList = List<dynamic>.generate(musicList.length, (i) => (i+1) % musicList.length);
 
     //TODO: foldControllBar を読み込む
-    //TODO: foldControllBar の値を元に コントローラの値を設定する
-    print(foldControllBar);
     if (foldControllBar){
       _controller.reverse();
       print('reverse');
@@ -86,6 +96,42 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
       _controller.forward();
       print('forword');
     }
+
+
+    // TODO :　仮で作っている表示用データ。この辺どうにかしないと
+    double jacketSize = (widget.scSize.width < widget.scSize.height ? widget.scSize.width : widget.scSize.height) * 0.6;
+    layers.addAll([
+      SnowAnimation(
+        snowNumber: 50,
+        screenSize: widget.scSize,
+        isGradient: false,
+      ),
+
+      CircleMine(
+        screenSize: widget.scSize,
+        diameter: jacketSize+50,
+        color: Colors.amber,
+      ),
+
+      CircleMine(
+        screenSize: widget.scSize,
+        diameter: jacketSize+70,
+        strokeWidth: 2,
+        color: Colors.redAccent,
+      ),
+
+      CircleMine(
+        screenSize: widget.scSize,
+        diameter: jacketSize+90,
+        color: Colors.blue,
+        strokeWidth: 2,
+//        startWidth: 90,
+      ),]
+    );
+
+//    layers.clear();
+
+
   }
 
   @override
@@ -104,10 +150,8 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
       case 'shuffle':
         var listIndex;
         if (shuffleChecker){
-//          shuffleChecker = true;
           listIndex = shuffleItems(List<dynamic>.generate(musicList.length, (i) => i));
         }else{
-//          shuffleChecker = false;
           listIndex = List<dynamic>.generate(musicList.length, (i) => (i+1) % musicList.length);
         }
         setState(() {
@@ -158,14 +202,22 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
         _music = music[playIndex];
         musicList = music;
         nowPlayIndexOfQueue = playIndex;
+        forFooterCallBack('shuffle', null);
         PlatformMethodInvoker.setQueue(idList);
         PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
         PlatformMethodInvoker.playFromCurrentQueueIndex();
-        forFooterCallBack('shuffle', null);
       });
     }
     setState(() {
       MusicPlayerFooterState.animatedIconControllerChecker = true;
+    });
+  }
+
+  /// callback for layer
+  void callbackSetLayer(List<Widget> list){
+    setState(() {
+      print('set');
+      layers = list;
     });
   }
 
@@ -178,6 +230,58 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
     Image returnsImageArt = _music.getArt();
     ImageProvider jacketImage = returnsImageArt == null ? AssetImage(imagePath) : returnsImageArt.image;
 
+    mustLayers.addAll([
+      // Gesture Layer
+      Center(
+        child: GestureDetector(
+          onTap: (){
+            foldControllBar ? _controller.forward(): _controller.reverse();
+            setState(() {
+              foldControllBar = !foldControllBar;
+            });
+          },
+          onPanUpdate: (pos){
+            showDialog(
+              context: context,
+              builder: (_) {
+                return MusicList(this.callbackSetMusic, _music);
+              },
+            );
+          },
+          child: Container(
+            height: size.height,
+            width: size.width,
+            color: Colors.blue.withOpacity(0.0),
+          ),
+        ),
+      ),
+
+      // Jacket Image
+      Center(
+        child: GestureDetector(
+          onTap: (){
+            print("Tap Jucket Image!");
+          },
+          child: Container(
+            width: jacketSize,
+            height: jacketSize,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  fit: BoxFit.fill,
+                  image: jacketImage,
+                )
+            ),
+          ),
+        ),
+      ),
+    ]);
+
+
+
+
+//    layers.addAll(mustLayers);
+
     return Scaffold(
       body: Container(
         color: Colors.black,
@@ -187,66 +291,12 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
             children: <Widget>[
               // BACK_GROUND
               BackGround(jacketImage),
+
               // Stacks Layer
               SlideTransition(
                 position: _offsetAnimation,
                 child: Stack(
-                  children: <Widget>[
-
-                    // LAYERS
-                    SnowAnimation(
-                      snowNumber: 50,
-                      screenSize: longSize,
-                      isGradient: false,
-                    ),
-
-                    // Gesture Layer
-                    Center(
-                      child: GestureDetector(
-                        onTap: (){
-                          foldControllBar ? _controller.forward(): _controller.reverse();
-                          setState(() {
-                            foldControllBar = !foldControllBar;
-                          });
-                        },
-                        onPanUpdate: (pos){
-                          showDialog(
-                            context: context,
-                            builder: (_) {
-                              return MusicList(this.callbackSetMusic, _music);
-                            },
-                          );
-                        },
-                        child: Container(
-                          height: size.height,
-                          width: size.width,
-                          color: Colors.blue.withOpacity(0.0),
-                        ),
-                      ),
-                    ),
-
-
-                    // Jacket Image
-                    Center(
-                      child: GestureDetector(
-                        onTap: (){
-                          print("Tap Jucket Image!");
-                        },
-                        child: Container(
-                          width: jacketSize,
-                          height: jacketSize,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              fit: BoxFit.fill,
-                              image: jacketImage,
-                            )
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  ],
+                  children: layers + mustLayers,
                 ),
               ),
 
@@ -259,7 +309,7 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
                   child: Container(
                     color: Colors.blueGrey.withOpacity(0.0),
                     height: size.height * heightRateHeader,
-                    child: MusicPlayerHeader(_music.title),
+                    child: MusicPlayerHeader(_music.title, this.callbackSetLayer, layers),
                   ),
                 ),
               ),
@@ -308,7 +358,10 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
 class MusicPlayerHeader extends StatelessWidget{
   String str = '';
 
-  MusicPlayerHeader(this.str);
+  Function callbackForLayer;
+  List<Widget> layerList;
+
+  MusicPlayerHeader(this.str, this.callbackForLayer, this.layerList);
 
   @override
   Widget build(BuildContext context) {
@@ -348,9 +401,15 @@ class MusicPlayerHeader extends StatelessWidget{
         SizedBox(
           width: fieldHeight,
           child: IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.layers),
             onPressed: () {
-              print('search');
+              print('layers');
+              showDialog(
+                context: context,
+                builder: (_) {
+                  return MusicLayerSetting(callbackForLayer, layerList);
+                },
+              );
             },
           ),
         ),
@@ -400,7 +459,7 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
 
   /// Controlls Buttons & Slider
   double sliderValue = 0;
-  bool repeatState=false;
+  int nowSliderPosition = 0;
 
   @override
   void initState() {
@@ -414,29 +473,33 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
     super.initState();
   }
 
-  int nowSliderPosition = 0;
   void forOnData(position, state){
     setState(() {
       sliderValue = position.toDouble();
       if (position.toDouble() > widget._music.duration.toDouble()){
-        // 元々はスライダーが範囲を超えてしまうことがあったから回避していた。
-        //なので、もし一回だけ再生ができたとき時、使いまわしてくれ。
-        //        sliderValue = widget._music.duration.toDouble();
         sliderValue = 0; position = 0;
-        if (repeatState){ //ただ最初に戻る
+        if (MusicPlayerState.repeatChecker == 0){ //その場で停止
+          //何もしないで初期化
+        }else if (MusicPlayerState.repeatChecker == 1){ //ただ最初に戻る
           widget._callback('nextAndPrev', 'next');
-        }else{ //曲を次のものにして最初に戻る。
+        }else if (MusicPlayerState.repeatChecker == 2){ //曲を次のものにして最初に戻る。
           widget._callback('nextAndPrev', 'unchanged');
         }
       }
       nowSliderPosition = position;
     });
-
-    if (state == 3){ //pause:2, play:3.
-      _animatedIconController.reverse();
-    }else if (state == 2){
+    print(state);
+    bool _flagsForAnimatedIconControllerChecker = animatedIconControllerChecker;
+    if (state == 1 || state == 2){ //stop:1, pause:2, play:3.
       _animatedIconController.forward();
+      _flagsForAnimatedIconControllerChecker = false;
+    }else if (state == 3){
+      _animatedIconController.reverse();
+      _flagsForAnimatedIconControllerChecker = true;
     }
+    setState(() {
+      animatedIconControllerChecker = _flagsForAnimatedIconControllerChecker;
+    });
   }
 
   @override
@@ -450,7 +513,7 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
           child: Container(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: _Buttons(),
+              children: _buttons(),
             ),
           ),
         ),
@@ -459,7 +522,7 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
           flex: 3,
           child: Container(
             child: Center(
-              child: _Slider(),
+              child: _slider(),
             ),
           ),
         ),
@@ -467,9 +530,8 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
     );
   }
 
-
-  /// Buttons Config
-  List<Widget> _Buttons() {
+  /// Buttons Settings
+  List<Widget> _buttons() {
     double iconSize = screenSize.width / 10;
     List<Widget> list = [];
     for (var value in ButtonMenuEnum.values){
@@ -511,8 +573,9 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
               PlatformMethodInvoker.pause();
             }else{
               _animatedIconController.reverse();
+              print(sliderValue);
               sliderValue == 0
-                  ? PlatformMethodInvoker.playFromCurrentMediaId(): PlatformMethodInvoker.play();
+                  ? PlatformMethodInvoker.playFromCurrentQueueIndex(): PlatformMethodInvoker.play();
             }
             setState(() {
               animatedIconControllerChecker = !animatedIconControllerChecker;
@@ -530,13 +593,30 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
           break;
 
         case ButtonMenuEnum.repeat:
-          wid = Icon(
-            repeatState ? Icons.repeat : Icons.repeat_one,
-            size: iconSize * 0.75
-          );
+          if (MusicPlayerState.repeatChecker == 0){
+            wid = Transform.rotate(
+              angle: 270 * pi / 180,
+              child: Icon(
+                Icons.vertical_align_bottom,
+                size: iconSize * 0.75,
+              ),
+            );
+
+          }else if (MusicPlayerState.repeatChecker == 1){
+            wid = Icon(
+                Icons.repeat,
+                size: iconSize * 0.75,
+            );
+          }else if (MusicPlayerState.repeatChecker == 2){
+            wid = Icon(
+                Icons.repeat_one,
+                size: iconSize * 0.75,
+            );
+          }
+
           func = (){
             setState(() {
-              repeatState = !repeatState;
+              MusicPlayerState.repeatChecker = (MusicPlayerState.repeatChecker + 1) % 3;
             });
           };
           break;
@@ -556,7 +636,8 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
     return list;
   }
 
-  Widget _Slider(){
+  /// Slider Settings
+  Widget _slider(){
     return Column(
       children: <Widget>[
         Padding(
@@ -604,8 +685,6 @@ class MusicPlayerFooterState extends State<MusicPlayerFooter> with SingleTickerP
     );
   }
 
-
-
   @override
   void dispose() {
     _animatedIconController.dispose();
@@ -640,6 +719,7 @@ String millSec2SecStr(int mills){
   return res;
 }
 
+///一巡するように並べ替える
 List<dynamic> shuffleItems(List<dynamic> item){
   int len = item.length;
   List<dynamic> res = List.from(item);
