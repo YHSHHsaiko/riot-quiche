@@ -2,18 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'dart:io';
 
+import 'package:riot_quiche/Music/Albatross.dart';
 
-abstract class Albatross{
-  final String _id;
-  String get id => _id;
-  final String _title;
-  String get title => _title;
-  
-  Albatross(
-    this._id,
-    this._title,
-  );
-}
 
 class Music extends Albatross{
 //  final String _id;
@@ -35,6 +25,7 @@ class Music extends Albatross{
   
   Music ({
     @required String id,
+    @required String albumId,
     @required String title,
     @required String artist,
     @required String album,
@@ -49,7 +40,7 @@ class Music extends Albatross{
     _artUri = artUri,
     _path = path,
     _art = art,
-    super(id, title);
+    super(id, albumId, title);
 
 
   Image getArt ({List<String> formatList = const <String>['png']}) {

@@ -1,0 +1,4 @@
+enum LayerType {
+  snowAnimation,
+  circleMine,
+}

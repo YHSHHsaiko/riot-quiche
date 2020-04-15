@@ -102,6 +102,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                             ArrayList<Object> musicObject = new ArrayList<>();
 
                             musicObject.add(music.getId());
+                            musicObject.add(music.getAlbumId());
                             musicObject.add(music.getTitle());
                             musicObject.add(music.getArtist());
                             musicObject.add(music.getAlbum());
@@ -307,6 +308,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 for (MediaMetadataCompat metadata : metadatas) {
 
                     String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
+                    String albumId = metadata.getString(MediaMetadataCompat.METADATA_KEY_COMPOSER);
                     String title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
                     String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
                     String album = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM);
@@ -324,7 +326,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                         art = artMap.get(id);
                     }
 
-                    Music music = new Music(id, title, artist, album, duration, artUri, path, art);
+                    Music music = new Music(id, albumId, title, artist, album, duration, artUri, path, art);
                     musics.add(music);
                 }
 

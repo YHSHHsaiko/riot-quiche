@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:riot_quiche/QuicheOracle.dart';
-
+import 'package:riot_quiche/Enumerates/LayerType.dart';
 
 abstract class CustomizableWidget extends Widget {
 
@@ -22,11 +22,7 @@ abstract class CustomizableWidget extends Widget {
   Map<String, dynamic> get setting;
   // set a widget's setting
   set setting (Map<String, dynamic> importedSetting);
-}
 
-
-
-enum LayerType {
-  snowAnimation,
-  circleMine,
+  // TODO: わ００００００００
+  // dynamic settingDialog ();
 }

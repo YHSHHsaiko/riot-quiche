@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
 import 'package:riot_quiche/Music/Music.dart';
+import 'package:riot_quiche/QuicheOracle.dart';
 
 
 class PlatformMethodInvoker {
@@ -52,22 +53,26 @@ class PlatformMethodInvoker {
     return res;
   }
 
-  static Future<List<Music>> butterflyEffect () async {
+  static Future<dynamic> butterflyEffect () async {
     List<dynamic> butterfly = await _methodChannel.invokeMethod('butterflyEffect', <dynamic>[]);
 
-    List<Music> musicList = List<Music>();
+    QuicheOracleVariables.musicList = List<Music>();
+    QuicheOracleVariables.albumIdList = List<String>();
+
     for (List<dynamic> musicObject in butterfly) {
       String id = musicObject[0] as String;
-      String title = musicObject[1] as String;
-      String artist = musicObject[2] as String;
-      String album = musicObject[3] as String;
-      int duration = musicObject[4] as int;
-      String artUri = musicObject[5] as String;
-      String path = musicObject[6] as String;
-      List<int> art = musicObject[7] as List<int>;
+      String albumId = musicObject[1] as String;
+      String title = musicObject[2] as String;
+      String artist = musicObject[3] as String;
+      String album = musicObject[4] as String;
+      int duration = musicObject[5] as int;
+      String artUri = musicObject[6] as String;
+      String path = musicObject[7] as String;
+      List<int> art = musicObject[8] as List<int>;
 
       Music music = Music(
         id: id,
+        albumId: albumId,
         title: title,
         artist: artist,
         album: album,
@@ -77,10 +82,9 @@ class PlatformMethodInvoker {
         art: art
       );
 
-      musicList.add(music);
+      QuicheOracleVariables.albumIdList.add(albumId);
+      QuicheOracleVariables.musicList.add(music);
     }
-    
-    return musicList;
   }
 
   static Future<Null> setQueue (List<String> mediaIdList) async {

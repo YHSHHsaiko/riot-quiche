@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:riot_quiche/Music/Albatross.dart';
 import 'package:riot_quiche/Music/Music.dart';
 
 
@@ -19,6 +20,7 @@ class Album extends Albatross{
 
   Album ({
     @required String id,
+    @required String albumId,
     @required String title,
     @required String artist,
     @required Image image,
@@ -27,7 +29,7 @@ class Album extends Albatross{
   : _artist = artist,
     _image = image,
     _musics = musics,
-    super(id, title);
+    super(id, albumId, title);
 
   void addMusic(Music value) {
     _musics.add(value);

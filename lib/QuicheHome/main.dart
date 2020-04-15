@@ -79,8 +79,7 @@ class _QuicheHomeState extends State<QuicheHome> {
     try {
       await PlatformMethodInvoker.trigger();
 
-      List<Music> musicList = await PlatformMethodInvoker.butterflyEffect();
-      QuicheOracleVariables.musicList = musicList;
+      await PlatformMethodInvoker.butterflyEffect();
 
       await PlatformMethodInvoker.setQueue(List<String>.from(QuicheOracleVariables.musicList.map((music) {
         return music.id;

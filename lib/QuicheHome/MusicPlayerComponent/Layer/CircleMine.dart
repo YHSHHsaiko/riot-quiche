@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
+import 'package:riot_quiche/Enumerates/LayerType.dart';
 
 //余りにも重いなら、ここで複数を処理できるようにしないといけない
 

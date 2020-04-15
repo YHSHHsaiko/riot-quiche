@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
 import 'package:riot_quiche/Enumerates/SortType.dart';
+import 'package:riot_quiche/Music/Albatross.dart';
 import 'package:riot_quiche/Music/Album.dart';
 import 'package:riot_quiche/Music/Music.dart';
 
@@ -21,6 +22,9 @@ extension QuicheOracleVariables on QuicheOracle {
 
   // media ID List
   static List<Music> musicList;
+
+  // media ALBUM_ID List
+  static List<String> albumIdList;
 
 
   // permission information
@@ -70,7 +74,7 @@ extension QuicheOracleFunctions on QuicheOracle {
         break;
       }
       case SortType.ALBUM_ASC: {
-        sortedList = sortAlbum('ASC');
+        sortedList = _sortAlbum('ASC');
         break;
       }
       case SortType.TITLE_DESC: {
@@ -84,61 +88,51 @@ extension QuicheOracleFunctions on QuicheOracle {
         break;
       }
       case SortType.ALBUM_DESC: {
-        sortedList = sortAlbum('DESC');
+        sortedList = _sortAlbum('DESC');
         break;
       }
     }
 
     return sortedList;
   }
-}
 
+  static List<dynamic> _sortAlbum(String set){
+    
+    // assertion
+    List<String> sortTypeList = ['ASC', 'DESC'];
+    assert(sortTypeList.contains(set));
 
-
-
-
-
-List<dynamic> sortAlbum(String set){
-  List<Albatross> defaultList = QuicheOracleVariables.musicList;
-  List<Albatross> albumList = [];
-  List<Albatross> musicList = [];
-
-  for (Music _music in defaultList){
-    var key = _music.album;
-    if (key == null){
-      musicList.add(_music);
-    }else{
-      bool newAlbumFlag = true;
-
-      for (Album _album in albumList){
-        if (_album.title == _music.album){
-          newAlbumFlag = false;
-          _album.addMusic(_music);
-        }
+    // collect members of albums
+    Map<String, List<Music>> albumList = Map<String, List<Music>>();
+    for (Music music in QuicheOracleVariables.musicList) {
+      String albumId = music.albumId;
+      
+      if (!albumList.containsKey(albumId)) {
+        albumList[albumId] = List<Music>();
       }
-
-      if (newAlbumFlag){
-        albumList.add(Album(
-          id: 'id',
-          title: _music.album,
-          artist: _music.artist,
-          image: _music.getArt(),
-          musics: [_music],
-        ));
-      }
+      albumList[albumId].add(music);
     }
-  }
 
-  if (set == 'ASC'){
-    albumList.addAll(musicList);
-    return albumList;
-  }else if (set == 'DESC'){
-    musicList.addAll(albumList);
-    return musicList;
+    // correct the order of members of albums
+    List<Album> result = List<Album>();
+    for (String albumId in albumList.keys) {
+      albumList[albumId].sort((m1, m2) {
+        int m1Id = int.parse(m1.id);
+        int m2Id = int.parse(m2.id);
+        return (set == 'ASC') ? m1Id.compareTo(m2Id) : m2Id.compareTo(m1Id);
+      });
+
+      Music target = albumList[albumId][0];
+      result.add(Album(
+        id: target.album,
+        albumId: albumId,
+        title: target.album,
+        artist: target.artist,
+        image: target.getArt(),
+        musics: albumList[albumId]
+      ));
+    }
+
+    return result;
   }
 }
-
-
-
-
-
