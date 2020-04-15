@@ -1,32 +1,39 @@
 import 'package:flutter/cupertino.dart';
+import 'package:riot_quiche/Music/Music.dart';
 
 
-class Album {
-  final String _id;
-  String get id => _id;
-  final String _title;
-  String get title => _title;
+class Album extends Albatross{
+//  final String _id;
+//  String get id => _id;
+//  final String _title;
+//  String get title => _title;
   final String _artist;
   String get artist => _artist;
-  final String _album;
-  String get album => _album;
-  final int _duration;
-  int get duration => _duration;
-  final String _artUri;
-  String get artUri => _artUri;
+
+  Image _image;
+  Image get image => _image;
+
+  List<Music> _musics;
+  List<Music> get musics => _musics;
+
 
   Album ({
     @required String id,
     @required String title,
     @required String artist,
-    @required String album,
-    @required int duration,
-    @required String artUri
+    @required Image image,
+    @required List<Music> musics,
   })
-  : _id = id,
-    _title = title,
-    _artist = artist,
-    _album = album,
-    _duration = duration,
-    _artUri = artUri;
+  : _artist = artist,
+    _image = image,
+    _musics = musics,
+    super(id, title);
+
+  void addMusic(Music value) {
+    _musics.add(value);
+  }
+
+  Image getArt(){
+    return _image;
+  }
 }

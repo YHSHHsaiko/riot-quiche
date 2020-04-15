@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
 import 'package:riot_quiche/Enumerates/SortType.dart';
+import 'package:riot_quiche/Music/Album.dart';
 import 'package:riot_quiche/Music/Music.dart';
 
 
@@ -59,23 +60,85 @@ extension QuicheOracleFunctions on QuicheOracle {
     
     switch (sortType) {
       case SortType.TITLE_ASC: {
+        sortedList = QuicheOracleVariables.musicList;
+        sortedList.sort((a,b) => a.title.compareTo(b.title) as int);
         break;
       }
       case SortType.ARTIST_ASC: {
+        //TODO:
+        sortedList = QuicheOracleVariables.musicList;
         break;
       }
       case SortType.ALBUM_ASC: {
+        sortedList = sortAlbum('ASC');
         break;
       }
       case SortType.TITLE_DESC: {
+        sortedList = QuicheOracleVariables.musicList;
+        sortedList.sort((a,b) => b.title.compareTo(a.title) as int);
         break;
       }
       case SortType.ARTIST_DESC: {
+        //TODO:
+        sortedList = QuicheOracleVariables.musicList;
         break;
       }
       case SortType.ALBUM_DESC: {
+        sortedList = sortAlbum('DESC');
         break;
       }
     }
+
+    return sortedList;
   }
 }
+
+
+
+
+
+
+List<dynamic> sortAlbum(String set){
+  List<Albatross> defaultList = QuicheOracleVariables.musicList;
+  List<Albatross> albumList = [];
+  List<Albatross> musicList = [];
+
+  for (Music _music in defaultList){
+    var key = _music.album;
+    if (key == null){
+      musicList.add(_music);
+    }else{
+      bool newAlbumFlag = true;
+
+      for (Album _album in albumList){
+        if (_album.title == _music.album){
+          newAlbumFlag = false;
+          _album.addMusic(_music);
+        }
+      }
+
+      if (newAlbumFlag){
+        albumList.add(Album(
+          id: 'id',
+          title: _music.album,
+          artist: _music.artist,
+          image: _music.getArt(),
+          musics: [_music],
+        ));
+      }
+    }
+  }
+
+  if (set == 'ASC'){
+    albumList.addAll(musicList);
+    return albumList;
+  }else if (set == 'DESC'){
+    musicList.addAll(albumList);
+    return musicList;
+  }
+}
+
+
+
+
+
