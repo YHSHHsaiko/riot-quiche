@@ -55,6 +55,9 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private static final String NOTIFICATION_CHANNEL_ID = "riot-quiche";
     private static final String NOTIFICATION_ID = "media-play";
 
+    // Top of Service Actions
+    private static final String ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE";
+
     public QuicheMediaSessionCallback mediaSessionCallback = new QuicheMediaSessionCallback();
     public QuicheLibrary library;
 
@@ -69,6 +72,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private ExoPlayer exoPlayer;
     private AudioManager audioManager;
     private Handler handler;
+    private Runnable handledProcedure;
     private Player.EventListener exoPlayerEventListener = new Player.EventListener() {
 
         @Override
@@ -143,7 +147,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     public void onCreate () {
         super.onCreate();
 
-        Log.d("QUicheMediaBrowserService", "onCreate");
+        Log.d("QuicheMediaBrowserService", "onCreate");
 
         // initialize properties
         playbackStateInformationObject = new ArrayList<>();
@@ -181,20 +185,27 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             @Override
             public void onPlaybackStateChanged (PlaybackStateCompat state) {
                 Notification notification = getNotification();
-                if (notification != null && isConnect == 1) {
-                    startForeground(1, notification);
-                } else if (notification != null && isConnect == 0) {
+                if (notification == null) {
                     stopForeground(false);
+                    stopSelf();
+                } else if (isConnect == 0) {
+                    startForeground(1, notification);
+                    stopForeground(false);
+                } else {
+                    startForeground(1, notification);
                 }
             }
 
             @Override
             public void onMetadataChanged (MediaMetadataCompat metadata) {
                 Notification notification = getNotification();
-                if (notification != null && isConnect == 1) {
-                    startForeground(1, notification);
-                } else if (notification != null && isConnect == 0) {
+                if (notification == null) {
                     stopForeground(false);
+                } else if (isConnect == 0) {
+                    startForeground(1, notification);
+                    stopForeground(false);
+                } else {
+                    startForeground(1, notification);
                 }
             }
         });
@@ -220,56 +231,73 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         exoPlayer.addListener(exoPlayerEventListener);
 
         // create async handler
-        handler = new Handler();
-        handler.postDelayed(new Runnable () {
+        handledProcedure = new Runnable () {
             @Override
-            public void run () {
+            public void run() {
+                if (handler != null) {
 //                if (exoPlayer.getPlaybackState() == Player.STATE_READY && exoPlayer.getPlayWhenReady()) {
 //                    updatePlaybackState();
 //                }
-                int currentState = updatePlaybackState();
-                long currentPosition = exoPlayer.getCurrentPosition();
+                    int currentState = updatePlaybackState();
+                    long currentPosition = exoPlayer.getCurrentPosition();
 
-                /* retrieve current position */
-                playbackStateInformationObject.set(0, currentPosition);
+                    /* retrieve current position */
+                    playbackStateInformationObject.set(0, currentPosition);
 
-                /* retrieve current playback state */
-                playbackStateInformationObject.set(1, currentState);
+                    /* retrieve current playback state */
+                    playbackStateInformationObject.set(1, currentState);
 
-                /* call red shift-taste function */
-                EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();
-                if (redShiftSink != null) {
-                    redShiftSink.success(playbackStateInformationObject);
-                }
+                    /* call red shift-taste function */
+                    EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();
+                    if (redShiftSink != null) {
+                        redShiftSink.success(playbackStateInformationObject);
+                    }
 
-                if (handler != null) {
                     handler.postDelayed(this, 500);
+                } else {
+                    stopSelf();
                 }
             }
-        }, 500);
+        };
+        handler = new Handler();
+        handler.postDelayed(handledProcedure, 500);
     }
 
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
-        super.onStartCommand(intent, flags, startId);
-        Log.d("QUicheMediaBrowserService", "onStartCommand");
+        Log.d("QuicheMediaBrowserService", "onStartCommand");
 
-        return START_STICKY;
+        try {
+            switch (intent.getAction()) {
+                case ACTION_STOP_SERVICE: {
+                    stopForeground(true);
+                    stopSelf();
+                    break;
+                }
+                default: {
+                }
+            }
+        } catch (Exception e) {}
+
+        return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy () {
         Log.d("QuicheMediaService", "onDestroy");
 
+        handler.removeCallbacksAndMessages(null);
         handler = null;
         library = null;
-        exoPlayer.stop();
+
+        Log.d("MediaBrowserService", "onStop::releaseExoPlayer");
         exoPlayer.removeListener(exoPlayerEventListener);
+        exoPlayer.stop();
+
+        Log.d("MediaBrowserService", "onStop::releaseMediaSession");
+        mediaSession.setCallback(null);
         mediaSession.setActive(false);
         mediaSession.release();
-        stopForeground(true);
-
-        stopSelf();
 
         super.onDestroy();
     }
@@ -304,13 +332,13 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         result.sendResult(mediaItemList);
     }
 
-    private Notification getNotification () {
+    synchronized Notification getNotification () {
         Log.d("NOTIFICATION", "create start");
 
         MediaControllerCompat mediaController = mediaSession.getController();
         MediaMetadataCompat metadata = mediaController.getMetadata();
 
-        if (metadata == null && !mediaSession.isActive()) {
+        if (handler == null || metadata == null) {
             Log.d("NOTIFICATION", "no longer recreated");
             return null;
         }
@@ -341,14 +369,12 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 getApplicationContext(), NOTIFICATION_CHANNEL_ID);
 
-//        Intent deleteIntent = new Intent(this, QuicheMediaService.class);
-//        PendingIntent deletePendingIntent = PendingIntent.getService(
-//                this,
-//                0, deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT
-//        );
-
-        PendingIntent deletePendingIntent = MediaButtonReceiver.buildMediaButtonPendingIntent(
-                this, PlaybackStateCompat.ACTION_STOP);
+        Intent deleteIntent = new Intent(this, QuicheMediaService.class);
+        deleteIntent.setAction(this.ACTION_STOP_SERVICE);
+        PendingIntent deletePendingIntent = PendingIntent.getService(
+                this,
+                0, deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT
+        );
 
         builder
                 .setContentTitle(description.getTitle())
@@ -398,6 +424,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                             PlaybackStateCompat.ACTION_PLAY)));
         }
 
+        Log.d("NOTIFICATION", "build");
         return builder.build();
     }
 
@@ -472,7 +499,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             onPlay();
 
             mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
-
         }
 
         @Override
@@ -488,6 +514,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onStop () {
+            Log.d("MediaBrowserService", "onStop");
+
             stopSelf();
         }
 

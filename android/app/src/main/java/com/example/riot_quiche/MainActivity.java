@@ -56,15 +56,15 @@ public class MainActivity extends FlutterActivity {
                 connectionResult = true;
                 isConnected = true;
 
-                // send result to plugin
-                pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.trigger, connectionResult);
-
                 mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallback);
 
             } catch (RemoteException e) {
                 isConnected = false;
                 e.printStackTrace();
             }
+
+            // send result to plugin
+            pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.trigger, connectionResult);
 
             if (isConnected) {
                 Bundle extra = new Bundle();
@@ -132,6 +132,8 @@ public class MainActivity extends FlutterActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("Activity", "onCreate");
+
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
 
@@ -154,8 +156,15 @@ public class MainActivity extends FlutterActivity {
         // blueShift
         EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();
         if (redShiftSink != null) {
+            Log.d("activity", "onDestroy::blueShift");
             redShiftSink.endOfStream();
             PublicSink.getInstance().setSink(null);
+        }
+        for (EventChannel.EventSink sink : eventAPI.eventSinks.keySet()) {
+            if (sink != null) {
+                Log.d("activity", "onDestroy::endSink");
+                sink.endOfStream();
+            }
         }
 
         // pause
@@ -175,10 +184,11 @@ public class MainActivity extends FlutterActivity {
                     extra
             );
 
-            mediaBrowser.disconnect();
-
             mediaController.unregisterCallback(controllerCallback);
             isConnected = false;
+
+            mediaBrowser.disconnect();
+            Log.d("isConnected", mediaBrowser.isConnected() + "");
         }
 
         super.onDestroy();

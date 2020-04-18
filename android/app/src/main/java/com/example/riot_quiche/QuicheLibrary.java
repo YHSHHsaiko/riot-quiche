@@ -161,6 +161,10 @@ public class QuicheLibrary {
 
                     MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
                             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(id_index))
+                            // TODO: 仕方なく，METADATA_KEY_COMPOSERをキーとして使用している
+                            .putString(MediaMetadataCompat.METADATA_KEY_COMPOSER, cursor.getString(album_id_index))
+                            // TODO: 仕方なく，METADATA_KEY_AUTHORをキーとして使用している
+                            .putString(MediaMetadataCompat.METADATA_KEY_AUTHOR, cursor.getString(artist_id_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, cursor.getString(title_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artist_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, cursor.getString(album_index))
@@ -168,7 +172,6 @@ public class QuicheLibrary {
                             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, cursor.getLong(duration_index))
                             .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaArtUriString)
                             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaUriString)
-                            .putString(MediaMetadataCompat.METADATA_KEY_COMPOSER, cursor.getString(album_id_index))
                             // TODO: 仕方なく，METADATA_KEY_GENREをキーとして使用している
                             .putString(MediaMetadataCompat.METADATA_KEY_GENRE, cursor.getString(data_index))
                             .build();

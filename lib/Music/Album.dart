@@ -21,6 +21,7 @@ class Album extends Albatross{
   Album ({
     @required String id,
     @required String albumId,
+    @required String artistId,
     @required String title,
     @required String artist,
     @required Image image,
@@ -29,7 +30,7 @@ class Album extends Albatross{
   : _artist = artist,
     _image = image,
     _musics = musics,
-    super(id, albumId, title);
+    super(id, albumId, artistId, title);
 
   void addMusic(Music value) {
     _musics.add(value);

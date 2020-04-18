@@ -33,6 +33,7 @@ class PlatformMethodInvoker {
     });
 
     List<bool> res = await stream.first;
+    stream = null;
     return res;
   }
 
@@ -44,6 +45,7 @@ class PlatformMethodInvoker {
     });
 
     bool res = await stream.first;
+    stream = null;
     if (res) {
       print('start service: riot-quiche');
     } else {
@@ -58,21 +60,24 @@ class PlatformMethodInvoker {
 
     QuicheOracleVariables.musicList = List<Music>();
     QuicheOracleVariables.albumIdList = List<String>();
+    QuicheOracleVariables.artistIdList = List<String>();
 
     for (List<dynamic> musicObject in butterfly) {
       String id = musicObject[0] as String;
       String albumId = musicObject[1] as String;
-      String title = musicObject[2] as String;
-      String artist = musicObject[3] as String;
-      String album = musicObject[4] as String;
-      int duration = musicObject[5] as int;
-      String artUri = musicObject[6] as String;
-      String path = musicObject[7] as String;
-      List<int> art = musicObject[8] as List<int>;
+      String artistId = musicObject[2] as String;
+      String title = musicObject[3] as String;
+      String artist = musicObject[4] as String;
+      String album = musicObject[5] as String;
+      int duration = musicObject[6] as int;
+      String artUri = musicObject[7] as String;
+      String path = musicObject[8] as String;
+      List<int> art = musicObject[9] as List<int>;
 
       Music music = Music(
         id: id,
         albumId: albumId,
+        artistId: artistId,
         title: title,
         artist: artist,
         album: album,
@@ -83,6 +88,7 @@ class PlatformMethodInvoker {
       );
 
       QuicheOracleVariables.albumIdList.add(albumId);
+      QuicheOracleVariables.artistIdList.add(artistId);
       QuicheOracleVariables.musicList.add(music);
     }
   }
