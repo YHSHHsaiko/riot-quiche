@@ -26,6 +26,9 @@ extension QuicheOracleVariables on QuicheOracle {
   // media ALBUM_ID List
   static List<String> albumIdList;
 
+  // media ARTIST_ID List
+  static List<String> artistIdList;
+
 
   // permission information
   static final Map<Permission, bool> permissionInformation = Map<Permission, bool>.fromIterable(
@@ -65,30 +68,30 @@ extension QuicheOracleFunctions on QuicheOracle {
     switch (sortType) {
       case SortType.TITLE_ASC: {
         sortedList = QuicheOracleVariables.musicList;
-        sortedList.sort((a,b) => a.title.compareTo(b.title) as int);
+        sortedList.sort((a,b) => a.title.compareTo(b.title));
         break;
       }
       case SortType.ARTIST_ASC: {
         //TODO:
-        sortedList = QuicheOracleVariables.musicList;
+        sortedList = _sortFromIDType('artist', order: 'ASC');
         break;
       }
       case SortType.ALBUM_ASC: {
-        sortedList = _sortAlbum('ASC');
+        sortedList = _sortFromIDType('album', order: 'ASC');
         break;
       }
       case SortType.TITLE_DESC: {
         sortedList = QuicheOracleVariables.musicList;
-        sortedList.sort((a,b) => b.title.compareTo(a.title) as int);
+        sortedList.sort((a,b) => b.title.compareTo(a.title));
         break;
       }
       case SortType.ARTIST_DESC: {
         //TODO:
-        sortedList = QuicheOracleVariables.musicList;
+        sortedList = _sortFromIDType('artist', order: 'DESC');
         break;
       }
       case SortType.ALBUM_DESC: {
-        sortedList = _sortAlbum('DESC');
+        sortedList = _sortFromIDType('album', order: 'DESC');
         break;
       }
     }
@@ -96,41 +99,75 @@ extension QuicheOracleFunctions on QuicheOracle {
     return sortedList;
   }
 
-  static List<dynamic> _sortAlbum(String set){
+  static List<Album> _sortFromIDType (
+    String idType,
+    {String order = 'ASC'}) {
     
     // assertion
-    List<String> sortTypeList = ['ASC', 'DESC'];
-    assert(sortTypeList.contains(set));
+    List<String> orderList = ['ASC', 'DESC'];
+    List<String> idTypeList = ['album', 'artist'];
+    assert(orderList.contains(order));
+    assert(idTypeList.contains(idType));
+
 
     // collect members of albums
-    Map<String, List<Music>> albumList = Map<String, List<Music>>();
+    Map<String, List<Music>> idList = Map<String, List<Music>>();
     for (Music music in QuicheOracleVariables.musicList) {
-      String albumId = music.albumId;
-      
-      if (!albumList.containsKey(albumId)) {
-        albumList[albumId] = List<Music>();
+      String id;
+      switch (idType) {
+        case 'album': {
+          id = music.albumId;
+          break;
+        }
+        case 'artist': {
+          id = music.artistId;
+          break;
+        }
       }
-      albumList[albumId].add(music);
+      
+      if (!idList.containsKey(id)) {
+        idList[id] = List<Music>();
+      }
+      idList[id].add(music);
     }
 
     // correct the order of members of albums
     List<Album> result = List<Album>();
-    for (String albumId in albumList.keys) {
-      albumList[albumId].sort((m1, m2) {
+    for (String id in (order == 'ASC') ? idList.keys : List<String>.from(idList.keys).reversed) {
+      idList[id].sort((m1, m2) {
         int m1Id = int.parse(m1.id);
         int m2Id = int.parse(m2.id);
-        return (set == 'ASC') ? m1Id.compareTo(m2Id) : m2Id.compareTo(m1Id);
+        return m1Id.compareTo(m2Id);
       });
 
-      Music target = albumList[albumId][0];
-      result.add(Album(
-        id: target.album,
-        albumId: albumId,
-        title: target.album,
-        artist: target.artist,
-        image: target.getArt(),
-        musics: albumList[albumId]
-      ));
+      Music target = idList[id][0];
+
+      switch (idType) {
+        case 'album': {
+          result.add(Album(
+            id: target.albumId,
+            albumId: id,
+            artistId: target.artistId,
+            title: target.album,
+            artist: target.artist,
+            image: target.getArt(),
+            musics: idList[id]
+          ));
+          break;
+        }
+        case 'artist': {
+          result.add(Album(
+            id: target.albumId,
+            albumId: id,
+            artistId: target.artistId,
+            title: target.artist,
+            artist: target.artist,
+            image: target.getArt(),
+            musics: idList[id]
+          ));
+          break;
+        }
+      }
     }
 
     return result;

@@ -4,6 +4,7 @@ package com.example.riot_quiche;
 public class Music {
     private String id;
     private String albumId;
+    private String artistId;
     private String title;
     private String artist;
     private String album;
@@ -18,6 +19,7 @@ public class Music {
     public Music (
             String id,
             String albumId,
+            String artistId,
             String title,
             String artist,
             String album,
@@ -28,6 +30,7 @@ public class Music {
 
         this.id = id;
         this.albumId = albumId;
+        this.artistId = artistId;
         this.title = title;
         this.album = album;
         this.artist = artist;
@@ -43,6 +46,7 @@ public class Music {
     public String getAlbumId () {
         return albumId;
     }
+    public String getArtistId () { return artistId; }
     public String getTitle () {
         return title;
     }

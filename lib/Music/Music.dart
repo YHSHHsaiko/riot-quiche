@@ -26,6 +26,7 @@ class Music extends Albatross{
   Music ({
     @required String id,
     @required String albumId,
+    @required String artistId,
     @required String title,
     @required String artist,
     @required String album,
@@ -40,7 +41,7 @@ class Music extends Albatross{
     _artUri = artUri,
     _path = path,
     _art = art,
-    super(id, albumId, title);
+    super(id, albumId, artistId, title);
 
 
   Image getArt ({List<String> formatList = const <String>['png']}) {

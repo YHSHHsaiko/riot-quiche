@@ -103,6 +103,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
                             musicObject.add(music.getId());
                             musicObject.add(music.getAlbumId());
+                            musicObject.add(music.getArtistId());
                             musicObject.add(music.getTitle());
                             musicObject.add(music.getArtist());
                             musicObject.add(music.getAlbum());
@@ -235,6 +236,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
     @Override
     public void onListen (Object obj, EventChannel.EventSink sink) {
+        eventAPI.eventSinks.put(sink, true);
         if (obj == null) sink.success(null);
 
         ArrayList<Object> _obj = (ArrayList<Object>)obj;
@@ -309,6 +311,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
                     String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
                     String albumId = metadata.getString(MediaMetadataCompat.METADATA_KEY_COMPOSER);
+                    String artistId = metadata.getString(MediaMetadataCompat.METADATA_KEY_AUTHOR);
                     String title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
                     String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
                     String album = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM);
@@ -326,7 +329,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                         art = artMap.get(id);
                     }
 
-                    Music music = new Music(id, albumId, title, artist, album, duration, artUri, path, art);
+                    Music music = new Music(id, albumId, artistId, title, artist, album, duration, artUri, path, art);
                     musics.add(music);
                 }
 
@@ -448,6 +451,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         private final HashMap<Object, Runnable> listeners = new HashMap<>();
         // for one-to-one and async methods
         private final HashMap<String, Object> eventResults = new HashMap<>();
+        public final HashMap<EventChannel.EventSink, Boolean> eventSinks = new HashMap<>();
 
 
         public void cancel (Object obj) {
@@ -476,7 +480,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
             pluginAPI.requestPermissions(permissionIdentifiers);
 
             final Handler handler = new Handler();
-            listeners.put(permissions, new Runnable() {
+            final Runnable handledProcedure = new Runnable() {
                 @Override
                 public void run () {
                     try {
@@ -498,6 +502,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                                     }
                                 }
 
+                                handler.removeCallbacksAndMessages(null);
                                 eventResults.remove(EventCalls.requestPermissions);
                                 cancel(permissions);
                                 sink.success(result);
@@ -509,7 +514,8 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                         e.printStackTrace();
                     }
                 }
-            });
+            };
+            listeners.put(permissions, handledProcedure);
 
             handler.postDelayed(listeners.get(permissions), 100);
         }
