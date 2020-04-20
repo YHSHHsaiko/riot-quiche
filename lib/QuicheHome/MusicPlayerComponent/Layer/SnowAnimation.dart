@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/Enumerates/LayerType.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
 
 
 class SnowAnimation extends StatefulWidget implements CustomizableWidget{
@@ -14,7 +16,7 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
   final Color color;
 
   SnowAnimation({
-    this.snowNumber = 50,
+    this.snowNumber = 50.0,
     this.speed = 0.1,
     this.screenSize,
     this.isGradient = false,
@@ -29,6 +31,27 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
   LayerType layerType = LayerType.snowAnimation;
   @override
   Map<String, dynamic> setting;
+
+  static List<LayerProp> getSettingList(){
+    List<LayerProp> list = [
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます', initValue: 50.0),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2),
+      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true),
+      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red),
+    ];
+    return list;
+  }
+
+  factory SnowAnimation.fromLayerPropList(List<LayerProp> list, Size screenSize){
+    return SnowAnimation(
+      snowNumber: list[0].result,
+      speed: list[1].result,
+      screenSize: screenSize,
+      isGradient: list[2].result,
+      color: ColorProp.getColor(list[3].result),
+    );
+  }
+
 }
 
 class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProviderStateMixin{

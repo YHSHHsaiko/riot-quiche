@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/Enumerates/LayerType.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
 
 //余りにも重いなら、ここで複数を処理できるようにしないといけない
 
@@ -40,9 +42,25 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
   @override
   Map<String, dynamic> setting;
 
+  static List<LayerProp> getSettingList(){
+    List<LayerProp> list = [
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます', initValue: 50),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2),
+      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true),
+      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red),
+    ];
+    return list;
+  }
 
-
-
+  factory CircleMine.fromLayerPropList(List<LayerProp> list, Size screenSize){
+    return CircleMine(
+//      snowNumber: list[0].result,
+//      speed: list[1].result,
+      screenSize: screenSize,
+//      isGradient: list[2].result,
+//      color: ColorProp.getColor(list[3].result),
+    );
+  }
 }
 
 class _CircleState extends State<CircleMine> with SingleTickerProviderStateMixin {

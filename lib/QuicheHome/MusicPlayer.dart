@@ -18,7 +18,7 @@ import 'package:riot_quiche/PlatformMethodInvoker.dart';
 
 
 class MusicPlayer extends StatefulWidget{
-  final scSize;
+  final Size scSize;
   MusicPlayer(this.scSize);
 
   @override
@@ -47,10 +47,14 @@ class MusicPlayerState extends State<MusicPlayer> with SingleTickerProviderState
   List<Widget> layers = [];
   List<Widget> mustLayers = [];
 
+  static Size screenSize;
+
 
   @override
   void initState() {
     super.initState();
+    screenSize = widget.scSize;
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -407,7 +411,7 @@ class MusicPlayerHeader extends StatelessWidget{
               showDialog(
                 context: context,
                 builder: (_) {
-                  return MusicLayerSetting(callbackForLayer, layerList);
+                  return MusicLayerSetting(callbackForLayer, layerList, MusicPlayerState.screenSize);
                 },
               );
             },

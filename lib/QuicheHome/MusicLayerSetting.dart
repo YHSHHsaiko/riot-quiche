@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 
 import 'dart:math' as math;
+
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
+import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/SelectLayer.dart';
 
 
 
 class MusicLayerSetting extends StatefulWidget{
   Function setLayer;
   List<Widget> layerList;
-  MusicLayerSetting(this.setLayer, this.layerList);
+  final Size screenSize;
+  MusicLayerSetting(this.setLayer, this.layerList, this.screenSize);
 
   @override
   State<StatefulWidget> createState() => MusicLayerSettingState();
@@ -32,6 +37,31 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
     secNumList = new List<int>.generate(widList.length, (i) => i);
   }
 
+  void callbackAddLayer(List<LayerProp> resultList, StackLayerType type){
+    print('SnowAnimation_before');
+    // widget ごとにswitchして、
+    CustomizableWidget addWidget = StackLayerVariables.getAddLayer(type, resultList, widget.screenSize);
+
+    print('SnowAnimation_after');
+    print(addWidget);
+    setState(() {
+      widList.add(addWidget);
+      numList.add(numList.length);
+      secNumList.add(secNumList.length);
+    });
+  }
+
+  void callbackSelectLayer(StackLayerType type){
+    var list = StackLayerVariables.getLayerPropList(type);
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return LayerSetting(list, this.callbackAddLayer, type);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -43,23 +73,14 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
       child: Scaffold(
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            var rnd = math.Random();
-            int js = rnd.nextInt(150);
-
-            Widget w = CircleMine(
-              screenSize: Size(300, 500),
-              diameter: 300.0+js,
-              color: Colors.green,
-              strokeWidth: 2,
+            // TODO: どのレイヤーを追加するか選ばせないといけない。本来なら画像で例示しながらCardみたいなのでやるべきだが...
+            showDialog(
+              context: context,
+              builder: (_) {
+                return SelectLayer(this.callbackSelectLayer);
+              },
             );
 
-            print('FAB:setState');
-
-            setState(() {
-              widList.add(w);
-              numList.add(numList.length);
-              secNumList.add(secNumList.length);
-            });
           },
           label: Text('Add Layer'),
           icon: Icon(Icons.add),
@@ -92,6 +113,9 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
               });
             },
             children: secNumList.map((int idx) {
+              print('kokokawakaranaikedo');
+              print(idx);
+              print(secNumList);
               CustomizableWidget wid = widList[idx];
               int keyidx = numList[idx];
               return Card(
