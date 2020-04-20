@@ -44,21 +44,38 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
 
   static List<LayerProp> getSettingList(){
     List<LayerProp> list = [
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます', initValue: 50),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2),
-      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true),
-      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'startWidth', description: '0~360度を指定できます', initValue: 4),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'sweepWidth', description: '0~360度を指定できます', initValue: 8),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialStartWidth', description: '初期の角度を指定できます', initValue: 0.0),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialSweepPosition', description: '初期の幅を指定できます', initValue: 0.0),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'diameter', description: 'もし長辺、短辺で指定するときは0を入力してください', initValue: 300),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'longSide', description: '長辺', initValue: 300),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'shortSide', description: '短辺', initValue: 300),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'strokeWidth', description: '線の幅', initValue: 1),
+      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色', initValue: ColorType.red),
     ];
     return list;
   }
 
   factory CircleMine.fromLayerPropList(List<LayerProp> list, Size screenSize){
+    var diameter_tmp = list[4].result;
+    var longSide_tmp = list[5].result.toDouble();
+    var shortSide_tmp = list[6].result.toDouble();
+    if (diameter_tmp != 0){
+      longSide_tmp = null; shortSide_tmp = null;
+    }
+
     return CircleMine(
-//      snowNumber: list[0].result,
-//      speed: list[1].result,
       screenSize: screenSize,
-//      isGradient: list[2].result,
-//      color: ColorProp.getColor(list[3].result),
+      startWidth: list[0].result,
+      sweepWidth: list[1].result,
+      initialStartWidth: list[2].result,
+      initialSweepPosition: list[3].result,
+      diameter: diameter_tmp.toDouble(),
+      longSide: longSide_tmp,
+      shortSide: shortSide_tmp,
+      strokeWidth: list[7].result.toDouble(),
+      color: ColorProp.getColor(list[8].result),
     );
   }
 }
