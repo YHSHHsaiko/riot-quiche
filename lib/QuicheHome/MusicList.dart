@@ -174,7 +174,7 @@ class SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMixi
       vsync: this,
     );
 
-    if (!MusicPlayerFooterState.animatedIconControllerChecker){
+    if (!MusicPlayerState.animatedIconControllerChecker){
       setState(() {
         _animatedIconController.forward();
       });
@@ -249,14 +249,14 @@ class SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMixi
                 ),
                 onPressed: () {
                   setState(() {
-                    if (MusicPlayerFooterState.animatedIconControllerChecker){
+                    if (MusicPlayerState.animatedIconControllerChecker){
                       PlatformMethodInvoker.pause();
                       _animatedIconController.forward();
                     }else{
                       PlatformMethodInvoker.play();
                       _animatedIconController.reverse();
                     }
-                    MusicPlayerFooterState.animatedIconControllerChecker = !MusicPlayerFooterState.animatedIconControllerChecker;
+                    MusicPlayerState.animatedIconControllerChecker = !MusicPlayerState.animatedIconControllerChecker;
                   });
                 },
               ),

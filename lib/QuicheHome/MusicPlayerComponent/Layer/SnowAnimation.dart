@@ -52,6 +52,7 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
     );
   }
 
+  static String imagePath = 'images/dopper.jpg';
 }
 
 class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProviderStateMixin{
@@ -112,7 +113,7 @@ class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProvider
             radius: _snowSize / 100,// * 8,
             speed: (_snowSize + 0.01) / screenSize.height,
             alpha: _rnd.nextDouble() / 2 + 0.5,//下駄はかせて0.5<a<1.0へ
-            color: Colors.white,
+            color: widget.color,
           )
         );
       } else {
@@ -123,7 +124,7 @@ class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProvider
             radius: _snowSize * 3,
             speed: _snowSize,
             alpha: _rnd.nextDouble() / 2 + 0.5,//下駄はかせて0.5<a<1.0へ
-            color: Colors.white,
+            color: widget.color,
           )
         );
       }

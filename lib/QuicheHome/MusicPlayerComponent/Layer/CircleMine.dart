@@ -78,6 +78,8 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
       color: ColorProp.getColor(list[8].result),
     );
   }
+
+  static String imagePath = 'images/dopper.jpg';
 }
 
 class _CircleState extends State<CircleMine> with SingleTickerProviderStateMixin {
