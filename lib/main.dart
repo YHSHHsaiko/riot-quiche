@@ -22,12 +22,12 @@ class QuicheMusicPlayer extends StatelessWidget with WidgetsBindingObserver {
         RouteName.Splash.name: (BuildContext context) {
           print('current Widget: ${RouteName.Splash.name}');
           return QuicheSplash(
-            minDuration: Duration(seconds: 2),
+            minDuration: Duration(microseconds: 100),
             /**
              * TODO:
              * decide what we do here
              */
-            someFuture: Future.delayed(Duration(microseconds: 500)),
+            someFuture: Future.delayed(Duration(microseconds: 100)),
           );
         },
         RouteName.Entrance.name: (BuildContext context) {

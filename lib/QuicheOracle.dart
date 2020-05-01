@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
+import 'package:riot_quiche/Enumerates/InitializationSection.dart';
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
 import 'package:riot_quiche/Enumerates/SortType.dart';
 import 'package:riot_quiche/Music/Albatross.dart';
 import 'package:riot_quiche/Music/Album.dart';
 import 'package:riot_quiche/Music/Music.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 abstract class QuicheOracle {
@@ -48,13 +50,22 @@ extension QuicheOracleVariables on QuicheOracle {
 
 extension QuicheOracleFunctions on QuicheOracle {
   // whether to app is initialized
-  static Future<bool> checkInitialization () {
+  static Future<bool> checkInitialization () async {
     /**
      * TODO:
      * check whether to app is initialized
      */
+
+    final prefs = await SharedPreferences.getInstance();
+
+    /* check whether initialization section has completed */
+    for (InitializationSection section in InitializationSection.values) {
+      if (!prefs.containsKey(section.toString()) || !prefs.getBool(section.toString())) {
+        return false;
+      }
+    }
     
-    return Future.value(false);
+    return true;
   }
 
   static List<dynamic> getSortedMusicList (SortType sortType) {
