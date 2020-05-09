@@ -134,18 +134,78 @@ class _MusicListState extends State<MusicList> {
       jucketImage = Image.asset("images/dopper.jpg");
     }
 
+//    var img = Image.network('https://pbs.twimg.com/media/EWm2AmcU4AID_2O?format=jpg&name=medium');
+    var jacketSize = size.width * 0.1;
+
     return Container(
-      child: ListTile(
-        leading: Container(
-          height: size.width * 0.1,
-          width: size.width * 0.1,
-          child: jucketImage,
-        ),
-        title: Text(listItem[index].title),
-        subtitle: Text(listItem[index].artist),
-        trailing: Icon(Icons.arrow_forward_ios, color: Colors.blueGrey,),
+      child: Row(
+          children: <Widget>[
+
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Container(
+                width: jacketSize,
+                height: jacketSize,
+                decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: jucketImage.image,
+                    )
+                ),
+              ),
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.all(5.0),
+                  height: jacketSize,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          listItem[index].title,
+                          style: TextStyle(
+                            fontSize: jacketSize / 4,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          listItem[index].artist,
+                          style: TextStyle(
+                            fontSize: jacketSize / 6,
+                          ),
+                        ),
+                      ),
+
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          ]
       ),
     );
+
+//    return Container(
+//      child: ListTile(
+//        leading: Container(
+//          height: size.width * 0.1,
+//          width: size.width * 0.1,
+//          child: jucketImage,
+//        ),
+//        title: Text(listItem[index].title),
+//        subtitle: Text(listItem[index].artist),
+//        trailing: Icon(Icons.arrow_forward_ios, color: Colors.blueGrey,),
+//      ),
+//    );
   }
 }
 
