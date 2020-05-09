@@ -20,13 +20,10 @@ class QuicheSplash extends StatefulWidget {
 }
 
 class _QuicheSplashState extends State<QuicheSplash> {
-  bool _isFinished;
 
   @override
   void initState() {
     super.initState();
-
-    _isFinished = false;
   }
   
   @override

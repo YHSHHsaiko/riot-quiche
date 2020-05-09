@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/InitializationSection.dart';
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
@@ -12,9 +13,10 @@ class RequestPermissionsSection extends IQuicheInitialization {
   RequestPermissionsSection ({
     @required void Function() onSuccess,
     @required void Function() onError,
+    @required InitializationSection nextSection,
     Key key,
   })
-  : super(key: key, onSuccess: onSuccess, onError: onError);
+  : super(key: key, onSuccess: onSuccess, onError: onError, nextSection: nextSection);
 
   @override
   _RequestPermissionsSectionState createState () {

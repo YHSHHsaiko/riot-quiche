@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/QuicheInitialization/NoneSection.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:riot_quiche/Enumerates/InitializationSection.dart';
 import 'package:riot_quiche/Enumerates/RouteName.dart';
 
@@ -19,6 +23,9 @@ class _QuicheInitializationState extends State<QuicheInitialization> {
   Map<InitializationSection, IQuicheInitialization> _sectionMap;
   InitializationSection _currentSection;
 
+  SharedPreferences _prefs;
+
+
   @override
   void initState () {
     super.initState();
@@ -26,19 +33,26 @@ class _QuicheInitializationState extends State<QuicheInitialization> {
     _sectionMap = <InitializationSection, IQuicheInitialization>{
       InitializationSection.RequestPermissions: RequestPermissionsSection(
         onSuccess: () {
+          print('RequestPermissions:onSuccess()');
           _initializationResults[InitializationSection.RequestPermissions] = true;
+          _prefs.setBool(InitializationSection.RequestPermissions.toString(), true);
           setState(() {
             _currentSection = InitializationSection.None;
           });
         },
         onError: () {
+          print('RequestPermissions:onError()');
           _initializationResults[InitializationSection.RequestPermissions] = false;
+          _prefs.setBool(InitializationSection.RequestPermissions.toString(), false);
           setState(() {
             _currentSection = InitializationSection.None;
           });
-        }
+        },
+        nextSection: InitializationSection.None,
       ),
-      InitializationSection.None: null
+      InitializationSection.None: NoneSection(
+        onSuccess: null, onError: null, nextSection: null
+      )
     };
 
     _currentSection = InitializationSection.RequestPermissions;
@@ -46,31 +60,54 @@ class _QuicheInitializationState extends State<QuicheInitialization> {
 
   @override
   Widget build (BuildContext context) {
-    if (_currentSection == InitializationSection.None) {
-      return Scaffold(
-        body: FutureBuilder(
-          future: _welcomeUntil(context),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            return Center(
-              child: FlutterLogo()
-            );
-          },
-        )
-      );
-    } else {
-      return Scaffold(
-        body: _sectionMap[_currentSection]
-      );
-    }
+    return Scaffold(
+      body: FutureBuilder<InitializationSection>(
+        future: _getNextSection(_currentSection),
+        builder: (BuildContext context, AsyncSnapshot<InitializationSection> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting: {
+              return Center(
+                child: FlutterLogo()
+              );
+
+              break;
+            }
+            case ConnectionState.done: {
+              _currentSection = snapshot.data;
+              return _sectionMap[_currentSection];
+
+              break;
+            }
+            default: {
+              return Center(
+                child: FlutterLogo()
+              );
+
+              break;
+            }
+          }
+        },
+      )
+    );
   }
 
   /**
-   * TODO:
-   * decide what we do actually
+   * get next target section that have to be initialized
    */
-  Future<Null> _welcomeUntil (BuildContext context) async {
-    await Future.delayed(Duration(seconds: 2));
+  Future<InitializationSection> _getNextSection (InitializationSection section) async {
+    InitializationSection targetSection = section;
 
-    Navigator.of(context).pushReplacementNamed(RouteName.Home.name);
+    if (_prefs == null) {
+      _prefs = await SharedPreferences.getInstance();
+    }
+    
+    while (targetSection != InitializationSection.None) {
+      if (!_prefs.containsKey(section.toString()) || !_prefs.getBool(section.toString())) {
+        return targetSection;
+      }
+      targetSection = _sectionMap[targetSection].nextSection;
+    }
+
+    return InitializationSection.None;
   }
 }
