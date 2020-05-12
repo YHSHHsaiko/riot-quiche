@@ -52,7 +52,11 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
     );
   }
 
-  static String imagePath = 'images/dopper.jpg';
+  @override
+  String imagePath = 'images/dopper.jpg';
+
+  @override
+  String widgetNameJP = '雪';
 }
 
 class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProviderStateMixin{

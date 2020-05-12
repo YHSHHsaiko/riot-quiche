@@ -9,7 +9,7 @@ class SelectLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var grid = [SnowAnimation.imagePath,CircleMine.imagePath];
+    var grid = ['images/dopper.jpg', 'images/dopper.jpg'];
     var grid2 = [StackLayerType.SnowAnimation,StackLayerType.Circle];
     return MaterialApp(
         home: Scaffold(

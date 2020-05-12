@@ -135,7 +135,7 @@ class _MusicListState extends State<MusicList> {
     }
 
 //    var img = Image.network('https://pbs.twimg.com/media/EWm2AmcU4AID_2O?format=jpg&name=medium');
-    var jacketSize = size.width * 0.1;
+    var jacketSize = (size.height > size.width ? size.height: size.width) * 0.1;
 
     return Container(
       child: Row(

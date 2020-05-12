@@ -25,4 +25,7 @@ abstract class CustomizableWidget extends Widget {
 
   // TODO: わ００００００００
   // dynamic settingDialog ();
+
+  String get imagePath;
+  String get widgetNameJP;
 }

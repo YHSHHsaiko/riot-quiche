@@ -95,7 +95,7 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
               padding: const EdgeInsets.all(8.0),
               child: Center(
                 child: Text(
-                  "Here is BackGround.",
+                  "Back Ground Image",
                   style: TextStyle(fontSize: 18.0),
                 ),
               ),
@@ -122,8 +122,9 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
                 elevation: 2.0,
                 key: Key(keyidx.toString()),
                 child: ListTile(
-                  leading: const Icon(Icons.people),
-                  title: Text(wid.layerType.toString()),
+//                  leading: const Icon(Icons.people),
+                  leading: Image.asset(wid.imagePath, fit: BoxFit.cover),
+                  title: Text(wid.widgetNameJP),
                   subtitle: Text("sub:$keyidx:"+wid.layerType.toString()),
                 ),
               );

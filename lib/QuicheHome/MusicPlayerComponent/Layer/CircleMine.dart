@@ -79,7 +79,12 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
     );
   }
 
-  static String imagePath = 'images/dopper.jpg';
+  @override
+  String imagePath = 'images/dopper.jpg';
+
+  @override
+  String widgetNameJP = '動く円';
+
 }
 
 class _CircleState extends State<CircleMine> with SingleTickerProviderStateMixin {
