@@ -6,7 +6,7 @@ import 'package:riot_quiche/Enumerates/ExoPlayerPlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/QuicheHome/MusicLayerSetting.dart';
-import 'package:riot_quiche/QuicheHome/MusicList.dart';
+import 'package:riot_quiche/QuicheHome/MusicList/MusicList.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/BackGround.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/Circle.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
@@ -123,7 +123,7 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
 
     // TODO ここでPreference使って、曲データを参照する。
     // Set Initial Music.
-    setMusic([QuicheOracleVariables.musicList[0]], 0);
+    _setMusic([QuicheOracleVariables.musicList[0]], 0);
 
     // Index List For Shuffle.
     moveIndexList = List<dynamic>.generate(musicList.length, (i) => (i+1) % musicList.length);
@@ -239,7 +239,9 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
 
 
   /// set music
-  void setMusic(var music, int playIndex){
+  void _setMusic(var music, int playIndex){
+    animatedIconControllerChecker = true;
+
     if (music is Music){
       setState(() {
         _music = music;
@@ -261,10 +263,6 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
         PlatformMethodInvoker.playFromCurrentQueueIndex();
       });
     }
-    setState(() {
-      animatedIconControllerChecker = true;
-    });
-
   }
 
   /// callback for layerSetting
@@ -292,13 +290,17 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
               foldControllBar = !foldControllBar;
             });
           },
-          onPanUpdate: (pos){
-            showDialog(
+          onPanUpdate: (pos) async {
+            List<dynamic> result = await showDialog<List<dynamic>>(
               context: context,
               builder: (_) {
-                return MusicList(this.setMusic, _music);
+                return MusicList(_music);
               },
             );
+
+            if (result != null) {
+              _setMusic(result[0], result[1]);
+            }
           },
           child: Container(
             height: screenSize.height,
