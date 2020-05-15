@@ -22,13 +22,13 @@ class VariousSortTab extends StatefulWidget {
 class _VariousSortTabState extends State<VariousSortTab> {
   List<dynamic> listItem, tmp;
   SortType nowSortType = SortType.TITLE_ASC;
-  int nowLayer = 0;
 
   @override
   void initState () {
     super.initState();
 
     listItem = widget.listItem;
+    tmp = [];
   }
 
   @override
@@ -37,51 +37,65 @@ class _VariousSortTabState extends State<VariousSortTab> {
 
     print('size: $size');
 
-    return Column(
-      children: <Widget>[
-        Align(
-          alignment: Alignment.topCenter,
-          child: _menu(),
-        ),
-
-        Expanded(
-          child: ListView.separated(
-
-            itemBuilder: (BuildContext context, int index) {
-              if (index < listItem.length) {
-                return GestureDetector(
-                  onTap: (){
-                    if (listItem[index] is Album){
-                      setState(() {
-                        tmp = listItem;
-                        listItem = listItem[index].musics;
-                        nowLayer++;
-                      });
-                    }else{
-                      print('$index');
-                      widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index, nowLayer];
-                      // widget.callback(listItem, index);
-                      Navigator.of(context).pop();
-
-                      //TODO　ここでlistitemを全部追加
-                      //callbuck側になにかkeyを渡して、特定の場所から始める。
-
-                    }
-
-                  },
-                  child: _seclist(index, size),
-                );
-              } else {
-                return Divider(height: 100);
-              }
-            },
-            itemCount: listItem.length + 1,
-            separatorBuilder: (BuildContext context, int index) {
-              return Divider(height: 1);
-            },
+    return WillPopScope(
+      onWillPop: () {
+        if (tmp.isEmpty) {
+          Navigator.of(context).pop();
+        } else {
+          setState(() {
+            listItem = tmp.removeLast();
+          });
+        }
+        
+        return Future.value(false);
+      },
+      child: Column(
+        children: <Widget>[
+          Align(
+            alignment: Alignment.topCenter,
+            child: _menu(),
           ),
-        ),
-      ]
+
+          Expanded(
+            child: ListView.separated(
+
+              itemBuilder: (BuildContext context, int index) {
+                if (index < listItem.length) {
+                  return GestureDetector(
+                    onTap: (){
+                      if (listItem[index] is Album){
+                        setState(() {
+                          tmp.add(listItem);
+                          listItem = listItem[index].musics;
+                          // widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
+                        });
+                      }else{
+                        print('$index');
+                        widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
+                        // widget.callback(listItem, index);
+                        // Navigator.of(context).pop();
+                        // print('pop');
+
+                        //TODO　ここでlistitemを全部追加
+                        //callbuck側になにかkeyを渡して、特定の場所から始める。
+
+                      }
+
+                    },
+                    child: _seclist(index, size),
+                  );
+                } else {
+                  return Divider(height: 100);
+                }
+              },
+              itemCount: listItem.length + 1,
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider(height: 1);
+              },
+            ),
+          ),
+        ]
+      )
     );
   }
 

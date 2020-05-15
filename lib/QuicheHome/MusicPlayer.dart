@@ -239,7 +239,7 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
 
 
   /// set music
-  void _setMusic(var music, int playIndex){
+  void _setMusic(dynamic music, int playIndex){
     animatedIconControllerChecker = true;
 
     if (music is Music){
@@ -291,16 +291,13 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
             });
           },
           onPanUpdate: (pos) async {
-            List<dynamic> result = await showDialog<List<dynamic>>(
+            showDialog(
               context: context,
               builder: (_) {
-                return MusicList(_music);
+                return MusicList(_music, nowPlayIndexOfQueue, onChangedCallback: _setMusic);
               },
             );
 
-            if (result != null) {
-              _setMusic(result[0], result[1]);
-            }
           },
           child: Container(
             height: screenSize.height,
