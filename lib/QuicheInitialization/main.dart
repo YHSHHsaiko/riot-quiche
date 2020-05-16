@@ -11,7 +11,7 @@ import 'package:riot_quiche/QuicheInitialization/RequestPermissionsSection.dart'
 
 
 class QuicheInitialization extends IQuicheInitialization {
-  
+
   @override
   _QuicheInitializationState createState () {
     return _QuicheInitializationState();

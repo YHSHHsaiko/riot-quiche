@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import 'package:riot_quiche/QuicheHome/MusicList/PlaylistTab.dart';
 
 import 'package:riot_quiche/header.dart';
 import 'package:riot_quiche/Enumerates/SortType.dart';
@@ -14,23 +15,24 @@ import 'package:riot_quiche/QuicheOracle.dart';
 
 
 class MusicList extends StatefulWidget{
-  final Music nowPlaying;
+  final List<dynamic> musicList;
   final int playIndex;
   final OnMusicChangedCallback onChangedCallback;
 
-  MusicList(this.nowPlaying, this.playIndex, {@required this.onChangedCallback});
+  MusicList(
+    this.musicList, this.playIndex,
+    {
+      @required this.onChangedCallback
+    }
+  );
 
   @override
   State<StatefulWidget> createState() => _MusicListState();
 }
 
 class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
-  List<dynamic> listItem = [], tmp = [];
-  SortType nowSortType = SortType.TITLE_ASC;
   int playIndex;
   // tsuchida
-  bool _isNowPlayingChanged;
-  TabController _tabController;
   ValueNotifier<List<dynamic>> onMusicChangedNotifier;
   //
 
@@ -39,28 +41,25 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
     //TODO ここでソートのタイプを読み取っておいて、それに適したものを取得する。
     super.initState();
 
-    listItem = QuicheOracleFunctions.getSortedMusicList(nowSortType);
     playIndex = widget.playIndex;
     // tsuchida
-    _tabController = TabController(length: 2, vsync: this);
-    onMusicChangedNotifier = ValueNotifier<List<dynamic>>(null)
-    ..value = <dynamic>[listItem, playIndex]
+    onMusicChangedNotifier = ValueNotifier<List<dynamic>>(<dynamic>[widget.musicList, playIndex])
     ..addListener(() {
-      // listItem = onMusicChangedNotifier.value[0];
-      // playIndex = onMusicChangedNotifier.value[1];
-
-      widget.onChangedCallback(onMusicChangedNotifier.value[0], onMusicChangedNotifier.value[1] as int);
-      _isNowPlayingChanged = true;
+      
+      onMusicChangedNotifier.value[1] = widget.onChangedCallback(
+        (onMusicChangedNotifier.value[0] is List) ? onMusicChangedNotifier.value[0] : [onMusicChangedNotifier.value[0]],
+        onMusicChangedNotifier.value[1] as int
+      );
 
       print('ValueNotifier::onListener');
     });
 
-    _isNowPlayingChanged = false;
     //
   }
 
   @override
   void dispose () {
+    print('MusicList::dispose()');
     onMusicChangedNotifier.dispose();
 
     super.dispose();
@@ -69,16 +68,45 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          VariousSortTab(listItem, onMusicChangedNotifier),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SubPlayer(widget.nowPlaying, onMusicChangedNotifier),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Select Music'),
+          bottom: PreferredSize(
+            child: TabBar(
+              isScrollable: true,
+              tabs: <Tab>[
+                Tab(
+                  text: 'Library'
+                ),
+                Tab(
+                  text: 'Playlist'
+                )
+              ]
+            ),
+            preferredSize: Size.fromHeight(30.0)
           ),
-        ],
-      ),
+        ),
+        body: Stack(
+          children: <Widget>[
+            TabBarView(
+              children: <Tab>[
+                Tab(
+                  child: VariousSortTab(onMusicChangedNotifier)
+                ),
+                Tab(
+                  child: PlaylistTab(onMusicChangedNotifier)
+                )
+              ]
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier),
+            )
+          ]
+        )
+      )
     );
   }
 }
@@ -183,7 +211,7 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
                 onPressed: () {
                   widget.onMusicChangedNotifier.value = <dynamic>[
                     widget.onMusicChangedNotifier.value[0],
-                    _changePlayIndex(widget.onMusicChangedNotifier.value[1] as int, -1)
+                    widget.onMusicChangedNotifier.value[1] - 1
                   ];
                 },
                 child: Icon(Icons.skip_previous)
@@ -220,7 +248,7 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
                 onPressed: () {
                   widget.onMusicChangedNotifier.value = <dynamic>[
                     widget.onMusicChangedNotifier.value[0],
-                    _changePlayIndex(widget.onMusicChangedNotifier.value[1] as int, 1)
+                    widget.onMusicChangedNotifier.value[1] + 1
                   ];
                 },
                 child: Icon(Icons.skip_next)
@@ -230,18 +258,6 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
         ),
       ),
     );
-  }
-
-  int _changePlayIndex (int currentIndex, int changeAmount) {
-    int changedIndex = currentIndex + changeAmount;
-
-    if (changedIndex > widget.onMusicChangedNotifier.value[0].length) {
-      changedIndex = widget.onMusicChangedNotifier.value[0].length;
-    } else if (changedIndex < 0) {
-      changedIndex = 0;
-    }
-
-    return changedIndex;
   }
 
 }

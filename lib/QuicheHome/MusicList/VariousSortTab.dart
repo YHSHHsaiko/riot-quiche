@@ -7,11 +7,10 @@ import 'package:riot_quiche/Music/Album.dart';
 
 class VariousSortTab extends StatefulWidget {
   final ValueNotifier<List<dynamic>> variousSortTabValueNotifier;
-  final List<dynamic> listItem;
 
   VariousSortTab (
-    this.listItem, this.variousSortTabValueNotifier, {Key key})
-  : super(key: key);
+    this.variousSortTabValueNotifier, {Key key}
+  ): super(key: key);
   
   @override
   _VariousSortTabState createState () {
@@ -20,15 +19,25 @@ class VariousSortTab extends StatefulWidget {
 }
 
 class _VariousSortTabState extends State<VariousSortTab> {
-  List<dynamic> listItem, tmp;
+  List<dynamic> listItem;
+  static List<dynamic> tmp = [];
   SortType nowSortType = SortType.TITLE_ASC;
 
   @override
   void initState () {
     super.initState();
 
-    listItem = widget.listItem;
-    tmp = [];
+    if (tmp.isEmpty) {
+      listItem = QuicheOracleFunctions.getSortedMusicList(nowSortType);
+    } else {
+      listItem = tmp.removeLast();
+    }
+  }
+
+  @override
+  void dispose () {
+    tmp.add(listItem);
+    super.dispose();
   }
 
   @override

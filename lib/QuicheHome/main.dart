@@ -7,6 +7,7 @@ import 'package:riot_quiche/QuicheOracle.dart';
 
 
 class QuicheHome extends StatefulWidget {
+  const QuicheHome();
   
   @override
   _QuicheHomeState createState () {

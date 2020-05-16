@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
+
 import 'package:riot_quiche/Enumerates/ExoPlayerPlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
@@ -14,15 +16,9 @@ import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/SnowAnimation.
 import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
+import 'package:riot_quiche/Enumerates/BottomMenuEnum.dart';
 
 
-enum ButtonMenuEnum{
-  shuffle,
-  prev,
-  play,
-  next,
-  repeat,
-}
 
 class MusicPlayer extends StatefulWidget{
   final Size scSize;
@@ -68,7 +64,7 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
   static Size screenSize, longSize;
   double jacketSize;
 
-  /// Others
+  // Others
   // none
 
 
@@ -239,8 +235,9 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
 
 
   /// set music
-  void _setMusic(dynamic music, int playIndex){
+  int _setMusic (dynamic music, int playIndex) {
     animatedIconControllerChecker = true;
+    nowPlayIndexOfQueue = playIndex;
 
     if (music is Music){
       setState(() {
@@ -254,15 +251,23 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
         idList.add(m.id);
       }
       setState(() {
-        _music = music[playIndex];
         musicList = music;
-        nowPlayIndexOfQueue = playIndex;
+
+        if (nowPlayIndexOfQueue < 0) {
+          nowPlayIndexOfQueue = 0;
+        } else if (nowPlayIndexOfQueue >= musicList.length) {
+          nowPlayIndexOfQueue = musicList.length - 1;
+        }
+        _music = musicList[nowPlayIndexOfQueue];
+        
         tapedFooterButton('shuffle', null);
         PlatformMethodInvoker.setQueue(idList);
         PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
         PlatformMethodInvoker.playFromCurrentQueueIndex();
       });
     }
+
+    return nowPlayIndexOfQueue;
   }
 
   /// callback for layerSetting
@@ -294,7 +299,7 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
             showDialog(
               context: context,
               builder: (_) {
-                return MusicList(_music, nowPlayIndexOfQueue, onChangedCallback: _setMusic);
+                return MusicList(musicList, nowPlayIndexOfQueue, onChangedCallback: _setMusic);
               },
             );
 

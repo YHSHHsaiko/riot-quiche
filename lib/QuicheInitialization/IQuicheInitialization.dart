@@ -7,7 +7,6 @@ class IQuicheInitialization extends StatefulWidget {
   final void Function() onError;
   final InitializationSection nextSection;
 
-
   IQuicheInitialization ({
     @required void Function() onSuccess,
     @required void Function() onError,
