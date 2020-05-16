@@ -65,6 +65,7 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
   double jacketSize;
 
   // Others
+  MusicList _cMusicList;
   // none
 
 
@@ -299,7 +300,11 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
             showDialog(
               context: context,
               builder: (_) {
-                return MusicList(musicList, nowPlayIndexOfQueue, onChangedCallback: _setMusic);
+                if (_cMusicList == null) {
+                  _cMusicList = MusicList(musicList, nowPlayIndexOfQueue, onChangedCallback: _setMusic);
+                }
+
+                return _cMusicList;
               },
             );
 

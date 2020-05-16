@@ -46,7 +46,7 @@ class QuicheMusicPlayer extends StatelessWidget with WidgetsBindingObserver {
         },
         RouteName.Home.name: (BuildContext context) {
           print('current Widget: ${RouteName.Home.name}');
-
+          
           return const QuicheHome();
         }
       },

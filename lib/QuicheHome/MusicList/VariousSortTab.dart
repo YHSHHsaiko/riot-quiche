@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/PopupMenuEnum.dart';
 
 import 'package:riot_quiche/Enumerates/SortType.dart';
+import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Album.dart';
 
@@ -76,14 +78,10 @@ class _VariousSortTabState extends State<VariousSortTab> {
                         setState(() {
                           tmp.add(listItem);
                           listItem = listItem[index].musics;
-                          // widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
                         });
                       }else{
                         print('$index');
                         widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
-                        // widget.callback(listItem, index);
-                        // Navigator.of(context).pop();
-                        // print('pop');
 
                         //TODO　ここでlistitemを全部追加
                         //callbuck側になにかkeyを渡して、特定の場所から始める。
@@ -156,8 +154,8 @@ class _VariousSortTabState extends State<VariousSortTab> {
                       fit: BoxFit.fill,
                       image: jucketImage.image,
                     )
-                ),
-              ),
+                )
+              )
             ),
             Expanded(
               child: Align(
@@ -175,8 +173,8 @@ class _VariousSortTabState extends State<VariousSortTab> {
                           listItem[index].title,
                           style: TextStyle(
                             fontSize: jacketSize / 4,
-                          ),
-                        ),
+                          )
+                        )
                       ),
                       Expanded(
                         flex: 1,
@@ -184,15 +182,41 @@ class _VariousSortTabState extends State<VariousSortTab> {
                           listItem[index].artist,
                           style: TextStyle(
                             fontSize: jacketSize / 6,
-                          ),
-                        ),
-                      ),
-
-                    ],
-                  ),
-                ),
-              ),
+                          )
+                        )
+                      )
+                    ]
+                  )
+                )
+              )
             ),
+            PopupMenuButton<PopupMenuEnum>(
+              onSelected: (PopupMenuEnum popupMenu) {
+                switch (popupMenu) {
+                  case PopupMenuEnum.AddToPlaylist: {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Center(
+                          child: PreferredSize(
+                            preferredSize: Size(80, 110),
+                            child: PopupMenuForAddToPlaylist(m)
+                          )
+                        );
+                      }
+                    );
+                  }
+                }
+              },
+              itemBuilder: (BuildContext context) {
+                return <PopupMenuEntry<PopupMenuEnum>>[
+                  const PopupMenuItem<PopupMenuEnum>(
+                    value: PopupMenuEnum.AddToPlaylist,
+                    child: Text('Add to playlist')
+                  )
+                ];
+              }
+            )
 
           ]
       ),

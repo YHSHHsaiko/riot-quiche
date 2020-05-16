@@ -58,6 +58,7 @@ class PlatformMethodInvoker {
   static Future<dynamic> butterflyEffect () async {
     List<dynamic> butterfly = await _methodChannel.invokeMethod('butterflyEffect', <dynamic>[]);
 
+    QuicheOracleVariables.musicMap = Map<String, Music>();
     QuicheOracleVariables.musicList = List<Music>();
     QuicheOracleVariables.albumIdList = List<String>();
     QuicheOracleVariables.artistIdList = List<String>();
@@ -87,6 +88,7 @@ class PlatformMethodInvoker {
         art: art
       );
 
+      QuicheOracleVariables.musicMap[id] = music;
       QuicheOracleVariables.albumIdList.add(albumId);
       QuicheOracleVariables.artistIdList.add(artistId);
       QuicheOracleVariables.musicList.add(music);

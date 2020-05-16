@@ -34,6 +34,9 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   int playIndex;
   // tsuchida
   ValueNotifier<List<dynamic>> onMusicChangedNotifier;
+  TabController _tabController;
+
+  static int _initialPage = 0;
   //
 
   @override
@@ -47,11 +50,18 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
     ..addListener(() {
       
       onMusicChangedNotifier.value[1] = widget.onChangedCallback(
-        (onMusicChangedNotifier.value[0] is List) ? onMusicChangedNotifier.value[0] : [onMusicChangedNotifier.value[0]],
+        (onMusicChangedNotifier.value[0] is List)
+          ? onMusicChangedNotifier.value[0] : [onMusicChangedNotifier.value[0]],
         onMusicChangedNotifier.value[1] as int
       );
 
       print('ValueNotifier::onListener');
+    });
+
+    _tabController = TabController(initialIndex: _initialPage, length: 2, vsync: this)
+    ..addListener(() {
+      print('currentPage: ${_tabController.index}');
+      _initialPage = _tabController.index;
     });
 
     //
@@ -61,6 +71,7 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   void dispose () {
     print('MusicList::dispose()');
     onMusicChangedNotifier.dispose();
+    _tabController.dispose();
 
     super.dispose();
   }
@@ -68,44 +79,43 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Select Music'),
-          bottom: PreferredSize(
-            child: TabBar(
-              isScrollable: true,
-              tabs: <Tab>[
-                Tab(
-                  text: 'Library'
-                ),
-                Tab(
-                  text: 'Playlist'
-                )
-              ]
-            ),
-            preferredSize: Size.fromHeight(30.0)
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Select Music'),
+        bottom: PreferredSize(
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabs: <Tab>[
+              Tab(
+                text: 'Library'
+              ),
+              Tab(
+                text: 'Playlist'
+              )
+            ]
           ),
+          preferredSize: Size.fromHeight(30.0)
         ),
-        body: Stack(
-          children: <Widget>[
-            TabBarView(
-              children: <Tab>[
-                Tab(
-                  child: VariousSortTab(onMusicChangedNotifier)
-                ),
-                Tab(
-                  child: PlaylistTab(onMusicChangedNotifier)
-                )
-              ]
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier),
-            )
-          ]
-        )
+      ),
+      body: Stack(
+        children: <Widget>[
+          TabBarView(
+            controller: _tabController,
+            children: <Tab>[
+              Tab(
+                child: VariousSortTab(onMusicChangedNotifier)
+              ),
+              Tab(
+                child: PlaylistTab(onMusicChangedNotifier)
+              )
+            ]
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier),
+          )
+        ]
       )
     );
   }
