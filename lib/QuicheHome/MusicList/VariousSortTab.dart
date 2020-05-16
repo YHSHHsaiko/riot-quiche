@@ -198,8 +198,10 @@ class _VariousSortTabState extends State<VariousSortTab> {
                       context: context,
                       builder: (BuildContext context) {
                         return Center(
-                          child: PreferredSize(
-                            preferredSize: Size(80, 110),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: 250, maxHeight: 400
+                            ),
                             child: PopupMenuForAddToPlaylist(m)
                           )
                         );

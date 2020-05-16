@@ -44,6 +44,7 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
   @override
   Widget build (BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       body: FutureBuilder(
         future: _initialize(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -59,14 +60,31 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
                 return Center(child: FlutterLogo());
               } else {
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
-                    _PlaylistInput(
-                      _playlistNameList,
-                      onPlaylistInputValueNotifier: onPlaylistInputValueNotifier
+                    Expanded(
+                      flex: 1,
+                      child: _PlaylistInput(
+                        _playlistNameList,
+                        onPlaylistInputValueNotifier: onPlaylistInputValueNotifier
+                      )
                     ),
-                    for (int i = 0; i < _playlistNameList.length; ++i) _PlaylistCell(
-                      _playlistNameList[i],
-                      widget.targetMusic
+                    Expanded(
+                      flex: 5,
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 3 / 4,
+                        child: ListView(
+                          children: <Widget>[
+                            for (int i = 0; i < _playlistNameList.length; ++i) _PlaylistCell(
+                              _playlistNameList[i],
+                              widget.targetMusic
+                            ),
+                            Container(
+                              height: 50.0
+                            )
+                          ]
+                        )
+                      )
                     )
                   ]
                 );
@@ -132,9 +150,6 @@ class _PlaylistInputState extends State<_PlaylistInput> {
         Expanded(
           flex: 3,
           child: TextField(
-            decoration: InputDecoration(
-              labelStyle: TextStyle(color: _inputColor)
-            ),
             controller: _textEditingController,
             onChanged: (String changedString) {
               _addedPlaylistName = changedString;
@@ -225,7 +240,7 @@ class _PlaylistCellState extends State<_PlaylistCell> {
 
   Future<bool> _isAddedToPlaylist (Music targetMusic) async {
     List<Music> playlist = await QuicheOracleFunctions.getPlaylistFromName(widget.playlistName);
-    return playlist.contains(targetMusic.id);
+    return List.from(playlist.map((Music music) => music.id)).contains(targetMusic.id);
   }
 }
 

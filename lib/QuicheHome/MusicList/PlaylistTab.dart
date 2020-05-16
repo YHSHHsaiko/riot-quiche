@@ -153,21 +153,32 @@ class _PlaylistTabState extends State<PlaylistTab> {
     Music m;
     String title;
     String artist;
+    Image jucketImage;
 
     print(listItem);
     if (listItem is Map) {
-      m = List.from(listItem.values)[0][index];
-      title = List.from(listItem.keys)[0][index];
-      artist = '';
+      print(List.from(listItem.values).length);
+      List<Music> playlistList = List.from(listItem.values)[index];
+      if (playlistList.isEmpty) {
+        jucketImage = Image.asset("images/dopper.jpg");
+        artist = '0 Musics';
+      } else {
+        m = playlistList[0];
+        jucketImage = m.getArt();
+        if (jucketImage == null) {
+          jucketImage = Image.asset("images/dopper.jpg");
+        }
+        artist = '${playlistList.length} Musics';
+      }
+      title = List.from(listItem.keys)[index];
     } else if (listItem is List) {
       m = listItem[index];
+      jucketImage = m.getArt();
+      if (jucketImage == null) {
+        jucketImage = Image.asset("images/dopper.jpg");
+      }
       title = listItem[index].title;
       artist = listItem[index].artist;
-    }
-
-    var jucketImage = m.getArt();
-    if (jucketImage == null){
-      jucketImage = Image.asset("images/dopper.jpg");
     }
 
 //    var img = Image.network('https://pbs.twimg.com/media/EWm2AmcU4AID_2O?format=jpg&name=medium');
