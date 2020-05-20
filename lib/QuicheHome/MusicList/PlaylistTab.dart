@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/PopupMenuEnum.dart';
 
 import 'package:riot_quiche/Enumerates/SortType.dart';
 import 'package:riot_quiche/Music/Music.dart';
+import 'package:riot_quiche/Music/Playlist.dart';
+import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Album.dart';
 
 
 class PlaylistTab extends StatefulWidget {
   final ValueNotifier<List<dynamic>> playlistTabValueNotifier;
+  final ValueNotifier<List<dynamic>> onPlaylistChangedNotifier;
 
   PlaylistTab (
-    this.playlistTabValueNotifier, {Key key}
+    this.playlistTabValueNotifier,
+    {
+      Key key,
+      @required this.onPlaylistChangedNotifier
+    }
   ): super(key: key);
   
   @override
@@ -19,24 +27,28 @@ class PlaylistTab extends StatefulWidget {
   }
 }
 
-class _PlaylistTabState extends State<PlaylistTab> {
-  bool _isInitialized;
+class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClientMixin {
+  //
+  bool wantKeepAlive = true;
+  //
   dynamic listItem;
   SortType nowSortType = SortType.TITLE_ASC;
 
-  static List<dynamic> _tmp = [];
+  static String _playlistIdentifier;
 
   @override
   void initState () {
     super.initState();
 
-    _isInitialized = false;
+    widget.onPlaylistChangedNotifier.addListener(() {
+      setState(() {
+        
+      });
+    });
   }
 
   @override
   void dispose () {
-    _tmp.add(listItem);
-
     super.dispose();
   }
 
@@ -55,11 +67,11 @@ class _PlaylistTabState extends State<PlaylistTab> {
         //
         return WillPopScope(
           onWillPop: () {
-            if (_tmp.isEmpty) {
+            if (_playlistIdentifier == null) {
               Navigator.of(context).pop();
             } else {
               setState(() {
-                listItem = _tmp.removeLast();
+                _playlistIdentifier = null;
               });
             }
             
@@ -79,10 +91,10 @@ class _PlaylistTabState extends State<PlaylistTab> {
                     if (index < listItem.length) {
                       return GestureDetector(
                         onTap: (){
-                          if (listItem is Map) {
+                          if (listItem[index] is Playlist) {
                             setState(() {
-                              _tmp.add(listItem);
-                              listItem = listItem[List.from(listItem.keys)[index]];
+                              _playlistIdentifier = listItem[index].name;
+                              listItem = listItem[index].musics;
                               print('setState()::${listItem}');
                             });
 
@@ -115,14 +127,12 @@ class _PlaylistTabState extends State<PlaylistTab> {
   }
 
   Future<Null> _initialze () async {
-    if (!_isInitialized) {
-      if (_tmp.isEmpty) {
-        listItem = await QuicheOracleVariables.playlists;
-      } else {
-        listItem = _tmp.removeLast();
-      }
-
-      _isInitialized = true;
+    if (_playlistIdentifier == null) {
+      // this block is executed when listItem is the list of "Playlist".
+      listItem = await Playlist.playlists;
+    } else {
+      // this block is executed when listItem is the list of "Music".
+      listItem = (await Playlist.fromName(_playlistIdentifier)).musics;
     }
   }
 
@@ -156,21 +166,20 @@ class _PlaylistTabState extends State<PlaylistTab> {
     Image jucketImage;
 
     print(listItem);
-    if (listItem is Map) {
-      print(List.from(listItem.values).length);
-      List<Music> playlistList = List.from(listItem.values)[index];
-      if (playlistList.isEmpty) {
+    if (listItem[index] is Playlist) {
+      Playlist targetPlaylist = listItem[index];
+      if (targetPlaylist.musics.isEmpty) {
         jucketImage = Image.asset("images/dopper.jpg");
         artist = '0 Musics';
       } else {
-        m = playlistList[0];
+        m = targetPlaylist.musics[0];
         jucketImage = m.getArt();
         if (jucketImage == null) {
           jucketImage = Image.asset("images/dopper.jpg");
         }
-        artist = '${playlistList.length} Musics';
+        artist = '${targetPlaylist.musics.length} Musics';
       }
-      title = List.from(listItem.keys)[index];
+      title = targetPlaylist.name;
     } else if (listItem is List) {
       m = listItem[index];
       jucketImage = m.getArt();
@@ -183,6 +192,43 @@ class _PlaylistTabState extends State<PlaylistTab> {
 
 //    var img = Image.network('https://pbs.twimg.com/media/EWm2AmcU4AID_2O?format=jpg&name=medium');
     var jacketSize = (size.height > size.width ? size.height: size.width) * 0.1;
+
+    Widget popupMenu;
+    if (listItem[index] is Playlist) {
+      popupMenu = Container();
+    } else if (listItem is List) {
+      popupMenu = PopupMenuButton<PopupMenuEnum>(
+        onSelected: (PopupMenuEnum popupMenu) async {
+          switch (popupMenu) {
+            case PopupMenuEnum.AddToPlaylist: {
+              await showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: 250, maxHeight: 400
+                      ),
+                      child: PopupMenuForAddToPlaylist(m)
+                    )
+                  );
+                }
+              );
+
+              widget.onPlaylistChangedNotifier.value = <dynamic>[];
+            }
+          }
+        },
+        itemBuilder: (BuildContext context) {
+          return <PopupMenuEntry<PopupMenuEnum>>[
+            const PopupMenuItem<PopupMenuEnum>(
+              value: PopupMenuEnum.AddToPlaylist,
+              child: Text('Add to playlist')
+            )
+          ];
+        }
+      );
+    }
 
     return Container(
       child: Row(
@@ -236,7 +282,7 @@ class _PlaylistTabState extends State<PlaylistTab> {
                 ),
               ),
             ),
-
+            popupMenu
           ]
       ),
     );

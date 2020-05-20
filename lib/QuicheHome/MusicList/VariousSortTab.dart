@@ -8,10 +8,16 @@ import 'package:riot_quiche/Music/Album.dart';
 
 
 class VariousSortTab extends StatefulWidget {
+  
   final ValueNotifier<List<dynamic>> variousSortTabValueNotifier;
+  final ValueNotifier<List<dynamic>> onPlaylistChangedNotifier;
 
   VariousSortTab (
-    this.variousSortTabValueNotifier, {Key key}
+    this.variousSortTabValueNotifier,
+    {
+      @required this.onPlaylistChangedNotifier,
+      Key key
+    }
   ): super(key: key);
   
   @override
@@ -20,7 +26,10 @@ class VariousSortTab extends StatefulWidget {
   }
 }
 
-class _VariousSortTabState extends State<VariousSortTab> {
+class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAliveClientMixin {
+  //
+  bool wantKeepAlive = true;
+  //
   List<dynamic> listItem;
   static List<dynamic> tmp = [];
   SortType nowSortType = SortType.TITLE_ASC;
@@ -191,10 +200,10 @@ class _VariousSortTabState extends State<VariousSortTab> {
               )
             ),
             PopupMenuButton<PopupMenuEnum>(
-              onSelected: (PopupMenuEnum popupMenu) {
+              onSelected: (PopupMenuEnum popupMenu) async {
                 switch (popupMenu) {
                   case PopupMenuEnum.AddToPlaylist: {
-                    showDialog(
+                    await showDialog<bool>(
                       context: context,
                       builder: (BuildContext context) {
                         return Center(
@@ -207,6 +216,8 @@ class _VariousSortTabState extends State<VariousSortTab> {
                         );
                       }
                     );
+
+                    widget.onPlaylistChangedNotifier.value = <dynamic>[];
                   }
                 }
               },

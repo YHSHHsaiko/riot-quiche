@@ -34,6 +34,7 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   int playIndex;
   // tsuchida
   ValueNotifier<List<dynamic>> onMusicChangedNotifier;
+  ValueNotifier<List<dynamic>> onPlaylistChangedNotifier;
   TabController _tabController;
 
   static int _initialPage = 0;
@@ -58,6 +59,8 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
       print('ValueNotifier::onListener');
     });
 
+    onPlaylistChangedNotifier = ValueNotifier<List<dynamic>>(<dynamic>[]);
+
     _tabController = TabController(initialIndex: _initialPage, length: 2, vsync: this)
     ..addListener(() {
       print('currentPage: ${_tabController.index}');
@@ -71,6 +74,7 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   void dispose () {
     print('MusicList::dispose()');
     onMusicChangedNotifier.dispose();
+    onPlaylistChangedNotifier.dispose();
     _tabController.dispose();
 
     super.dispose();
@@ -104,10 +108,10 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
             controller: _tabController,
             children: <Tab>[
               Tab(
-                child: VariousSortTab(onMusicChangedNotifier)
+                child: VariousSortTab(onMusicChangedNotifier, onPlaylistChangedNotifier: onPlaylistChangedNotifier)
               ),
               Tab(
-                child: PlaylistTab(onMusicChangedNotifier)
+                child: PlaylistTab(onMusicChangedNotifier, onPlaylistChangedNotifier: onPlaylistChangedNotifier)
               )
             ]
           ),
