@@ -35,6 +35,11 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   // tsuchida
   ValueNotifier<List<dynamic>> onMusicChangedNotifier;
   ValueNotifier<List<dynamic>> onPlaylistChangedNotifier;
+  ValueNotifier<List<dynamic>> onVariousSortTabWillPopNotifier;
+  ValueNotifier<List<dynamic>> onPlaylistTabWillPopNotifier;
+
+  List<ValueNotifier<List<dynamic>>> _willPopNotifiers;
+  List<Tab> _tabs;
   TabController _tabController;
 
   static int _initialPage = 0;
@@ -61,6 +66,31 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
 
     onPlaylistChangedNotifier = ValueNotifier<List<dynamic>>(<dynamic>[]);
 
+    onVariousSortTabWillPopNotifier = ValueNotifier<List<dynamic>>(null);
+
+    onPlaylistTabWillPopNotifier = ValueNotifier<List<dynamic>>(null);
+
+    _willPopNotifiers = <ValueNotifier<List<dynamic>>>[
+      onVariousSortTabWillPopNotifier,
+      onPlaylistTabWillPopNotifier
+    ];
+    _tabs = <Tab>[
+      Tab(
+        child: VariousSortTab(
+          onMusicChangedNotifier,
+          onPlaylistChangedNotifier: onPlaylistChangedNotifier,
+          onWillPopNotifier: onVariousSortTabWillPopNotifier
+        )
+      ),
+      Tab(
+        child: PlaylistTab(
+          onMusicChangedNotifier,
+          onPlaylistChangedNotifier: onPlaylistChangedNotifier,
+          onWillPopNotifier: onPlaylistTabWillPopNotifier
+        )
+      )
+    ];
+
     _tabController = TabController(initialIndex: _initialPage, length: 2, vsync: this)
     ..addListener(() {
       print('currentPage: ${_tabController.index}');
@@ -75,6 +105,9 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
     print('MusicList::dispose()');
     onMusicChangedNotifier.dispose();
     onPlaylistChangedNotifier.dispose();
+    onVariousSortTabWillPopNotifier.dispose();
+    onPlaylistTabWillPopNotifier.dispose();
+
     _tabController.dispose();
 
     super.dispose();
@@ -83,43 +116,49 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Select Music'),
-        bottom: PreferredSize(
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabs: <Tab>[
-              Tab(
-                text: 'Library'
-              ),
-              Tab(
-                text: 'Playlist'
-              )
-            ]
+    return WillPopScope(
+      onWillPop: () {
+        bool shouldPop = _willPopNotifiers[_tabController.index].value[0];
+        
+        if (shouldPop) {
+          Navigator.of(context).pop();
+        } else {
+          _willPopNotifiers[_tabController.index].value = <dynamic>[true];
+        }
+
+        return Future.value(false);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Select Music'),
+          bottom: PreferredSize(
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabs: <Tab>[
+                const Tab(
+                  text: 'Library'
+                ),
+                const Tab(
+                  text: 'Playlist'
+                )
+              ]
+            ),
+            preferredSize: Size.fromHeight(30.0)
           ),
-          preferredSize: Size.fromHeight(30.0)
         ),
-      ),
-      body: Stack(
-        children: <Widget>[
-          TabBarView(
-            controller: _tabController,
-            children: <Tab>[
-              Tab(
-                child: VariousSortTab(onMusicChangedNotifier, onPlaylistChangedNotifier: onPlaylistChangedNotifier)
-              ),
-              Tab(
-                child: PlaylistTab(onMusicChangedNotifier, onPlaylistChangedNotifier: onPlaylistChangedNotifier)
-              )
-            ]
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier),
-          )
-        ]
+        body: Stack(
+          children: <Widget>[
+            TabBarView(
+              controller: _tabController,
+              children: _tabs
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier),
+            )
+          ]
+        )
       )
     );
   }

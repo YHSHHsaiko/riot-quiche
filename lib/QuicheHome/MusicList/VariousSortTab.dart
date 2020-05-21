@@ -11,12 +11,15 @@ class VariousSortTab extends StatefulWidget {
   
   final ValueNotifier<List<dynamic>> variousSortTabValueNotifier;
   final ValueNotifier<List<dynamic>> onPlaylistChangedNotifier;
+  final ValueNotifier<List<dynamic>> onWillPopNotifier;
+
 
   VariousSortTab (
     this.variousSortTabValueNotifier,
     {
+      Key key,
       @required this.onPlaylistChangedNotifier,
-      Key key
+      @required this.onWillPopNotifier
     }
   ): super(key: key);
   
@@ -32,7 +35,7 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
   //
   List<dynamic> listItem;
   static List<dynamic> tmp = [];
-  SortType nowSortType = SortType.TITLE_ASC;
+  static SortType nowSortType = SortType.TITLE_ASC;
 
   @override
   void initState () {
@@ -40,78 +43,86 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
 
     if (tmp.isEmpty) {
       listItem = QuicheOracleFunctions.getSortedMusicList(nowSortType);
+      widget.onWillPopNotifier.value = <dynamic>[true];
     } else {
       listItem = tmp.removeLast();
+      widget.onWillPopNotifier.value = <dynamic>[false];
     }
+
+    print('VariousSorttab::initState()::widget.onWillPopNotifier.value: ${widget.onWillPopNotifier.value}');
+
+    widget.onWillPopNotifier.addListener(() {
+      bool shouldPop = widget.onWillPopNotifier.value[0];
+
+      if (shouldPop) {
+        setState(() {
+          listItem = tmp.removeLast();
+        });
+      } else {
+        int index = widget.onWillPopNotifier.value[1];
+
+        if (listItem[index] is Album) {
+          setState(() {
+            tmp.add(listItem);
+            listItem = listItem[index].musics;
+          });
+        } else {
+          print('$index');
+          widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
+
+          //TODO　ここでlistitemを全部追加
+          //callbuck側になにかkeyを渡して、特定の場所から始める。
+        }
+      }
+    });
   }
 
   @override
   void dispose () {
-    tmp.add(listItem);
+    bool firstLayer = widget.onWillPopNotifier.value[0];
+    if (!firstLayer) {
+      tmp.add(listItem);
+    }
     super.dispose();
   }
 
   @override
   Widget build (BuildContext context) {
+    super.build(context);
+
     final Size size = MediaQuery.of(context).size;
 
     print('size: $size');
 
-    return WillPopScope(
-      onWillPop: () {
-        if (tmp.isEmpty) {
-          Navigator.of(context).pop();
-        } else {
-          setState(() {
-            listItem = tmp.removeLast();
-          });
-        }
-        
-        return Future.value(false);
-      },
-      child: Column(
-        children: <Widget>[
-          Align(
-            alignment: Alignment.topCenter,
-            child: _menu(),
+    return Column(
+      children: <Widget>[
+        Align(
+          alignment: Alignment.topCenter,
+          child: _menu(),
+        ),
+
+        Expanded(
+          child: ListView.separated(
+
+            itemBuilder: (BuildContext context, int index) {
+              if (index < listItem.length) {
+                return GestureDetector(
+                  onTap: (){
+                    widget.onWillPopNotifier.value = <dynamic>[false, index];
+                  },
+                  child: _seclist(index, size),
+                );
+              } else {
+                return Divider(height: 100);
+              }
+            },
+            itemCount: listItem.length + 1,
+            separatorBuilder: (BuildContext context, int index) {
+              return Divider(height: 1);
+            },
           ),
-
-          Expanded(
-            child: ListView.separated(
-
-              itemBuilder: (BuildContext context, int index) {
-                if (index < listItem.length) {
-                  return GestureDetector(
-                    onTap: (){
-                      if (listItem[index] is Album){
-                        setState(() {
-                          tmp.add(listItem);
-                          listItem = listItem[index].musics;
-                        });
-                      }else{
-                        print('$index');
-                        widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
-
-                        //TODO　ここでlistitemを全部追加
-                        //callbuck側になにかkeyを渡して、特定の場所から始める。
-
-                      }
-
-                    },
-                    child: _seclist(index, size),
-                  );
-                } else {
-                  return Divider(height: 100);
-                }
-              },
-              itemCount: listItem.length + 1,
-              separatorBuilder: (BuildContext context, int index) {
-                return Divider(height: 1);
-              },
-            ),
-          ),
-        ]
-      )
+        ),
+      ]
     );
   }
 

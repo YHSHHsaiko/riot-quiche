@@ -7,17 +7,20 @@ import 'package:riot_quiche/Music/Playlist.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Album.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class PlaylistTab extends StatefulWidget {
   final ValueNotifier<List<dynamic>> playlistTabValueNotifier;
   final ValueNotifier<List<dynamic>> onPlaylistChangedNotifier;
+  final ValueNotifier<List<dynamic>> onWillPopNotifier;
 
   PlaylistTab (
     this.playlistTabValueNotifier,
     {
       Key key,
-      @required this.onPlaylistChangedNotifier
+      @required this.onPlaylistChangedNotifier,
+      @required this.onWillPopNotifier
     }
   ): super(key: key);
   
@@ -34,11 +37,15 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
   dynamic listItem;
   SortType nowSortType = SortType.TITLE_ASC;
 
-  static String _playlistIdentifier;
+  String _playlistIdentifier;
+  bool _isInitialized;
+
 
   @override
   void initState () {
     super.initState();
+
+    _isInitialized = false;
 
     widget.onPlaylistChangedNotifier.addListener(() {
       setState(() {
@@ -49,14 +56,16 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
 
   @override
   void dispose () {
+    _destruct();
+
     super.dispose();
   }
 
   @override
   Widget build (BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
+    super.build(context);
 
-    print('size: $size');
+    final Size size = MediaQuery.of(context).size;
 
     return FutureBuilder(
       future: _initialze(),
@@ -65,68 +74,88 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
           return Center(child: FlutterLogo());
         }
         //
-        return WillPopScope(
-          onWillPop: () {
-            if (_playlistIdentifier == null) {
-              Navigator.of(context).pop();
-            } else {
-              setState(() {
-                _playlistIdentifier = null;
-              });
-            }
-            
-            return Future.value(false);
-          },
-          child: Column(
-            children: <Widget>[
-              Align(
-                alignment: Alignment.topCenter,
-                child: _menu(),
-              ),
+        return Column(
+          children: <Widget>[
+            Align(
+              alignment: Alignment.topCenter,
+              child: _menu(),
+            ),
 
-              Expanded(
-                child: ListView.separated(
+            Expanded(
+              child: ListView.separated(
 
-                  itemBuilder: (BuildContext context, int index) {
-                    if (index < listItem.length) {
-                      return GestureDetector(
-                        onTap: (){
-                          if (listItem[index] is Playlist) {
-                            setState(() {
-                              _playlistIdentifier = listItem[index].name;
-                              listItem = listItem[index].musics;
-                              print('setState()::${listItem}');
-                            });
+                itemBuilder: (BuildContext context, int index) {
+                  if (index < listItem.length) {
+                    return GestureDetector(
+                      onTap: () {
+                        widget.onWillPopNotifier.value = <dynamic>[false, index];
 
-                          } else if (listItem is List) {
-                            print('$index');
-                            widget.playlistTabValueNotifier.value = <dynamic>[listItem, index];
-
-                            //TODO　ここでlistitemを全部追加
-                            //callbuck側になにかkeyを渡して、特定の場所から始める。
-                          }
-
-                        },
-                        child: _seclist(index, size),
-                      );
-                    } else {
-                      return Divider(height: 100);
-                    }
-                  },
-                  itemCount: listItem.length + 1,
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Divider(height: 1);
-                  },
-                ),
-              ),
-            ]
-          )
+                        //TODO　ここでlistitemを全部追加
+                        //callbuck側になにかkeyを渡して、特定の場所から始める。
+                      },
+                      child: _seclist(index, size),
+                    );
+                  } else {
+                    return Divider(height: 100);
+                  }
+                },
+                itemCount: listItem.length + 1,
+                separatorBuilder: (BuildContext context, int index) {
+                  return Divider(height: 1);
+                }
+              )
+            )
+          ]
         );
       }
     );
   }
 
   Future<Null> _initialze () async {
+    print('_initialize::_playlistIdentifier: ${_playlistIdentifier}');
+
+    if (!_isInitialized) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (prefs.containsKey('playlistTab::_playlistIdentifier')) {
+        _playlistIdentifier = prefs.getString('playlistTab::_playlistIdentifier');
+
+        if (_playlistIdentifier == null) {
+          widget.onWillPopNotifier.value = <dynamic>[true];
+        } else {
+          widget.onWillPopNotifier.value = <dynamic>[false];
+        }
+      } else {
+        widget.onWillPopNotifier.value = <dynamic>[true];
+      }
+
+      widget.onWillPopNotifier.addListener(() {
+        bool shouldPop = widget.onWillPopNotifier.value[0];
+
+        if (shouldPop) {
+          setState(() {
+            _playlistIdentifier = null;
+          });
+        } else {
+          int index = widget.onWillPopNotifier.value[1];
+
+          if (listItem[index] is Playlist) {
+            _playlistIdentifier = listItem[index].name;
+
+            setState(() {
+              listItem = listItem[index].musics;
+            });
+            print('setState()::${listItem}');
+            print(_playlistIdentifier);
+          } else if (listItem is List) {
+            print('$index');
+            widget.playlistTabValueNotifier.value = <dynamic>[listItem, index];
+          }
+        }
+      });
+
+      _isInitialized = true;
+    }
+
     if (_playlistIdentifier == null) {
       // this block is executed when listItem is the list of "Playlist".
       listItem = await Playlist.playlists;
@@ -134,6 +163,13 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
       // this block is executed when listItem is the list of "Music".
       listItem = (await Playlist.fromName(_playlistIdentifier)).musics;
     }
+  }
+
+  Future<Null> _destruct () async {
+    print('_initialize::_playlistIdentifier: ${_playlistIdentifier}');
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('playlistTab::_playlistIdentifier', _playlistIdentifier);
   }
 
   Widget _menu(){
