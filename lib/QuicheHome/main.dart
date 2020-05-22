@@ -82,24 +82,6 @@ class _QuicheHomeState extends State<QuicheHome> {
 
       await PlatformMethodInvoker.butterflyEffect();
 
-      await PlatformMethodInvoker.setQueue(List<String>.from(QuicheOracleVariables.musicList.map((music) {
-        return music.id;
-      })));
-
-      void Function(int position, int state) onData = (int position, int state) {
-          print('position: ${Duration(milliseconds: position).inSeconds}');
-          print('state: ${PlaybackStateExt.of(state)}');
-      };
-      PlatformMethodInvoker.redShift(
-        onData,
-        onError: (dynamic) {
-          print('ERROR!');
-        },
-        onDone: () {
-          print('end of .:<RedShift>:-^');
-        }
-      );
-
     } catch (err) {
       print(err);
       result = err.toString();

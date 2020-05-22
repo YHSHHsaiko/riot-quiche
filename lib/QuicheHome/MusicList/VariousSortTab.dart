@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:riot_quiche/Enumerates/PopupMenuEnum.dart';
 
 import 'package:riot_quiche/Enumerates/SortType.dart';
+import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Album.dart';
@@ -53,26 +54,29 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
 
     widget.onWillPopNotifier.addListener(() {
       bool shouldPop = widget.onWillPopNotifier.value[0];
+      int index = widget.onWillPopNotifier.value[1];
 
-      if (shouldPop) {
+      if (shouldPop && index == -1) {
         setState(() {
-          listItem = tmp.removeLast();
+          if (tmp.isNotEmpty) {
+            listItem = tmp.removeLast();
+          }
         });
+      } else if (shouldPop) {
+        print('$index');
+        widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
       } else {
-        int index = widget.onWillPopNotifier.value[1];
-
-        if (listItem[index] is Album) {
-          setState(() {
+        setState(() {
+          if (tmp.isEmpty) {
             tmp.add(listItem);
             listItem = listItem[index].musics;
-          });
-        } else {
-          print('$index');
-          widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
+          } else {
+            widget.variousSortTabValueNotifier.value = <dynamic>[listItem, index];
+          }
+        });
 
           //TODO　ここでlistitemを全部追加
           //callbuck側になにかkeyを渡して、特定の場所から始める。
-        }
       }
     });
   }
@@ -80,6 +84,7 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
   @override
   void dispose () {
     bool firstLayer = widget.onWillPopNotifier.value[0];
+    print('VariousSortTab::dispose()::firstLayer: ${firstLayer}');
     if (!firstLayer) {
       tmp.add(listItem);
     }
@@ -106,7 +111,13 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
               if (index < listItem.length) {
                 return GestureDetector(
                   onTap: (){
-                    widget.onWillPopNotifier.value = <dynamic>[false, index];
+                    if (listItem[index] is Album) {
+                      widget.onWillPopNotifier.value = <dynamic>[false, index];
+                    } else if (listItem[index] is Music && tmp.isEmpty) {
+                      widget.onWillPopNotifier.value = <dynamic>[true, index];
+                    } else {
+                      widget.onWillPopNotifier.value = <dynamic>[false, index];
+                    }
                   },
                   child: _seclist(index, size),
                 );

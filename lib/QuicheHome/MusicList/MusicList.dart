@@ -123,7 +123,7 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
         if (shouldPop) {
           Navigator.of(context).pop();
         } else {
-          _willPopNotifiers[_tabController.index].value = <dynamic>[true];
+          _willPopNotifiers[_tabController.index].value = <dynamic>[true, -1];
         }
 
         return Future.value(false);
