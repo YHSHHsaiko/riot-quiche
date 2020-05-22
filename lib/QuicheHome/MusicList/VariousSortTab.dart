@@ -92,8 +92,6 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
 
     final Size size = MediaQuery.of(context).size;
 
-    print('size: $size');
-
     return Column(
       children: <Widget>[
         Align(
@@ -159,6 +157,43 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
 //    var img = Image.network('https://pbs.twimg.com/media/EWm2AmcU4AID_2O?format=jpg&name=medium');
     var jacketSize = (size.height > size.width ? size.height: size.width) * 0.1;
 
+    Widget _popupMenu;
+    if (m is Album) {
+      _popupMenu = Container();
+    } else {
+      _popupMenu = PopupMenuButton<PopupMenuEnum>(
+        onSelected: (PopupMenuEnum popupMenu) async {
+          switch (popupMenu) {
+            case PopupMenuEnum.AddToPlaylist: {
+              await showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: 250, maxHeight: 400
+                      ),
+                      child: PopupMenuForAddToPlaylist(m)
+                    )
+                  );
+                }
+              );
+
+              widget.onPlaylistChangedNotifier.value = <dynamic>[];
+            }
+          }
+        },
+        itemBuilder: (BuildContext context) {
+          return <PopupMenuEntry<PopupMenuEnum>>[
+            const PopupMenuItem<PopupMenuEnum>(
+              value: PopupMenuEnum.AddToPlaylist,
+              child: Text('Add to playlist')
+            )
+          ];
+        }
+      );
+    }
+
     return Container(
       child: Row(
           children: <Widget>[
@@ -210,37 +245,7 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
                 )
               )
             ),
-            PopupMenuButton<PopupMenuEnum>(
-              onSelected: (PopupMenuEnum popupMenu) async {
-                switch (popupMenu) {
-                  case PopupMenuEnum.AddToPlaylist: {
-                    await showDialog<bool>(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return Center(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: 250, maxHeight: 400
-                            ),
-                            child: PopupMenuForAddToPlaylist(m)
-                          )
-                        );
-                      }
-                    );
-
-                    widget.onPlaylistChangedNotifier.value = <dynamic>[];
-                  }
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return <PopupMenuEntry<PopupMenuEnum>>[
-                  const PopupMenuItem<PopupMenuEnum>(
-                    value: PopupMenuEnum.AddToPlaylist,
-                    child: Text('Add to playlist')
-                  )
-                ];
-              }
-            )
+            _popupMenu
 
           ]
       ),

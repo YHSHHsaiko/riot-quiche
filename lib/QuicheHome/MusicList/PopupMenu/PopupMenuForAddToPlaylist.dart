@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Music/Album.dart';
 import 'package:riot_quiche/Music/Playlist.dart';
 
 import 'package:riot_quiche/QuicheOracle.dart';
@@ -32,8 +33,8 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
         Playlist newPlaylist = Playlist(onPlaylistInputValueNotifier.value, [])
         ..save();
         _playlists.add(newPlaylist);
-        print('update playlists::${_playlists}');
       });
+      print('update playlists::${_playlists}');
     });
   }
 

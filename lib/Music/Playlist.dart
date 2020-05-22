@@ -64,6 +64,7 @@ class Playlist {
       List<String> playlistNames = prefs.getStringList(prefName);
 
       if (!playlistNames.contains(name)) {
+        playlistNames.add(name);
         prefs.setStringList(prefName, playlistNames);
       }
     } else {
