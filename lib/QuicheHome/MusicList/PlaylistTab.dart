@@ -5,6 +5,7 @@ import 'package:riot_quiche/Enumerates/SortType.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/Music/Playlist.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
+import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Album.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -296,18 +297,18 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
 
                       Expanded(
                         flex: 1,
-                        child: Text(
-                          title,
-                          style: TextStyle(
+                        child: AutoScrollText(
+                          text: title,
+                          textStyle: TextStyle(
                             fontSize: jacketSize / 4,
                           )
                         )
                       ),
                       Expanded(
                         flex: 1,
-                        child: Text(
-                          artist,
-                          style: TextStyle(
+                        child: AutoScrollText(
+                          text: artist,
+                          textStyle: TextStyle(
                             fontSize: jacketSize / 6,
                           )
                         )

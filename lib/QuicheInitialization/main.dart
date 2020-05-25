@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:riot_quiche/QuicheInitialization/NoneSection.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,6 +39,7 @@ class _QuicheInitializationState extends State<QuicheInitialization> {
           print('RequestPermissions:onSuccess()');
           _initializationResults[InitializationSection.RequestPermissions] = true;
           _prefs.setBool(InitializationSection.RequestPermissions.toString(), true);
+
           setState(() {
             _currentSection = InitializationSection.None;
           });
@@ -44,8 +48,9 @@ class _QuicheInitializationState extends State<QuicheInitialization> {
           print('RequestPermissions:onError()');
           _initializationResults[InitializationSection.RequestPermissions] = false;
           _prefs.setBool(InitializationSection.RequestPermissions.toString(), false);
+
           setState(() {
-            _currentSection = InitializationSection.None;
+            _currentSection = InitializationSection.RequestPermissions;
           });
         },
         nextSection: InitializationSection.None,

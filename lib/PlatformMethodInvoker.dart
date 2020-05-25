@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
+import 'package:riot_quiche/Enumerates/PlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 
@@ -17,6 +18,9 @@ class PlatformMethodInvoker {
   static const EventChannel _redShiftChannel = const EventChannel(
     'redshift_channel'
   );
+
+  static String currentMediaId;
+  static int currentQueueIndex;
 
   static Future<List<bool>> requestPermissions (List<Permission> permissions) async {
     print(permissions);
@@ -100,10 +104,12 @@ class PlatformMethodInvoker {
   }
 
   static Future<Null> setCurrentMediaId (String mediaId) async {
+    currentMediaId = mediaId;
     await _methodChannel.invokeMethod('setCurrentMediaId', <dynamic>[mediaId]);
   }
 
   static Future<Null> setCurrentQueueIndex (int index) async {
+    currentQueueIndex = index;
     await _methodChannel.invokeMethod('setCurrentQueueIndex', <dynamic>[index]);
   }
 
@@ -128,7 +134,7 @@ class PlatformMethodInvoker {
   }
 
   static Stream<dynamic> redShift (
-    void Function(int position, int state) onData,
+    void Function(int position, PlaybackState state) onData,
     {void Function(dynamic) onError, void Function() onDone}) {
 
     var stream = _redShiftChannel.receiveBroadcastStream(<dynamic>[
@@ -141,7 +147,7 @@ class PlatformMethodInvoker {
         int position = playbackinformationList[0] as int;
         int state = playbackinformationList[1] as int;
 
-        onData(position, state);
+        onData(position, PlaybackStateExt.of(state));
       } else {
         print('info: play back state is null.');
       }

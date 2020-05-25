@@ -1,6 +1,8 @@
 package com.example.riot_quiche;
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -27,6 +29,8 @@ import io.flutter.plugins.GeneratedPluginRegistrant;
 
 
 public class MainActivity extends FlutterActivity {
+    private QuicheMusicPlayerPlugin plugin;
+
     public PlayerAPI playerAPI = new PlayerAPI();
     public PluginAPI pluginAPI = new PluginAPI();
 
@@ -103,10 +107,10 @@ public class MainActivity extends FlutterActivity {
         @Override
         public void onMetadataChanged (MediaMetadataCompat metadata) {
             // TODO: なんとかしてDartに変更を伝える．もしくは変数に入れておく？
-//            MediaDescriptionCompat description = metadata.getDescription();
-//
-//            String title = (String)description.getTitle();
-//            Uri artUri = description.getIconUri();
+           //  MediaDescriptionCompat description = metadata.getDescription();
+
+           //  String title = (String)description.getTitle();
+           //  Uri artUri = description.getIconUri();
         }
 
         // when the state of the player is changed
@@ -138,7 +142,7 @@ public class MainActivity extends FlutterActivity {
         GeneratedPluginRegistrant.registerWith(this);
 
         /* register QuicheMusicPlayerPlugin */
-        QuicheMusicPlayerPlugin plugin = QuicheMusicPlayerPlugin.registerWith(
+        plugin = QuicheMusicPlayerPlugin.registerWith(
                 this.registrarFor("com.example.riot_quiche.QuicheMusicPlayerPlugin")
         );
         eventAPI = plugin.eventAPI;
@@ -167,28 +171,33 @@ public class MainActivity extends FlutterActivity {
             }
         }
 
-        // pause
-        mediaController.getTransportControls().pause();
-        mediaController.getTransportControls().sendCustomAction(
-                QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_STOP_FOREGROUND,
-                null
-        );
+        // clean up plugin's handler
+        plugin.clean();
 
-        // unbind service
-        if (mediaBrowser != null) {
-            Log.d("activity", "onDestroy::unbindService");
-            Bundle extra = new Bundle();
-            extra.putInt("connection", 0);
+        if (mediaController != null) {
+            // pause
+            mediaController.getTransportControls().pause();
             mediaController.getTransportControls().sendCustomAction(
-                    QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT,
-                    extra
+                    QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_STOP_FOREGROUND,
+                    null
             );
 
-            mediaController.unregisterCallback(controllerCallback);
-            isConnected = false;
+            // unbind service
+            if (mediaBrowser != null) {
+                Log.d("activity", "onDestroy::unbindService");
+                Bundle extra = new Bundle();
+                extra.putInt("connection", 0);
+                mediaController.getTransportControls().sendCustomAction(
+                        QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT,
+                        extra
+                );
 
-            mediaBrowser.disconnect();
-            Log.d("isConnected", mediaBrowser.isConnected() + "");
+                // mediaController.unregisterCallback(controllerCallback);
+                isConnected = false;
+
+                mediaBrowser.disconnect();
+                Log.d("isConnected", mediaBrowser.isConnected() + "");
+            }
         }
 
         super.onDestroy();
@@ -212,7 +221,9 @@ public class MainActivity extends FlutterActivity {
         pluginAPI.sendResult(QuicheMusicPlayerPlugin.EventCalls.requestPermissions, result);
     }
 
-    private void startServiceAndConnect () {
+    private boolean startServiceAndConnect () {
+        boolean hasAlreadyStarted = isMyServiceRunning(QuicheMediaService.class);
+
         // start media foreground service
         startService(new Intent(getApplicationContext(), QuicheMediaService.class));
 
@@ -225,6 +236,19 @@ public class MainActivity extends FlutterActivity {
         );
 
         mediaBrowser.connect();
+
+        return hasAlreadyStarted;
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean isMyServiceRunning (Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Player APIs
@@ -317,12 +341,17 @@ public class MainActivity extends FlutterActivity {
             }
         }
 
-        public void trigger () {
+        public boolean trigger () {
+            boolean result = false;
+
             try {
-                startServiceAndConnect();
+                result = startServiceAndConnect();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            
+//            sendResult(QuicheMusicPlayerPlugin.EventCalls.trigger, result);
+            return result;
         }
 
         ////////////////////////////////////////////////////////

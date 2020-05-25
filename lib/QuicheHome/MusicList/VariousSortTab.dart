@@ -4,6 +4,7 @@ import 'package:riot_quiche/Enumerates/PopupMenuEnum.dart';
 import 'package:riot_quiche/Enumerates/SortType.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
+import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Album.dart';
 
@@ -235,18 +236,18 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
 
                       Expanded(
                         flex: 1,
-                        child: Text(
-                          listItem[index].title,
-                          style: TextStyle(
+                        child: AutoScrollText(
+                          text: listItem[index].title,
+                          textStyle: TextStyle(
                             fontSize: jacketSize / 4,
                           )
                         )
                       ),
                       Expanded(
                         flex: 1,
-                        child: Text(
-                          listItem[index].artist,
-                          style: TextStyle(
+                        child: AutoScrollText(
+                          text: listItem[index].artist,
+                          textStyle: TextStyle(
                             fontSize: jacketSize / 6,
                           )
                         )

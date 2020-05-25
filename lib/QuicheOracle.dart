@@ -32,6 +32,11 @@ extension QuicheOracleVariables on QuicheOracle {
   // media ARTIST_ID List
   static List<String> artistIdList;
 
+  static final String musicCachePrefName = '__CACHE__';
+  static final String musicIdCachePrefName = '__CACHE_ID__';
+  static final String musicQueueCachePrefName = '__CACHE_QUEUE__';
+  static final String musicRepeatCheckerPrefName = '__CACHE_REPEAT_CHECKER__';
+
   // // playlist name List
   // static Future<List<String>> get playlistsName async {
   //   SharedPreferences prefs = await SharedPreferences.getInstance();

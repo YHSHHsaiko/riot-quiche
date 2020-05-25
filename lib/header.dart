@@ -1,1 +1,1 @@
-typedef int OnMusicChangedCallback(dynamic listItem, int playIndex);
+typedef Future<int> OnMusicChangedCallback(dynamic listItem, int playIndex, bool isInitial);

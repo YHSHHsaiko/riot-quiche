@@ -298,6 +298,12 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         eventAPI.cancel(obj);
     }
 
+    public void clean () {
+        Log.d("QuicheMusicPlayerPlugin", "clean()");
+        eventAPI.listeners.clear();
+        eventAPI.eventSinks.clear();
+    }
+
     public class MethodAPI {
         public ArrayList<Music> butterflyEffect (MethodCall call) {
             try {

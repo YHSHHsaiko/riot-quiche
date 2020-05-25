@@ -30,7 +30,7 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
   @override
   LayerType layerType = LayerType.snowAnimation;
   @override
-  Map<String, dynamic> setting;
+  Map<String, dynamic> get setting;
 
   static List<LayerProp> getSettingList(){
     List<LayerProp> list = [

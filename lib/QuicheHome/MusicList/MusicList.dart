@@ -53,13 +53,16 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
     playIndex = widget.playIndex;
     // tsuchida
     onMusicChangedNotifier = ValueNotifier<List<dynamic>>(<dynamic>[widget.musicList, playIndex])
-    ..addListener(() {
+    ..addListener(() async {
       
-      onMusicChangedNotifier.value[1] = widget.onChangedCallback(
+      onMusicChangedNotifier.value[1] = await widget.onChangedCallback(
         (onMusicChangedNotifier.value[0] is List)
           ? onMusicChangedNotifier.value[0] : [onMusicChangedNotifier.value[0]],
-        onMusicChangedNotifier.value[1] as int
+        onMusicChangedNotifier.value[1] as int,
+        false
       );
+
+      playIndex = playIndex;
 
       print('ValueNotifier::onListener');
     });
@@ -182,6 +185,7 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
   Size screenSize;
   String imagePath = "images/dopper.jpg";
   AnimationController _animatedIconController;
+  bool animatedIconControllerChecker;
   bool isPlaying;
   Music nowPlaying;
 
@@ -194,14 +198,16 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
       vsync: this,
     );
 
-    if (!MusicPlayerState.animatedIconControllerChecker){
-      setState(() {
-        _animatedIconController.forward();
-      });
+    animatedIconControllerChecker = MusicPlayerState.animatedIconControllerChecker;
+    if (!animatedIconControllerChecker) {
+      _animatedIconController.forward();
     }
 
     widget.onMusicChangedNotifier.addListener(() {
       setState(() {
+        animatedIconControllerChecker = true;
+        _animatedIconController.reverse();
+
         nowPlaying = widget.onMusicChangedNotifier.value[0][widget.onMusicChangedNotifier.value[1]];
       });
     });
@@ -282,14 +288,14 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
                 ),
                 onPressed: () {
                   setState(() {
-                    if (MusicPlayerState.animatedIconControllerChecker){
+                    if (animatedIconControllerChecker){
                       PlatformMethodInvoker.pause();
                       _animatedIconController.forward();
                     }else{
                       PlatformMethodInvoker.play();
                       _animatedIconController.reverse();
                     }
-                    MusicPlayerState.animatedIconControllerChecker = !MusicPlayerState.animatedIconControllerChecker;
+                    animatedIconControllerChecker = !animatedIconControllerChecker;
                   });
                 },
               ),

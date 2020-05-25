@@ -41,54 +41,53 @@ class _RequestPermissionsSectionState extends State<RequestPermissionsSection> {
 
     _utilityButton = Row(
       children: <Widget>[
-        FlatButton(
-          onPressed: () async {
-            List<bool> isGranted = await PlatformMethodInvoker.requestPermissions(Permission.values);
+        Padding(
+          padding: EdgeInsets.all(10),
+          child: FlatButton(
+            onPressed: () async {
+              List<bool> isGranted = await PlatformMethodInvoker.requestPermissions(Permission.values);
 
-            for (int i = 0; i < Permission.values.length; ++i) {
-              if (isGranted[i]) {
-                print('permission is granted: ${Permission.values[i]}');
-                QuicheOracleVariables.permissionInformation[Permission.values[i]] = true;
+              for (int i = 0; i < Permission.values.length; ++i) {
+                if (isGranted[i]) {
+                  print('permission is granted: ${Permission.values[i]}');
+                  QuicheOracleVariables.permissionInformation[Permission.values[i]] = true;
 
-                switch (Permission.values[i]) {
-                  case Permission.READ_EXTERNAL_STORAGE: {
-                    break;
+                  switch (Permission.values[i]) {
+                    case Permission.READ_EXTERNAL_STORAGE: {
+                      break;
+                    }
+                    default: {
+                      break;
+                    }
                   }
-                  default: {
-                    break;
-                  }
-                }
-              } else {
-                print('permission is not granted: ${Permission.values[i]}');
-                QuicheOracleVariables.permissionInformation[Permission.values[i]] = false;
+                } else {
+                  print('permission is not granted: ${Permission.values[i]}');
+                  QuicheOracleVariables.permissionInformation[Permission.values[i]] = false;
 
-                switch (Permission.values[i]) {
-                  case Permission.READ_EXTERNAL_STORAGE: {
-                    break;
-                  }
-                  default: {
-                    break;
+                  switch (Permission.values[i]) {
+                    case Permission.READ_EXTERNAL_STORAGE: {
+                      break;
+                    }
+                    default: {
+                      break;
+                    }
                   }
                 }
               }
-            }
 
-            if (isGranted.contains(false)) {
-              widget.onError();
-            } else {
-              widget.onSuccess();
-            }
+              if (isGranted.contains(false)) {
+                widget.onError();
+              } else {
+                widget.onSuccess();
+              }
 
-          },
-          child: Text("accept")
-        ),
-              FlatButton(
-          onPressed: () async {
-            print('permission is all not granted');
-            widget.onError();
-          },
-          child: Text("cancel")
-        ),
+            },
+            child: Text(
+              "わかりました！",
+              style: TextStyle(decoration: TextDecoration.underline)
+            )
+          )
+        )
       ],
       mainAxisAlignment: MainAxisAlignment.end,
     );
@@ -137,7 +136,12 @@ class _PermissionExplanation1 extends StatelessWidget {
   @override
   Widget build (BuildContext context) {
     return Center(
-      child: Text("なぜPermission:READ_EXTERNAL_STORAGEが必要なのかをUserの納得がいくように説明する")
+      child: const Text('''
+        このアプリを起動するには、
+        ストレージアクセス権限が必要です。
+        
+        ご理解ご協力のほど、よろしくお願い致します！
+      ''')
     );
   }
 }
