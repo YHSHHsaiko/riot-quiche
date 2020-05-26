@@ -2,22 +2,21 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter/material.dart';
 
 import 'package:riot_quiche/Enumerates/PlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
-import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/QuicheHome/MusicLayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/MusicList.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/BackGround.dart';
-import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/Circle.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/SnowAnimation.dart';
 import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/Enumerates/BottomMenuEnum.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 
 

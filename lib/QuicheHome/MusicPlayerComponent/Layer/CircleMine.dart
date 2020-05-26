@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'dart:math';
+
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -6,10 +9,11 @@ import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/Enumerates/LayerType.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
+import 'package:riot_quiche/QuicheOracle.dart';
 
 //余りにも重いなら、ここで複数を処理できるようにしないといけない
 
-class CircleMine extends StatefulWidget implements CustomizableWidget{
+class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
   final int sweepWidth, startWidth;
   final double initialSweepPosition, initialStartWidth;
   final Size screenSize;
@@ -18,6 +22,9 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
   final double strokeWidth;
 
   final Color color;
+
+  @override
+  final uniqueID;
 
   CircleMine({
     this.startWidth = 4,
@@ -30,32 +37,27 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
     this.shortSide,
     this.strokeWidth = 1,
     this.color = Colors.white,
-  }) : assert(diameter != null || (longSide != null && shortSide != null));
+    this.uniqueID
+  })
+  : assert(diameter != null || (longSide != null && shortSide != null)),
+    super();
 
-  @override
-  _CircleState createState() => _CircleState();
 
-  // implements 用
-  @override
-  LayerType layerType = LayerType.circleMine;
+  CircleMine.fromJson (Map<String, dynamic> importedSetting)
+  : startWidth = importedSetting['startWidth'],
+    sweepWidth = importedSetting['sweepWidth'],
+    initialStartWidth = importedSetting['initialStartWidth'],
+    initialSweepPosition = importedSetting['initialSweepPosition'],
+    screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]),
+    diameter = importedSetting['diameter'],
+    longSide = importedSetting['longSide'],
+    shortSide = importedSetting['shortSide'],
+    strokeWidth = importedSetting['strokeWidth'],
+    color = Color(importedSetting['color']),
+    uniqueID = importedSetting['uniqueID'],
+    assert(diameter != null || (longSide != null && shortSide != null)),
+    super();
 
-  @override
-  Map<String, dynamic> setting;
-
-  static List<LayerProp> getSettingList(){
-    List<LayerProp> list = [
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'startWidth', description: '0~360度を指定できます', initValue: 4),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'sweepWidth', description: '0~360度を指定できます', initValue: 8),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialStartWidth', description: '初期の角度を指定できます', initValue: 0.0),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialSweepPosition', description: '初期の幅を指定できます', initValue: 0.0),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'diameter', description: 'もし長辺、短辺で指定するときは0を入力してください', initValue: 300),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'longSide', description: '長辺', initValue: 300),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'shortSide', description: '短辺', initValue: 300),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'strokeWidth', description: '線の幅', initValue: 1),
-      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色', initValue: ColorType.red),
-    ];
-    return list;
-  }
 
   factory CircleMine.fromLayerPropList(List<LayerProp> list, Size screenSize){
     var diameter_tmp = list[4].result;
@@ -79,11 +81,61 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
     );
   }
 
-  @override
-  String imagePath = 'images/dopper.jpg';
 
   @override
-  String widgetNameJP = '動く円';
+  _CircleState createState() => _CircleState();
+
+  @override
+  final LayerType layerType = LayerType.circleMine;
+
+  @override
+  CircleMine importSetting (Map<String, dynamic> importedSetting) {
+    return CircleMine.fromJson(importedSetting);
+  }
+
+  @override
+  void exportSetting () async {
+    Directory parent = await QuicheOracleVariables.serializedJsonDirectory;
+    File target = File(p.absolute(parent.path, layerType.toString(), uniqueID));
+    
+    String settingJson = '''
+    {
+      "startWidth": $startWidth,
+      "sweepWidth": $sweepWidth,
+      "initialStartWidth": $initialStartWidth,
+      "screenSize": [${screenSize.width}, ${screenSize.height}],
+      "diameter": $diameter,
+      "longSide": $longSide,
+      "shortSide": $shortSide,
+      "strokeWidth": $strokeWidth,
+      "color": ${color.value},
+      "uniqueID": $uniqueID
+    }
+    ''';
+
+    target.writeAsStringSync(settingJson);
+  }
+
+  static List<LayerProp> getSettingList(){
+    List<LayerProp> list = [
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'startWidth', description: '0~360度を指定できます', initValue: 4),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'sweepWidth', description: '0~360度を指定できます', initValue: 8),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialStartWidth', description: '初期の角度を指定できます', initValue: 0.0),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialSweepPosition', description: '初期の幅を指定できます', initValue: 0.0),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'diameter', description: 'もし長辺、短辺で指定するときは0を入力してください', initValue: 300),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'longSide', description: '長辺', initValue: 300),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'shortSide', description: '短辺', initValue: 300),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'strokeWidth', description: '線の幅', initValue: 1),
+      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色', initValue: ColorType.red),
+    ];
+    return list;
+  }
+
+  @override
+  String get imagePath => 'images/dopper.jpg';
+
+  @override
+  String get widgetNameJP => '動く円';
 
 }
 

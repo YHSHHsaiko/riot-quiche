@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'dart:math';
+
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -6,14 +9,19 @@ import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/Enumerates/LayerType.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
+import 'package:riot_quiche/QuicheOracle.dart';
 
 
-class SnowAnimation extends StatefulWidget implements CustomizableWidget{
+class SnowAnimation extends CustomizableStatefulWidget {
   final double snowNumber; // 個数
   final double speed; // 落下速度
   final Size screenSize; // screenSize
   final bool isGradient;
   final Color color;
+
+  @override
+  final String uniqueID;
+
 
   SnowAnimation({
     this.snowNumber = 50.0,
@@ -21,26 +29,24 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
     this.screenSize,
     this.isGradient = false,
     this.color = Colors.white,
-  }): assert(screenSize != null);
+    this.uniqueID
+  })
+  : assert(screenSize != null),
+    assert(uniqueID != null),
+    super();
 
-  @override
-  _SnowAnimationState createState() => _SnowAnimationState();
 
-  // CustomizableWidget
-  @override
-  LayerType layerType = LayerType.snowAnimation;
-  @override
-  Map<String, dynamic> get setting;
+  SnowAnimation.fromJson (Map<String, dynamic> importedSetting)
+  : snowNumber = importedSetting['snowNumber'],
+    speed = importedSetting['snowNumber'],
+    screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]),
+    isGradient = importedSetting['isGradient'],
+    color = Color(importedSetting['color']),
+    uniqueID = importedSetting['uniqueID'],
+    assert(screenSize != null),
+    assert(uniqueID != null),
+    super();
 
-  static List<LayerProp> getSettingList(){
-    List<LayerProp> list = [
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます', initValue: 50.0),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2),
-      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true),
-      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red),
-    ];
-    return list;
-  }
 
   factory SnowAnimation.fromLayerPropList(List<LayerProp> list, Size screenSize){
     return SnowAnimation(
@@ -52,11 +58,55 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
     );
   }
 
-  @override
-  String imagePath = 'images/dopper.jpg';
 
   @override
-  String widgetNameJP = '雪';
+  _SnowAnimationState createState() => _SnowAnimationState();
+
+  // CustomizableWidget
+  @override
+  final LayerType layerType = LayerType.snowAnimation;
+
+  @override
+  SnowAnimation importSetting (Map<String, dynamic> importedSetting) {
+    return SnowAnimation.fromJson(importedSetting);
+  }
+
+  @override
+  void exportSetting () async {
+    Directory parent = await QuicheOracleVariables.serializedJsonDirectory;
+    File target = File(p.absolute(parent.path, layerType.toString(), uniqueID));
+    
+    String settingJson = '''
+    {
+      "snowNumber": $snowNumber,
+      "speed": $speed,
+      "screenSize": [${screenSize.width}, ${screenSize.height}],
+      "isGradient": ${isGradient.toString()},
+      "color": ${color.value},
+      "uniqueID": $uniqueID
+    }
+    ''';
+
+    target.writeAsStringSync(settingJson);
+  }
+  //
+
+  static List<LayerProp> getSettingList(){
+    List<LayerProp> list = [
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます', initValue: 50.0),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2),
+      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true),
+      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red),
+    ];
+    return list;
+  }
+
+
+  @override
+  String get imagePath => 'images/dopper.jpg';
+
+  @override
+  String get widgetNameJP => '雪';
 }
 
 class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProviderStateMixin{

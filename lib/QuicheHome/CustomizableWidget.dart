@@ -3,29 +3,60 @@ import 'package:flutter/material.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Enumerates/LayerType.dart';
 
-abstract class CustomizableWidget extends Widget {
 
-  LayerType layerType;
+abstract class CustomizableWidget {
+  final LayerType layerType = LayerType.NONE;
+  final uniqueID = '';
 
-  // =================== =
-  // static methods
-  // =================== =
-  static Widget fromJson (String layerIdentifier, Map<String, dynamic> setting) {
-    // =================== =
-    // TODO:
-    // jsonからlayerIdentifierインスタンスを作成
-    // =================== =
-    return Text("efgeff");
-  }
-  
-  // return a serialized setting
-  Map<String, dynamic> get setting;
-  // set a widget's setting
-  set setting (Map<String, dynamic> importedSetting);
+  CustomizableWidget (
+    {
+      Key key
+    }
+  );
 
-  // TODO: わ００００００００
-  // dynamic settingDialog ();
+  CustomizableWidget importSetting (Map<String, dynamic> importedSetting);
+  void exportSetting ();
 
   String get imagePath;
   String get widgetNameJP;
+}
+
+
+abstract class CustomizableStatefulWidget extends StatefulWidget implements CustomizableWidget {
+
+  CustomizableStatefulWidget (
+    {
+      Key key
+    }
+  )
+  : super(key: key);
+
+  CustomizableStatefulWidget.fromJson (
+    Map<String, dynamic> importedSetting,
+    {
+      Key key
+    }
+  )
+  : super(key: key);
+}
+
+
+abstract class CustomizableStatelessWidget extends StatelessWidget implements CustomizableWidget {
+
+  final LayerType layerType = LayerType.NONE;
+
+  CustomizableStatelessWidget (
+    {
+      Key key
+    }
+  )
+  : super(key: key);
+
+  CustomizableStatelessWidget.fromJson (
+    Map<String, dynamic> importedSetting,
+    {
+      Key key
+    }
+  )
+  : super(key: key);
 }
