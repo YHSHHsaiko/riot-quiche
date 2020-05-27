@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
+
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
 import 'package:riot_quiche/Enumerates/InitializationSection.dart';
@@ -74,7 +76,8 @@ extension QuicheOracleVariables on QuicheOracle {
 
 
   // permission information
-  static final Map<Permission, bool> permissionInformation = Map<Permission, bool>.fromIterable(
+  static final Map<Permission, bool> permissionInformation
+  = Map<Permission, bool>.fromIterable(
     Permission.values,
     key: (key) => key as Permission,
     value: (_) => false,
@@ -84,7 +87,16 @@ extension QuicheOracleVariables on QuicheOracle {
   static Future<Directory> get serializedJsonDirectory async {
     Directory localDirectory = await pp.getApplicationDocumentsDirectory();
 
-    return Directory(p.absolute(localDirectory.path, "layers"));
+    return Directory(p.absolute(localDirectory.path, 'jsonDirectory'));
+  }
+
+  static Future<File> get serializedJsonLayerInformation async {
+    return File(
+      p.absolute(
+        (await serializedJsonDirectory).path,
+        'layers.json'
+      )
+    );
   }
 }
 
@@ -107,6 +119,10 @@ extension QuicheOracleFunctions on QuicheOracle {
     }
     
     return true;
+  }
+
+  static Map<String, dynamic> loadJson (File target) {
+    return jsonDecode(target.readAsStringSync());
   }
 
   // static Future<Null> addPlaylist (String playlistName) async {

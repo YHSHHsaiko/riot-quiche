@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:riot_quiche/Enumerates/PlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
@@ -33,6 +35,14 @@ class _QuicheHomeState extends State<QuicheHome> {
               break;
             }
             case ConnectionState.done: {
+              if (QuicheOracleVariables.musicList == null || QuicheOracleVariables.musicList.isEmpty) {
+                return Center(
+                  child: const Text('''
+                  この端末にはまだ音楽が無いようです．
+                  アプリを終了して，音楽を追加してください．
+                  ''')
+                );
+              }
 
               if (!snapshot1.hasError) {
                 if (QuicheOracleVariables.musicList == null) {
@@ -50,7 +60,11 @@ class _QuicheHomeState extends State<QuicheHome> {
                       if (snapshot2.connectionState != ConnectionState.done) {
                         return Center(child: FlutterLogo());
                       }
-                      return MusicPlayer(screenSize, snapshot2.data[0], snapshot2.data[1], snapshot2.data[2]);
+
+                      List<dynamic> musicList = snapshot2.data[0];
+                      int index = snapshot2.data[1];
+                      int repeatChecker = snapshot2.data[2];
+                      return MusicPlayer(screenSize, musicList, index, repeatChecker);
                     }
                   );
                 }
@@ -129,6 +143,14 @@ class _QuicheHomeState extends State<QuicheHome> {
     } else {
       result = <dynamic>[[QuicheOracleVariables.musicList[0]], 0, 1];
     }
+
+    // TODO: load layer information
+    // File layersIDFile = await QuicheOracleVariables.serializedJsonLayerInformation;
+    // if (layersIDFile.existsSync()) {
+    //   Map<String, dynamic> layersID = QuicheOracleFunctions.loadJson(layersIDFile);
+
+      
+    // }
 
     return result;
   }
