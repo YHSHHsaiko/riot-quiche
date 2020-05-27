@@ -111,8 +111,8 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
 
             itemBuilder: (BuildContext context, int index) {
               if (index < listItem.length) {
-                return GestureDetector(
-                  onTap: (){
+                return FlatButton(
+                  onPressed: (){
                     if (listItem[index] is Album) {
                       widget.onWillPopNotifier.value = <dynamic>[false, index];
                     } else if (listItem[index] is Music && tmp.isEmpty) {

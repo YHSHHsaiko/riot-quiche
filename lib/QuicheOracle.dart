@@ -8,7 +8,6 @@ import 'package:riot_quiche/Enumerates/InitializationSection.dart';
 
 import 'package:riot_quiche/Enumerates/Permission.dart';
 import 'package:riot_quiche/Enumerates/SortType.dart';
-import 'package:riot_quiche/Music/Albatross.dart';
 import 'package:riot_quiche/Music/Album.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,41 +39,6 @@ extension QuicheOracleVariables on QuicheOracle {
   static final String musicRepeatCheckerPrefName = '__CACHE_REPEAT_CHECKER__';
 
   static final String layerPresetIDPrefName = '__CACHE_LAYER_PRESET_ID__';
-
-  // // playlist name List
-  // static Future<List<String>> get playlistsName async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  //   if (prefs.containsKey('playlists')) {
-  //     return prefs.getStringList('playlists');
-  //   } else {
-  //     prefs.setStringList('playlists', []);
-  //     return [];
-  //   }
-  // }
-
-  // // playlist List
-  // static Future<Map<String, List<Music>>> get playlists async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  //   if (prefs.containsKey('playlists')) {
-  //     return Map<String, List<Music>>.fromIterable(
-  //       prefs.getStringList('playlists'),
-  //       key: (playlistName) {
-  //         return playlistName as String;
-  //       },
-  //       value: (playlistName) {
-  //         List<String> ids = prefs.getStringList('playlist::${playlistName}');
-  //         return List<Music>.from(ids.map((String id) {
-  //           return QuicheOracleVariables.musicMap[id];
-  //         }));
-  //       }
-  //     );
-  //   } else {
-  //     prefs.setStringList('playlists', []);
-  //     return Map<String, List<Music>>();
-  //   }
-  // }
 
 
   // permission information
@@ -139,51 +103,6 @@ extension QuicheOracleFunctions on QuicheOracle {
       )
     );
   }
-
-  // static Future<Null> addPlaylist (String playlistName) async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  //   if (prefs.containsKey('playlists')) {
-  //     List<String> playlistNameList = prefs.getStringList('playlists');
-
-  //     playlistNameList.add(playlistName);
-  //     prefs.setStringList('playlists', playlistNameList);
-  //   } else {
-  //     prefs.setStringList('playlists', [playlistName]);
-  //   }
-
-  //   prefs.setStringList('playlist::${playlistName}', []);
-
-  //   print(prefs.getStringList('playlists'));
-  //   print(prefs.getStringList('playlist::${playlistName}'));
-  // }
-
-  // static Future<Null> removePlaylist (String playlistName) async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  //   if (prefs.containsKey('playlists')) {
-  //     List<String> playlistNameList = prefs.getStringList('playlists');
-
-  //     playlistNameList.remove(playlistName);
-  //     prefs.setStringList('playlists', playlistNameList);
-  //   }
-
-  //   prefs.remove('playlist::${playlistName}');
-  // }
-
-  // static Future<Null> addToPlaylist (String playlistName, Music targetMusic) async {
-  //   List<Music> playlist = await QuicheOracleFunctions.getPlaylistFromName(playlistName);
-  //   playlist.add(targetMusic);
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   prefs.setStringList('playlist::${playlistName}', List<String>.from(playlist.map((Music music) => music.id)));
-  // }
-
-  // static Future<Null> removeFromPlaylist (String playlistName, Music targetMusic) async {
-  //   List<Music> playlist = await QuicheOracleFunctions.getPlaylistFromName(playlistName);
-  //   playlist.removeAt((List<bool>.from(playlist.map<bool>((Music music) => music.id == targetMusic.id))).indexOf(true));
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   prefs.setStringList('playlist::${playlistName}', List<String>.from(playlist.map((Music music) => music.id)));
-  // }
 
   static List<dynamic> getSortedMusicList (SortType sortType) {
     /**

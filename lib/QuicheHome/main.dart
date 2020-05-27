@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:riot_quiche/Enumerates/PlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
@@ -32,7 +31,7 @@ class _QuicheHomeState extends State<QuicheHome> {
         builder: (BuildContext context, AsyncSnapshot snapshot1) {
           switch (snapshot1.connectionState) {
             case ConnectionState.waiting: {
-              return Center(child: Text('こんにちはーwait'));
+              return Center(child: FlutterLogo());
               break;
             }
             case ConnectionState.done: {
@@ -81,15 +80,15 @@ class _QuicheHomeState extends State<QuicheHome> {
               break;
             }
             case ConnectionState.none: {
-              return Center(child: Text('こんにちはーnone'));
+              return Center(child: FlutterLogo());
               break;
             }
             case ConnectionState.active: {
-              return Center(child: Text('こんにちはーactive'));
+              return Center(child: FlutterLogo());
               break;
             }
             default: {
-              return Center(child: Text('こんにちはー'));
+              return Center(child: FlutterLogo());
               break;
             }
           }
@@ -122,6 +121,7 @@ class _QuicheHomeState extends State<QuicheHome> {
     print('''
     prefs.containsKey(QuicheOracleVariables.musicCachePrefName):
     ${prefs.containsKey(QuicheOracleVariables.musicCachePrefName)}''');
+
     if (prefs.containsKey(QuicheOracleVariables.musicCachePrefName)) {
       String musicId = prefs.getString(QuicheOracleVariables.musicIdCachePrefName);
       List<String> queue = prefs.getStringList(QuicheOracleVariables.musicQueueCachePrefName);

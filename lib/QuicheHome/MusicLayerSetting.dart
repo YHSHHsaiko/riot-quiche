@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
-import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 
 import 'dart:math' as math;
@@ -12,8 +11,8 @@ import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/SelectLayer.dart';
 
 
 class MusicLayerSetting extends StatefulWidget{
-  Function setLayer;
-  List<CustomizableWidget> layerList;
+  final Function setLayer;
+  final List<CustomizableWidget> layerList;
   final Size screenSize;
   MusicLayerSetting(this.setLayer, this.layerList, this.screenSize);
 
@@ -125,7 +124,6 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
                 elevation: 2.0,
                 key: Key(keyidx.toString()),
                 child: ListTile(
-//                  leading: const Icon(Icons.people),
                   leading: Image.asset(wid.imagePath, fit: BoxFit.cover),
                   title: Text(wid.widgetNameJP),
                   subtitle: Text("sub:$keyidx:"+wid.layerType.toString()),

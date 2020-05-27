@@ -316,6 +316,9 @@ class MusicPlayerState extends State<MusicPlayer>
       if (!isInitial) {
         PlatformMethodInvoker.playFromCurrentMediaId();
         sliderValue = 0;
+      } else {
+        PlatformMethodInvoker.playFromCurrentMediaId();
+        PlatformMethodInvoker.pause();
       }
 
     }else{

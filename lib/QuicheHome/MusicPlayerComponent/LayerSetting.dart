@@ -42,7 +42,7 @@ class LayerSettingState extends State<LayerSetting>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("List Test"),),
+      appBar: AppBar(title: const Text("List Test")),
       body: ListView.separated(
         separatorBuilder: (BuildContext context, int index) => Divider(height: 1),
         itemBuilder: (BuildContext context, int index) {
@@ -70,7 +70,7 @@ class LayerSettingState extends State<LayerSetting>{
           widget.callback(layerPropList, widget.type);
           Navigator.of(context).pop();
         },
-        label: Text('Add Layer'),
+        label: const Text('Add Layer'),
         icon: Icon(Icons.add),
         backgroundColor: Colors.pink,
       ),
@@ -142,12 +142,12 @@ class LayerSettingState extends State<LayerSetting>{
                   setState((){
                     layerPropList[index].setResult(ColorProp.getNextColorType(_colorType));
                   });
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+                }
+              )
+            )
+          ]
+        )
+      )
     );
   }
 
@@ -194,17 +194,6 @@ class LayerSettingState extends State<LayerSetting>{
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 enum ColorType{

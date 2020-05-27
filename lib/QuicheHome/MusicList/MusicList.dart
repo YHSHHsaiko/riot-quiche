@@ -169,8 +169,6 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
 }
 
 
-
-
 class SubPlayer extends StatefulWidget {
   final Music nowPlaying;
   final ValueNotifier onMusicChangedNotifier;

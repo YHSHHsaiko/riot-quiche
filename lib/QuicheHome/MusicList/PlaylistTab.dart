@@ -42,12 +42,16 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
   String _playlistIdentifier;
   bool _isInitialized;
 
+  ScrollController _reorderScrollController;
+
 
   @override
   void initState () {
     super.initState();
 
     _isInitialized = false;
+
+    _reorderScrollController = ScrollController();
 
     widget.onPlaylistChangedNotifier.addListener(() {
       setState(() {
@@ -58,6 +62,8 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
 
   @override
   void dispose () {
+    _reorderScrollController.dispose();
+
     _destruct();
 
     super.dispose();
@@ -76,6 +82,63 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
           return Center(child: FlutterLogo());
         }
         //
+
+        Widget listView;
+        if (listItem.isEmpty || listItem[0] is Playlist) {
+          listView = ListView.separated(
+            itemBuilder: (BuildContext context, int index) {
+              if (index < listItem.length) {
+                return GestureDetector(
+                  onTap: () {
+                    widget.onWillPopNotifier.value = <dynamic>[false, index];
+
+                    //TODO　ここでlistitemを全部追加
+                    //callbuck側になにかkeyを渡して、特定の場所から始める。
+                  },
+                  child: _seclist(index, size),
+                );
+              } else {
+                return Divider(height: 100);
+              }
+            },
+            itemCount: listItem.length + 1,
+            separatorBuilder: (BuildContext context, int index) {
+              return Divider(height: 1);
+            }
+          );
+        } else {
+          listView = ReorderableListView(
+            scrollController: _reorderScrollController,
+            onReorder: (int oldIndex, int newIndex) {
+              setState(() {
+                if (newIndex > oldIndex) {
+                  newIndex -= 1;
+                }
+                
+                Music item = listItem.removeAt(oldIndex);
+                listItem.insert(newIndex, item);
+                Playlist(_playlistIdentifier, listItem).save();
+              });
+            },
+            children: List.generate(listItem.length+1, (int index) {
+              if (index < listItem.length) {
+                return FlatButton(
+                  key: Key(index.toString()),
+                  onPressed: () {
+                    widget.onWillPopNotifier.value = <dynamic>[false, index];
+
+                    //TODO　ここでlistitemを全部追加
+                    //callbuck側になにかkeyを渡して、特定の場所から始める。
+                  },
+                  child: _seclist(index, size)
+                );
+              } else {
+                return Divider(key: Key(index.toString()), height: 100);
+              }
+            }),
+          );
+        }
+
         return Column(
           children: <Widget>[
             Align(
@@ -84,28 +147,7 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
             ),
 
             Expanded(
-              child: ListView.separated(
-
-                itemBuilder: (BuildContext context, int index) {
-                  if (index < listItem.length) {
-                    return GestureDetector(
-                      onTap: () {
-                        widget.onWillPopNotifier.value = <dynamic>[false, index];
-
-                        //TODO　ここでlistitemを全部追加
-                        //callbuck側になにかkeyを渡して、特定の場所から始める。
-                      },
-                      child: _seclist(index, size),
-                    );
-                  } else {
-                    return Divider(height: 100);
-                  }
-                },
-                itemCount: listItem.length + 1,
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider(height: 1);
-                }
-              )
+              child: listView
             )
           ]
         );
@@ -261,7 +303,7 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
           return <PopupMenuEntry<PopupMenuEnum>>[
             const PopupMenuItem<PopupMenuEnum>(
               value: PopupMenuEnum.AddToPlaylist,
-              child: Text('Add to playlist')
+              child: const Text('Add to playlist')
             )
           ];
         }
@@ -269,6 +311,7 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
     }
 
     return Container(
+      height: jacketSize + 4.0,
       child: Row(
           children: <Widget>[
 

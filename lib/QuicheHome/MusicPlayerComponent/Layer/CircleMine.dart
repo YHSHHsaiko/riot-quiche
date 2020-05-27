@@ -116,6 +116,7 @@ class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
       "startWidth": startWidth,
       "sweepWidth": sweepWidth,
       "initialStartWidth": initialStartWidth,
+      "initialSweepPosition": initialSweepPosition,
       "screenSize": [screenSize.width, screenSize.height],
       "diameter": diameter,
       "longSide": longSide,
