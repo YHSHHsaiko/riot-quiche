@@ -16,12 +16,14 @@ appDirectory
 # layers.json
 ```dart
 {
-  "layer1": {
-    ${各CustomizableWidgetにて定義されたJsonオブジェクト}
-  },
-  "layer2": {
-    ${各CustomizableWidgetにて定義されたJsonオブジェクト}
-  }
+  [
+      {
+       ${各CustomizableWidgetにて定義されたJsonオブジェクト}
+      },
+      {
+       ${各CustomizableWidgetにて定義されたJsonオブジェクト}
+      }
+  ]
   ...
 }
 ```
