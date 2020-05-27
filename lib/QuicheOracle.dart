@@ -39,6 +39,8 @@ extension QuicheOracleVariables on QuicheOracle {
   static final String musicQueueCachePrefName = '__CACHE_QUEUE__';
   static final String musicRepeatCheckerPrefName = '__CACHE_REPEAT_CHECKER__';
 
+  static final String layerPresetIDPrefName = '__CACHE_LAYER_PRESET_ID__';
+
   // // playlist name List
   // static Future<List<String>> get playlistsName async {
   //   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -89,15 +91,6 @@ extension QuicheOracleVariables on QuicheOracle {
 
     return Directory(p.absolute(localDirectory.path, 'jsonDirectory'));
   }
-
-  static Future<File> get serializedJsonLayerInformation async {
-    return File(
-      p.absolute(
-        (await serializedJsonDirectory).path,
-        'layers.json'
-      )
-    );
-  }
 }
 
 
@@ -121,8 +114,30 @@ extension QuicheOracleFunctions on QuicheOracle {
     return true;
   }
 
+  static Future<Null> initializeDirectoryStructure () async {
+    Directory sjd = await QuicheOracleVariables.serializedJsonDirectory;
+    if (!sjd.existsSync()) {
+      sjd.createSync();
+    }
+    
+  }
+
   static Map<String, dynamic> loadJson (File target) {
     return jsonDecode(target.readAsStringSync());
+  }
+
+  static void saveJson (File target, Map<String, dynamic> json) {
+    target.writeAsStringSync(jsonEncode(json));
+    print('QuicheOracleFunctions.saveJson(): ${target.path}');
+  }
+
+  static Future<File> getJsonLayerInformation (String presetIdentifier) async {
+    return File(
+      p.absolute(
+        (await QuicheOracleVariables.serializedJsonDirectory).path,
+        p.join(presetIdentifier, 'layers.json')
+      )
+    );
   }
 
   // static Future<Null> addPlaylist (String playlistName) async {

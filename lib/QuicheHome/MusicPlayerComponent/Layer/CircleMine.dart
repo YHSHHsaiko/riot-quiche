@@ -5,8 +5,9 @@ import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
-import 'package:riot_quiche/Enumerates/LayerType.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
@@ -37,29 +38,44 @@ class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
     this.shortSide,
     this.strokeWidth = 1,
     this.color = Colors.white,
-    this.uniqueID
+    @required this.uniqueID
   })
   : assert(diameter != null || (longSide != null && shortSide != null)),
-    super();
+    assert(uniqueID != null);
 
 
-  CircleMine.fromJson (Map<String, dynamic> importedSetting)
-  : startWidth = importedSetting['startWidth'],
-    sweepWidth = importedSetting['sweepWidth'],
-    initialStartWidth = importedSetting['initialStartWidth'],
-    initialSweepPosition = importedSetting['initialSweepPosition'],
-    screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]),
-    diameter = importedSetting['diameter'],
-    longSide = importedSetting['longSide'],
-    shortSide = importedSetting['shortSide'],
-    strokeWidth = importedSetting['strokeWidth'],
-    color = Color(importedSetting['color']),
-    uniqueID = importedSetting['uniqueID'],
-    assert(diameter != null || (longSide != null && shortSide != null)),
-    super();
+  factory CircleMine.fromJson (Map<String, dynamic> importedSetting) {
+    int startWidth = importedSetting['startWidth'];
+    int sweepWidth = importedSetting['sweepWidth'];
+    double initialStartWidth = importedSetting['initialStartWidth'];
+    double initialSweepPosition = importedSetting['initialSweepPosition'];
+    Size screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]);
+    double diameter = importedSetting['diameter'];
+    double longSide = importedSetting['longSide'];
+    double shortSide = importedSetting['shortSide'];
+    double strokeWidth = importedSetting['strokeWidth'];
+    Color color = Color(importedSetting['color']);
+    String uniqueID = importedSetting['uniqueID']; 
+
+    return CircleMine(
+      startWidth: startWidth,
+      sweepWidth: sweepWidth,
+      initialStartWidth: initialStartWidth,
+      initialSweepPosition: initialSweepPosition,
+      screenSize: screenSize,
+      diameter: diameter,
+      longSide: longSide,
+      shortSide: shortSide,
+      strokeWidth: strokeWidth,
+      color: color,
+      uniqueID: uniqueID
+    );
+  }
 
 
   factory CircleMine.fromLayerPropList(List<LayerProp> list, Size screenSize){
+    print('CircleMine.fromLayerPropList');
+    
     var diameter_tmp = list[4].result;
     var longSide_tmp = list[5].result.toDouble();
     var shortSide_tmp = list[6].result.toDouble();
@@ -78,6 +94,7 @@ class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
       shortSide: shortSide_tmp,
       strokeWidth: list[7].result.toDouble(),
       color: ColorProp.getColor(list[8].result),
+      uniqueID: DateTime.now().millisecondsSinceEpoch.toString(),
     );
   }
 
@@ -86,7 +103,7 @@ class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
   _CircleState createState() => _CircleState();
 
   @override
-  final LayerType layerType = LayerType.circleMine;
+  final StackLayerType layerType = StackLayerType.CircleMine;
 
   @override
   CircleMine importSetting (Map<String, dynamic> importedSetting) {
@@ -94,26 +111,22 @@ class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
   }
 
   @override
-  void exportSetting () async {
-    Directory parent = await QuicheOracleVariables.serializedJsonDirectory;
-    File target = File(p.absolute(parent.path, layerType.toString(), uniqueID));
-    
-    String settingJson = '''
-    {
-      "startWidth": $startWidth,
-      "sweepWidth": $sweepWidth,
-      "initialStartWidth": $initialStartWidth,
-      "screenSize": [${screenSize.width}, ${screenSize.height}],
-      "diameter": $diameter,
-      "longSide": $longSide,
-      "shortSide": $shortSide,
-      "strokeWidth": $strokeWidth,
-      "color": ${color.value},
-      "uniqueID": $uniqueID
-    }
-    ''';
+  Map<String, dynamic> exportSetting () {
+    Map<String, dynamic> settingJson = {
+      "startWidth": startWidth,
+      "sweepWidth": sweepWidth,
+      "initialStartWidth": initialStartWidth,
+      "screenSize": [screenSize.width, screenSize.height],
+      "diameter": diameter,
+      "longSide": longSide,
+      "shortSide": shortSide,
+      "strokeWidth": strokeWidth,
+      "color": color.value,
+      "stackLayerType": layerType.name,
+      "uniqueID": uniqueID
+    };
 
-    target.writeAsStringSync(settingJson);
+    return settingJson;
   }
 
   static List<LayerProp> getSettingList(){
@@ -132,7 +145,7 @@ class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
   }
 
   @override
-  String get imagePath => 'images/dopper.jpg';
+  String get imagePath => QuicheAssets.iconPath;
 
   @override
   String get widgetNameJP => '動く円';

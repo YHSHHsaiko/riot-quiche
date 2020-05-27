@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:riot_quiche/Enumerates/PlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
+import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayer.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -64,7 +65,8 @@ class _QuicheHomeState extends State<QuicheHome> {
                       List<dynamic> musicList = snapshot2.data[0];
                       int index = snapshot2.data[1];
                       int repeatChecker = snapshot2.data[2];
-                      return MusicPlayer(screenSize, musicList, index, repeatChecker);
+                      List<CustomizableWidget> layers = snapshot2.data[3];
+                      return MusicPlayer(screenSize, musicList, index, repeatChecker, layers);
                     }
                   );
                 }
@@ -144,13 +146,25 @@ class _QuicheHomeState extends State<QuicheHome> {
       result = <dynamic>[[QuicheOracleVariables.musicList[0]], 0, 1];
     }
 
-    // TODO: load layer information
-    // File layersIDFile = await QuicheOracleVariables.serializedJsonLayerInformation;
-    // if (layersIDFile.existsSync()) {
-    //   Map<String, dynamic> layersID = QuicheOracleFunctions.loadJson(layersIDFile);
+    // load layer information
+    await QuicheOracleFunctions.initializeDirectoryStructure();
 
-      
-    // }
+    List<CustomizableWidget> layers = <CustomizableWidget>[];
+    if (prefs.containsKey(QuicheOracleVariables.layerPresetIDPrefName)) {
+      String presetIdentifier = prefs.getString(QuicheOracleVariables.layerPresetIDPrefName);
+      File layersJsonFile = await QuicheOracleFunctions.getJsonLayerInformation(presetIdentifier);
+
+      if (layersJsonFile.existsSync()) {
+        List<Map<String, dynamic>> layersJsonList = List<Map<String, dynamic>>.from(
+          QuicheOracleFunctions.loadJson(layersJsonFile)['layers']
+        );
+
+        for (Map<String, dynamic> layerJson in layersJsonList) {
+          layers.add(CustomizableWidget.fromJson(layerJson));
+        }
+      }
+    }
+    result.add(layers);
 
     return result;
   }

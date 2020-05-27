@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
 
+import 'package:riot_quiche/QuicheAssets.dart';
+import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/material.dart';
@@ -25,8 +27,9 @@ class MusicPlayer extends StatefulWidget{
   final List<dynamic> musicList;
   final int index;
   final int repeatChecker;
+  final List<CustomizableWidget> layers;
 
-  MusicPlayer(this.scSize, this.musicList, this.index, this.repeatChecker);
+  MusicPlayer(this.scSize, this.musicList, this.index, this.repeatChecker, this.layers);
 
   @override
   State<StatefulWidget> createState() => MusicPlayerState();
@@ -37,7 +40,7 @@ class MusicPlayerState extends State<MusicPlayer>
 
   /// MusicPlayer Hard Cording
   double heightRateHeader = 0.1, heightRateFooter = 0.3;
-  final imagePath = "images/dopper.jpg";
+  final imagePath = QuicheAssets.iconPath;
 
   /// MusicPlayer variables
   // controlls Animation
@@ -65,13 +68,14 @@ class MusicPlayerState extends State<MusicPlayer>
   int repeatChecker;
 
   // controlls Layers
-  List<Widget> layers = [];
+  List<CustomizableWidget> layers = [];
   List<Widget> mustLayers = [];
   static Size screenSize, longSize;
   double jacketSize;
 
   //
   PlaybackState _currentState;
+  int _layerPreset;
   //
 
 
@@ -178,20 +182,7 @@ class MusicPlayerState extends State<MusicPlayer>
     }
 
 
-    // TODO :　仮で作っている表示用データ。この辺どうにかしないと
-    layers.addAll([
-      SnowAnimation(
-        snowNumber: 50,
-        screenSize: widget.scSize,
-        isGradient: false,
-      ),
-
-      CircleMine(
-        screenSize: widget.scSize,
-        diameter: jacketSize+50,
-        color: Colors.amber,
-      )]
-    );
+    layers.addAll(widget.layers);
 
     //
     WidgetsBinding.instance.addObserver(this);
@@ -214,6 +205,7 @@ class MusicPlayerState extends State<MusicPlayer>
   }
 
   void _saveCache () async {
+    // save preferences
     print('''
     ******************************************
     :save cache:
@@ -228,6 +220,20 @@ class MusicPlayerState extends State<MusicPlayer>
       QuicheOracleVariables.musicQueueCachePrefName,
       List<String>.from(musicList.map((dynamic music) => music.id))
     );
+
+    prefs.setString(QuicheOracleVariables.layerPresetIDPrefName, _layerPreset.toString());
+
+    // save layers
+    File layerJsonFile = await QuicheOracleFunctions.getJsonLayerInformation(_layerPreset.toString())
+    ..createSync(recursive: true);
+
+    Map<String, dynamic> layerJsonObject = Map<String, dynamic>();
+    layerJsonObject['layers'] = <Map<String, dynamic>>[];
+    for (int i = 0; i < layers.length; ++i) {
+      layerJsonObject['layers'].add(layers[i].exportSetting());
+    }
+
+    QuicheOracleFunctions.saveJson(layerJsonFile, layerJsonObject);
   }
 
   @override
@@ -239,6 +245,7 @@ class MusicPlayerState extends State<MusicPlayer>
     ''');
     switch (state) {
       case AppLifecycleState.detached: {
+        dispose();
         break;
       }
       case AppLifecycleState.paused: {
@@ -342,7 +349,7 @@ class MusicPlayerState extends State<MusicPlayer>
   }
 
   /// callback for layerSetting
-  void callbackSetLayer(List<Widget> list){
+  void callbackSetLayer(List<CustomizableWidget> list){
     setState(() {
       print('set');
       layers = list;
@@ -418,7 +425,7 @@ class MusicPlayerState extends State<MusicPlayer>
               SlideTransition(
                 position: _offsetAnimation,
                 child: Stack(
-                  children: layers + mustLayers,
+                  children: List<Widget>.from(layers) + mustLayers,
                 ),
               ),
 

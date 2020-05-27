@@ -1,14 +1,11 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/SnowAnimation.dart';
 
-enum StackLayerType{
-  SnowAnimation,
-  Circle,
-}
 
 class StackLayerVariables{
   static List<LayerProp> getLayerPropList(StackLayerType type){
@@ -16,11 +13,13 @@ class StackLayerVariables{
       case StackLayerType.SnowAnimation:
         return SnowAnimation.getSettingList();
         break;
-      case StackLayerType.Circle:
+      case StackLayerType.CircleMine:
         return CircleMine.getSettingList();
         break;
+      
+      default:
+        return null;
     }
-    return null;
   }
 
   static CustomizableWidget getAddLayer(StackLayerType type, List<LayerProp> list, Size screenSize){
@@ -28,11 +27,13 @@ class StackLayerVariables{
       case StackLayerType.SnowAnimation:
         return SnowAnimation.fromLayerPropList(list, screenSize);
         break;
-      case StackLayerType.Circle:
+      case StackLayerType.CircleMine:
         return CircleMine.fromLayerPropList(list, screenSize);
         break;
+      
+      default:
+        return null;
     }
-    return null;
   }
 
 }

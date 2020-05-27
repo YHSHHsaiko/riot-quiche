@@ -5,8 +5,9 @@ import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
-import 'package:riot_quiche/Enumerates/LayerType.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
@@ -26,35 +27,45 @@ class SnowAnimation extends CustomizableStatefulWidget {
   SnowAnimation({
     this.snowNumber = 50.0,
     this.speed = 0.1,
-    this.screenSize,
+    @required this.screenSize,
     this.isGradient = false,
     this.color = Colors.white,
-    this.uniqueID
+    @required this.uniqueID
   })
   : assert(screenSize != null),
     assert(uniqueID != null),
     super();
 
 
-  SnowAnimation.fromJson (Map<String, dynamic> importedSetting)
-  : snowNumber = importedSetting['snowNumber'],
-    speed = importedSetting['snowNumber'],
-    screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]),
-    isGradient = importedSetting['isGradient'],
-    color = Color(importedSetting['color']),
-    uniqueID = importedSetting['uniqueID'],
-    assert(screenSize != null),
-    assert(uniqueID != null),
-    super();
+  factory SnowAnimation.fromJson (Map<String, dynamic> importedSetting) {
+    double snowNumber = importedSetting['snowNumber'];
+    double speed = importedSetting['snowNumber'];
+    Size screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]);
+    bool isGradient = importedSetting['isGradient'];
+    Color color = Color(importedSetting['color']);
+    String uniqueID = importedSetting['uniqueID'];
+
+    return SnowAnimation(
+      snowNumber: snowNumber,
+      speed: speed,
+      screenSize: screenSize,
+      isGradient: isGradient,
+      color: color,
+      uniqueID: uniqueID
+    );
+  }
 
 
   factory SnowAnimation.fromLayerPropList(List<LayerProp> list, Size screenSize){
+    print('SnowAnimation.fromLayerPropList');
+    
     return SnowAnimation(
       snowNumber: list[0].result,
       speed: list[1].result,
       screenSize: screenSize,
       isGradient: list[2].result,
       color: ColorProp.getColor(list[3].result),
+      uniqueID: DateTime.now().millisecondsSinceEpoch.toString()
     );
   }
 
@@ -64,7 +75,7 @@ class SnowAnimation extends CustomizableStatefulWidget {
 
   // CustomizableWidget
   @override
-  final LayerType layerType = LayerType.snowAnimation;
+  final StackLayerType layerType = StackLayerType.SnowAnimation;
 
   @override
   SnowAnimation importSetting (Map<String, dynamic> importedSetting) {
@@ -72,22 +83,18 @@ class SnowAnimation extends CustomizableStatefulWidget {
   }
 
   @override
-  void exportSetting () async {
-    Directory parent = await QuicheOracleVariables.serializedJsonDirectory;
-    File target = File(p.absolute(parent.path, layerType.toString(), uniqueID));
-    
-    String settingJson = '''
-    {
-      "snowNumber": $snowNumber,
-      "speed": $speed,
-      "screenSize": [${screenSize.width}, ${screenSize.height}],
-      "isGradient": ${isGradient.toString()},
-      "color": ${color.value},
-      "uniqueID": $uniqueID
-    }
-    ''';
+  Map<String, dynamic> exportSetting () {
+    Map<String, dynamic> settingJson = {
+      "snowNumber": snowNumber,
+      "speed": speed,
+      "screenSize": [screenSize.width, screenSize.height],
+      "isGradient": isGradient,
+      "color": color.value,
+      "stackLayerType": layerType.name,
+      "uniqueID": uniqueID
+    };
 
-    target.writeAsStringSync(settingJson);
+    return settingJson;
   }
   //
 
@@ -103,7 +110,7 @@ class SnowAnimation extends CustomizableStatefulWidget {
 
 
   @override
-  String get imagePath => 'images/dopper.jpg';
+  String get imagePath => QuicheAssets.iconPath;
 
   @override
   String get widgetNameJP => '雪';

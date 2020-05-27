@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
+
 
 // List<LayerProp>を受け取って、resultを更新したList<LayerProp>を返す
 class LayerSetting extends StatefulWidget{

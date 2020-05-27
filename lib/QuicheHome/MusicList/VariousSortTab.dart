@@ -3,6 +3,7 @@ import 'package:riot_quiche/Enumerates/PopupMenuEnum.dart';
 
 import 'package:riot_quiche/Enumerates/SortType.dart';
 import 'package:riot_quiche/Music/Music.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
 import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
@@ -163,7 +164,7 @@ class _VariousSortTabState extends State<VariousSortTab> with AutomaticKeepAlive
     var m = listItem[index];
     var jucketImage = m.getArt();
     if (jucketImage == null){
-      jucketImage = Image.asset("images/dopper.jpg");
+      jucketImage = QuicheAssets.icon;
     }
 
 //    var img = Image.network('https://pbs.twimg.com/media/EWm2AmcU4AID_2O?format=jpg&name=medium');

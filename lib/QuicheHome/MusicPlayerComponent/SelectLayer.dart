@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/SnowAnimation.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
@@ -9,8 +11,8 @@ class SelectLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var grid = ['images/dopper.jpg', 'images/dopper.jpg'];
-    var grid2 = [StackLayerType.SnowAnimation,StackLayerType.Circle];
+    var grid = [QuicheAssets.iconPath, QuicheAssets.iconPath];
+    var grid2 = [StackLayerType.SnowAnimation,StackLayerType.CircleMine];
     return MaterialApp(
         home: Scaffold(
             appBar: AppBar(

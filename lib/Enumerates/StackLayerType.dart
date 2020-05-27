@@ -4,18 +4,37 @@ import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dar
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/SnowAnimation.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 
+
 enum StackLayerType {
   SnowAnimation,
-  Circle,
+  CircleMine,
+  None
 }
 
+extension StackLayerTypeExt on StackLayerType {
+  static final Map<StackLayerType, String> _nameMap = Map.fromEntries(
+    StackLayerType.values.map(
+      (e) => MapEntry<StackLayerType, String>(e, e.toString().split('.')[1])
+    )
+  );
 
-extension LayerTypeExt on StackLayerType {
+  static StackLayerType fromName (String layerTypeName) {
+    for (StackLayerType layerType in StackLayerType.values) {
+      if (layerType.name == layerTypeName) {
+        return layerType;
+      }
+    }
+
+    return null;
+  }
+
+  String get name => _nameMap[this];
+
   CustomizableWidget ofDefault () {
     CustomizableWidget result;
 
     switch (this) {
-      case StackLayerType.Circle: {
+      case StackLayerType.CircleMine: {
         result = CircleMine(
           screenSize: Size(
             QuicheOracleVariables.screenWidth,
@@ -33,8 +52,14 @@ extension LayerTypeExt on StackLayerType {
         );
         break;
       }
+
+      case StackLayerType.None: {
+        result = null;
+        break;
+      }
     }
 
     return result;
   }
+
 }

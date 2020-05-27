@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PlaylistTab.dart';
 
 import 'package:riot_quiche/header.dart';
@@ -183,7 +184,7 @@ class SubPlayer extends StatefulWidget {
 
 class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMixin{
   Size screenSize;
-  String imagePath = "images/dopper.jpg";
+  String imagePath = QuicheAssets.iconPath;
   AnimationController _animatedIconController;
   bool animatedIconControllerChecker;
   bool isPlaying;

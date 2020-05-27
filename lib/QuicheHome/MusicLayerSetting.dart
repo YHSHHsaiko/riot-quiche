@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
@@ -12,7 +13,7 @@ import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/SelectLayer.dart';
 
 class MusicLayerSetting extends StatefulWidget{
   Function setLayer;
-  List<Widget> layerList;
+  List<CustomizableWidget> layerList;
   final Size screenSize;
   MusicLayerSetting(this.setLayer, this.layerList, this.screenSize);
 
@@ -32,7 +33,7 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
     super.initState();
     print(widget.layerList);
     print(widList);
-    widList = widget.layerList.cast<CustomizableWidget>();
+    widList = widget.layerList;
     numList = new List<int>.generate(widList.length, (i) => i);
     secNumList = new List<int>.generate(widList.length, (i) => i);
   }
@@ -67,8 +68,10 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
     return WillPopScope(
       onWillPop: () {
         print(widList);
-        widget.setLayer(widList.cast<Widget>());
-        return new Future<bool>.value(true);
+        widget.setLayer(widList);
+
+        Navigator.of(context).pop(true);
+        return new Future<bool>.value(false);
       },
       child: Scaffold(
         floatingActionButton: FloatingActionButton.extended(

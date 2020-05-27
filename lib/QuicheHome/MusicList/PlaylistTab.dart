@@ -4,6 +4,7 @@ import 'package:riot_quiche/Enumerates/PopupMenuEnum.dart';
 import 'package:riot_quiche/Enumerates/SortType.dart';
 import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/Music/Playlist.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
 import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
@@ -206,13 +207,13 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
     if (listItem[index] is Playlist) {
       Playlist targetPlaylist = listItem[index];
       if (targetPlaylist.musics.isEmpty) {
-        jucketImage = Image.asset("images/dopper.jpg");
+        jucketImage = QuicheAssets.icon;
         artist = '0 Musics';
       } else {
         m = targetPlaylist.musics[0];
         jucketImage = m.getArt();
         if (jucketImage == null) {
-          jucketImage = Image.asset("images/dopper.jpg");
+          jucketImage = QuicheAssets.icon;
         }
         artist = '${targetPlaylist.musics.length} Musics';
       }
@@ -221,7 +222,7 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
       m = listItem[index];
       jucketImage = m.getArt();
       if (jucketImage == null) {
-        jucketImage = Image.asset("images/dopper.jpg");
+        jucketImage = QuicheAssets.icon;
       }
       title = listItem[index].title;
       artist = listItem[index].artist;
