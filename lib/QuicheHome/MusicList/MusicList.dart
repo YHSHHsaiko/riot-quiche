@@ -19,11 +19,13 @@ class MusicList extends StatefulWidget{
   final List<dynamic> musicList;
   final int playIndex;
   final OnMusicChangedCallback onChangedCallback;
+  final ValueNotifier<List<dynamic>> onMusicChangedForSubPlayerNotifier;
 
   MusicList(
     this.musicList, this.playIndex,
     {
-      @required this.onChangedCallback
+      @required this.onChangedCallback,
+      @required this.onMusicChangedForSubPlayerNotifier
     }
   );
 
@@ -159,7 +161,7 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier),
+              child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier, widget.onMusicChangedForSubPlayerNotifier),
             )
           ]
         )
@@ -171,16 +173,17 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
 
 class SubPlayer extends StatefulWidget {
   final Music nowPlaying;
-  final ValueNotifier onMusicChangedNotifier;
+  final ValueNotifier<List<dynamic>> onMusicChangedNotifier;
+  final ValueNotifier<List<dynamic>> onMusicChangedForSubPlayerNotifier;
 
-  SubPlayer(this.nowPlaying, this.onMusicChangedNotifier);
+  SubPlayer(this.nowPlaying, this.onMusicChangedNotifier, this.onMusicChangedForSubPlayerNotifier);
 
   @override
   State<StatefulWidget> createState() => _SubPlayerState();
 }
 
 
-class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMixin{
+class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMixin {
   Size screenSize;
   String imagePath = QuicheAssets.iconPath;
   AnimationController _animatedIconController;
@@ -211,11 +214,22 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
       });
     });
 
+    widget.onMusicChangedForSubPlayerNotifier.addListener(() {
+      print('onMusicChangedForSubPlayerNotifier::onListen()');
+      setState(() {
+        animatedIconControllerChecker = true;
+        _animatedIconController.reverse();
+
+        nowPlaying = widget.onMusicChangedForSubPlayerNotifier.value[0][widget.onMusicChangedForSubPlayerNotifier.value[1]];
+      });
+    });
+
     nowPlaying = widget.nowPlaying;
   }
 
   @override
   void dispose() {
+    print('SubPlayer::dispose()');
     _animatedIconController.dispose();
     super.dispose();
   }
@@ -291,7 +305,7 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
                       PlatformMethodInvoker.pause();
                       _animatedIconController.forward();
                     }else{
-                      PlatformMethodInvoker.play();
+                      PlatformMethodInvoker.playFromCurrentQueueIndex(isForce: false);
                       _animatedIconController.reverse();
                     }
                     animatedIconControllerChecker = !animatedIconControllerChecker;
@@ -316,6 +330,13 @@ class _SubPlayerState extends State<SubPlayer> with SingleTickerProviderStateMix
         ),
       ),
     );
+  }
+
+  @override
+  void setState(fn) {
+    if(mounted){
+      super.setState(fn);
+    }
   }
 
 }

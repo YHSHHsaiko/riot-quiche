@@ -380,7 +380,10 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
         public boolean playFromCurrentMediaId (MethodCall call) {
             if (_currentMediaId != null) {
-                playerAPI.playFromMediaId(_currentMediaId);
+                List<Object> arguments = call.arguments();
+                Boolean isForce = (Boolean)arguments.get(0);
+
+                playerAPI.playFromMediaId(_currentMediaId, isForce);
                 return true;
             } else {
                 return false;
@@ -389,7 +392,10 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
         public boolean playFromCurrentQueueIndex (MethodCall call) {
             if (_currentQueueIndex != -1) {
-                playerAPI.playFromQueueIndex(_currentQueueIndex);
+                List<Object> arguments = call.arguments();
+                Boolean isForce = (Boolean)arguments.get(0);
+
+                playerAPI.playFromQueueIndex(_currentQueueIndex, isForce);
                 return true;
             } else {
                 return false;

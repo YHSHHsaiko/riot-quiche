@@ -65,6 +65,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
     private int isConnect = 0; // false
 
+    private String currentMediaId = "";
+
     private ArrayList<MediaSessionCompat.QueueItem> queueItems = new ArrayList<>();
     private int queueIndex = 0;
     private MediaSessionCompat mediaSession;
@@ -432,7 +434,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         public static final String CUSTOM_ACTION_SET_QUEUE = "SET_QUEUE";
         public static final String CUSTOM_ACTION_STOP_SERVICE = "STOP_SERVICE";
         public static final String CUSTOM_ACTION_STOP_FOREGROUND = "STOP_FOREGROUND";
-        public static final String CUSTOM_ACTION_SET_CONNECT = "CUSTOM_ACTION_SET_CONNECT";
+        public static final String CUSTOM_ACTION_SET_CONNECT = "SET_CONNECT";
+        public static final String CUSTOM_ACTION_PLAY_FROM_QUEUE_INDEX = "PLAY_FROM_QUEUE_INDEX";
 
         private AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener =
                 new AudioManager.OnAudioFocusChangeListener() {
@@ -479,26 +482,37 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPlayFromMediaId (String mediaId, Bundle extras) {
-            /*
-            On played from local media ID (not an external network URI or others).
-            */
-            MediaBrowserCompat.MediaItem targetItem = library.getMediaItemFromMediaId(mediaId);
+            Byte isForce = 1;
+            if (extras != null) {
+                isForce = extras.getByte("isForce");
+            }
 
-            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
-                    getApplicationContext(),
-                    Util.getUserAgent(getApplicationContext(), "riot-quiche")
-            );
-            Uri uri = targetItem.getDescription().getMediaUri();
-            MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(uri);
+            if (isForce == 1 || !currentMediaId.equals(mediaId)) {
+                /*
+                On played from local media ID (not an external network URI or others).
+                */
+                MediaBrowserCompat.MediaItem targetItem = library.getMediaItemFromMediaId(mediaId);
 
-            // prepare exoPlayer
-            exoPlayer.prepare(mediaSource);
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
+                        getApplicationContext(),
+                        Util.getUserAgent(getApplicationContext(), "riot-quiche")
+                );
+                Uri uri = targetItem.getDescription().getMediaUri();
+                MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(uri);
 
-            Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
-            onPlay();
+                // prepare exoPlayer
+                exoPlayer.prepare(mediaSource);
 
-            mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
+                Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
+                onPlay();
+
+                mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
+            } else {
+                onPlay();
+            }
+
+            currentMediaId = mediaId;
         }
 
         @Override
@@ -578,6 +592,10 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 case QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT: {
                     isConnect = extras.getInt("connection");
                     break;
+                }
+                case QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_PLAY_FROM_QUEUE_INDEX: {
+                    queueIndex = (int)extras.getLong("index");
+                    onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), extras);
                 }
                 default: {
                     break;

@@ -253,12 +253,23 @@ public class MainActivity extends FlutterActivity {
 
     // Player APIs
     public class PlayerAPI {
-        public void playFromMediaId (String mediaId) {
-            mediaController.getTransportControls().playFromMediaId(mediaId, null);
+        public void playFromMediaId (String mediaId, Boolean isForce) {
+            Bundle extras = new Bundle();
+            extras.putByte("isForce", isForce.booleanValue() ? (byte)1 : (byte)0);
+
+            mediaController.getTransportControls().playFromMediaId(mediaId, extras);
         }
 
-        public void playFromQueueIndex (long index) {
-            mediaController.getTransportControls().skipToQueueItem(index);
+        public void playFromQueueIndex (long index, Boolean isForce) {
+            Bundle extras = new Bundle();
+            extras.putLong("index", index);
+            extras.putByte("isForce", isForce.booleanValue() ? (byte)1 : (byte)0);
+
+            // mediaController.getTransportControls().skipToQueueItem(index, extras);
+            mediaController.getTransportControls().sendCustomAction(
+                    QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_PLAY_FROM_QUEUE_INDEX,
+                    extras
+            );
         }
 
         public void setQueue (ArrayList<String> mediaIdList) {

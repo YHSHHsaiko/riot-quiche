@@ -76,6 +76,7 @@ class MusicPlayerState extends State<MusicPlayer>
   //
   PlaybackState _currentState;
   int _layerPreset;
+  ValueNotifier<List<dynamic>> onMusicChangedForSubPlayerNotifier;
   //
 
 
@@ -185,6 +186,8 @@ class MusicPlayerState extends State<MusicPlayer>
     layers.addAll(widget.layers);
 
     //
+    onMusicChangedForSubPlayerNotifier = ValueNotifier<List<dynamic>>(null);
+
     WidgetsBinding.instance.addObserver(this);
     //
   }
@@ -194,6 +197,8 @@ class MusicPlayerState extends State<MusicPlayer>
     print('MusicPlayer::dispose()');
     _controller.dispose();
     _animatedIconController.dispose();
+    onMusicChangedForSubPlayerNotifier.dispose();
+    
     _saveCache();
     
     PlatformMethodInvoker.blueShift();
@@ -294,6 +299,8 @@ class MusicPlayerState extends State<MusicPlayer>
           _music = musicList[nowPlayIndexOfQueue];
           PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
           PlatformMethodInvoker.playFromCurrentQueueIndex();
+          
+          onMusicChangedForSubPlayerNotifier.value = <dynamic>[musicList, nowPlayIndexOfQueue];
           sliderValue = 0;
           animatedIconControllerChecker = true;
         });
@@ -314,11 +321,8 @@ class MusicPlayerState extends State<MusicPlayer>
       await PlatformMethodInvoker.setCurrentMediaId(_music.id);
 
       if (!isInitial) {
-        PlatformMethodInvoker.playFromCurrentMediaId();
+        PlatformMethodInvoker.playFromCurrentMediaId(isForce: true);
         sliderValue = 0;
-      } else {
-        PlatformMethodInvoker.playFromCurrentMediaId();
-        PlatformMethodInvoker.pause();
       }
 
     }else{
@@ -341,10 +345,12 @@ class MusicPlayerState extends State<MusicPlayer>
       await PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
 
       if (!isInitial) {
-        PlatformMethodInvoker.playFromCurrentQueueIndex();
+        PlatformMethodInvoker.playFromCurrentQueueIndex(isForce: true);
         sliderValue = 0;
       }
     }
+
+    onMusicChangedForSubPlayerNotifier.value = <dynamic>[musicList, nowPlayIndexOfQueue];
 
     setState(() {});
 
@@ -380,7 +386,11 @@ class MusicPlayerState extends State<MusicPlayer>
             showDialog(
               context: context,
               builder: (_) {
-                return MusicList(musicList, nowPlayIndexOfQueue, onChangedCallback: _setMusic);
+                return MusicList(
+                  musicList, nowPlayIndexOfQueue,
+                  onChangedCallback: _setMusic,
+                  onMusicChangedForSubPlayerNotifier: onMusicChangedForSubPlayerNotifier
+                );
               },
             );
 
@@ -590,7 +600,8 @@ class MusicPlayerState extends State<MusicPlayer>
               _animatedIconController.reverse();
               print(sliderValue);
               sliderValue == 0
-                  ? PlatformMethodInvoker.playFromCurrentQueueIndex() : PlatformMethodInvoker.play();
+                  ? PlatformMethodInvoker.playFromCurrentQueueIndex(isForce: true)
+                  : PlatformMethodInvoker.playFromCurrentQueueIndex(isForce: false);
             }
             setState(() {
               animatedIconControllerChecker = !animatedIconControllerChecker;

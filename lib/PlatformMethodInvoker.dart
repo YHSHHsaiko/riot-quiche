@@ -113,14 +113,15 @@ class PlatformMethodInvoker {
     await _methodChannel.invokeMethod('setCurrentQueueIndex', <dynamic>[index]);
   }
 
-  static Future<Null> playFromCurrentMediaId () async {
-    await _methodChannel.invokeMethod('playFromCurrentMediaId', <dynamic>[]);
+  static Future<Null> playFromCurrentMediaId ({bool isForce = true}) async {
+    await _methodChannel.invokeMethod('playFromCurrentMediaId', <dynamic>[isForce]);
   }
 
-  static Future<Null> playFromCurrentQueueIndex () async {
-    await _methodChannel.invokeMethod('playFromCurrentQueueIndex', <dynamic>[]);
+  static Future<Null> playFromCurrentQueueIndex ({bool isForce = true}) async {
+    await _methodChannel.invokeMethod('playFromCurrentQueueIndex', <dynamic>[isForce]);
   }
 
+  @deprecated
   static Future<Null> play () async {
     await _methodChannel.invokeMethod('play', <dynamic>[]);
   }
