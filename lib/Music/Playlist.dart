@@ -95,6 +95,28 @@ class Playlist {
       return [];
     }
   }
+
+  static Future<Null> removePlaylist (dynamic playlistIdentifier) async {
+    String name;
+    if (playlistIdentifier is Playlist) {
+      name = playlistIdentifier.name;
+    } else if (playlistIdentifier is String) {
+      name = playlistIdentifier;
+    } else {
+      throw Exception('unsupported type: ${playlistIdentifier.runtimeType}');
+    }
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String key = '${prefName}::${name}';
+    if (prefs.containsKey(key)) {
+      prefs.remove(key);
+      
+      final List<String> playlists = prefs.getStringList(prefName);
+      playlists.remove(name);
+
+      prefs.setStringList(prefName, playlists);
+    }
+  }
   //                //////////////////////////////
 
 }

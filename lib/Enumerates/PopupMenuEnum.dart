@@ -1,3 +1,4 @@
 enum PopupMenuEnum {
-  AddToPlaylist
+  AddToPlaylist,
+  RemovePlaylist
 }

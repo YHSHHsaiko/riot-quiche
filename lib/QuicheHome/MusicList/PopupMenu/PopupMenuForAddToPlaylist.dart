@@ -148,11 +148,14 @@ class _PlaylistInputState extends State<_PlaylistInput> {
         ),
         Expanded(
           flex: 3,
-          child: TextField(
-            controller: _textEditingController,
-            onChanged: (String changedString) {
-              _addedPlaylistName = changedString;
-            }
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TextField(
+              controller: _textEditingController,
+              onChanged: (String changedString) {
+                _addedPlaylistName = changedString;
+              }
+            )
           )
         )
       ]
@@ -221,7 +224,10 @@ class _PlaylistCellState extends State<_PlaylistCell> {
                 ),
                 Expanded(
                   flex: 3,
-                  child: Text(widget.playlist.name)
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(widget.playlist.name)
+                  )
                 )
               ]
             );

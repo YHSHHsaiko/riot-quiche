@@ -6,6 +6,7 @@ import 'package:riot_quiche/Music/Music.dart';
 import 'package:riot_quiche/Music/Playlist.dart';
 import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForAddToPlaylist.dart';
+import 'package:riot_quiche/QuicheHome/MusicList/PopupMenu/PopupMenuForRemovePlaylist.dart';
 import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Album.dart';
@@ -37,19 +38,24 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
   bool wantKeepAlive = true;
   //
   dynamic listItem;
-  SortType nowSortType = SortType.TITLE_ASC;
+  static SortType nowSortType = SortType.TITLE_ASC;
 
   String _playlistIdentifier;
   bool _isInitialized;
 
   ScrollController _reorderScrollController;
 
+  bool isPlaylist;
+
+  bool editMode;
 
   @override
   void initState () {
     super.initState();
 
     _isInitialized = false;
+    isPlaylist = true;
+    editMode = false;
 
     _reorderScrollController = ScrollController();
 
@@ -85,11 +91,27 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
 
         Widget listView;
         if (listItem.isEmpty || listItem[0] is Playlist) {
+          isPlaylist = true;
+          editMode = false;
+          //
+        } else {
+          isPlaylist = false;
+          //
+        }
+
+        if (editMode) {
+          listView = EditPlaylistView(
+            _playlistIdentifier,
+            listItem,
+            scrollController: _reorderScrollController,
+            childBuilder: (int index) => _seclist(index, size),
+          );
+        } else {
           listView = ListView.separated(
             itemBuilder: (BuildContext context, int index) {
               if (index < listItem.length) {
-                return GestureDetector(
-                  onTap: () {
+                return FlatButton(
+                  onPressed: () {
                     widget.onWillPopNotifier.value = <dynamic>[false, index];
 
                     //TODO　ここでlistitemを全部追加
@@ -105,37 +127,6 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
             separatorBuilder: (BuildContext context, int index) {
               return Divider(height: 1);
             }
-          );
-        } else {
-          listView = ReorderableListView(
-            scrollController: _reorderScrollController,
-            onReorder: (int oldIndex, int newIndex) {
-              setState(() {
-                if (newIndex > oldIndex) {
-                  newIndex -= 1;
-                }
-                
-                Music item = listItem.removeAt(oldIndex);
-                listItem.insert(newIndex, item);
-                Playlist(_playlistIdentifier, listItem).save();
-              });
-            },
-            children: List.generate(listItem.length+1, (int index) {
-              if (index < listItem.length) {
-                return FlatButton(
-                  key: Key(index.toString()),
-                  onPressed: () {
-                    widget.onWillPopNotifier.value = <dynamic>[false, index];
-
-                    //TODO　ここでlistitemを全部追加
-                    //callbuck側になにかkeyを渡して、特定の場所から始める。
-                  },
-                  child: _seclist(index, size)
-                );
-              } else {
-                return Divider(key: Key(index.toString()), height: 100);
-              }
-            }),
           );
         }
 
@@ -203,6 +194,15 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
     if (_playlistIdentifier == null) {
       // this block is executed when listItem is the list of "Playlist".
       listItem = await Playlist.playlists;
+      listItem.sort((Playlist p1, Playlist p2) {
+        if (nowSortType == SortType.TITLE_ASC) {
+          return p1.name.compareTo(p2.name);
+        } else if (nowSortType == SortType.TITLE_DESC) {
+          return p2.name.compareTo(p1.name);
+        } else {
+          return 0;
+        }
+      });
     } else {
       // this block is executed when listItem is the list of "Music".
       listItem = (await Playlist.fromName(_playlistIdentifier)).musics;
@@ -217,26 +217,71 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
   }
 
   Widget _menu(){
-    return ListTile(
-      title: Text(nowSortType.toString().split('.')[1]),
-      trailing: PopupMenuButton<SortType>(
-        onSelected: (SortType result) {
-          setState(() {
-            nowSortType = result;
-            // listItem = QuicheOracleFunctions.getSortedMusicList(nowSortType);
-          });
-        },
-        itemBuilder: (BuildContext context) {
-          return SortType.values.map((SortType st) {
-            return PopupMenuItem<SortType>(
-              value: st,
-              child: Text(st.toString()),
-            );
-          }).toList();
-        },
-      ),
-    );
-
+    if (isPlaylist) {
+      return ListTile(
+        title: Text(nowSortType.toString().split('.')[1]),
+        trailing: PopupMenuButton<SortType>(
+          onSelected: (SortType result) {
+            setState(() {
+              nowSortType = result;
+              // listItem = QuicheOracleFunctions.getSortedMusicList(nowSortType);
+            });
+          },
+          itemBuilder: (BuildContext context) {
+            return <PopupMenuEntry<SortType>>[
+              PopupMenuItem<SortType>(
+                value: SortType.TITLE_ASC,
+                child: Text(SortType.TITLE_ASC.toString())
+              ),
+              PopupMenuItem<SortType>(
+                value: SortType.TITLE_DESC,
+                child: Text(SortType.TITLE_DESC.toString())
+              )
+            ];
+          },
+        ),
+      );
+    } else {
+      if (editMode) {
+        return Container(
+          alignment: Alignment.centerLeft,
+          child: FlatButton(
+            onPressed: () {
+              setState(() {
+                editMode = false;
+              });
+            },
+            color: Colors.blue,
+            child: const Text(
+              'Quit Edit Mode',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold
+              )
+            )
+          )
+        );
+      } else {
+        return Container(
+          alignment: Alignment.centerLeft,
+          child: FlatButton(
+            onPressed: () {
+              setState(() {
+                editMode = true;
+              });
+            },
+            color: Colors.blue,
+            child: const Text(
+              'Edit Playlist',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold
+              )
+            )
+          )
+        );
+      }
+    }
   }
 
   Widget _seclist(int index, Size size){
@@ -246,7 +291,7 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
     Image jucketImage;
 
     print(listItem);
-    if (listItem[index] is Playlist) {
+    if (isPlaylist) {
       Playlist targetPlaylist = listItem[index];
       if (targetPlaylist.musics.isEmpty) {
         jucketImage = QuicheAssets.icon;
@@ -260,7 +305,7 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
         artist = '${targetPlaylist.musics.length} Musics';
       }
       title = targetPlaylist.name;
-    } else if (listItem is List) {
+    } else {
       m = listItem[index];
       jucketImage = m.getArt();
       if (jucketImage == null) {
@@ -270,44 +315,83 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
       artist = listItem[index].artist;
     }
 
-//    var img = Image.network('https://pbs.twimg.com/media/EWm2AmcU4AID_2O?format=jpg&name=medium');
     var jacketSize = (size.height > size.width ? size.height: size.width) * 0.1;
 
     Widget popupMenu;
-    if (listItem[index] is Playlist) {
+    if (editMode) {
       popupMenu = Container();
-    } else if (listItem is List) {
-      popupMenu = PopupMenuButton<PopupMenuEnum>(
-        onSelected: (PopupMenuEnum popupMenu) async {
-          switch (popupMenu) {
-            case PopupMenuEnum.AddToPlaylist: {
-              await showDialog<bool>(
-                context: context,
-                builder: (BuildContext context) {
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: 250, maxHeight: 400
-                      ),
-                      child: PopupMenuForAddToPlaylist(m)
-                    )
-                  );
-                }
-              );
+    } else {
+      if (isPlaylist) {
+        popupMenu = PopupMenuButton<PopupMenuEnum>(
+          onSelected: (PopupMenuEnum popupMenu) async {
+            switch (popupMenu) {
+              case PopupMenuEnum.RemovePlaylist: {
+                await showDialog<bool>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: 250, maxHeight: 200
+                        ),
+                        child: PopupMenuForRemovePlaylist(listItem[index])
+                      )
+                    );
+                  }
+                );
 
-              widget.onPlaylistChangedNotifier.value = <dynamic>[];
+                widget.onPlaylistChangedNotifier.value = <dynamic>[];
+
+                break;
+              }
+              default: break;
             }
+          },
+          itemBuilder: (BuildContext context) {
+            return const <PopupMenuEntry<PopupMenuEnum>>[
+              const PopupMenuItem<PopupMenuEnum>(
+                value: PopupMenuEnum.RemovePlaylist,
+                child: const Text('Remove playlist')
+              )
+            ];
           }
-        },
-        itemBuilder: (BuildContext context) {
-          return <PopupMenuEntry<PopupMenuEnum>>[
-            const PopupMenuItem<PopupMenuEnum>(
-              value: PopupMenuEnum.AddToPlaylist,
-              child: const Text('Add to playlist')
-            )
-          ];
-        }
-      );
+        );
+      } else {
+        popupMenu = PopupMenuButton<PopupMenuEnum>(
+          onSelected: (PopupMenuEnum popupMenu) async {
+            switch (popupMenu) {
+              case PopupMenuEnum.AddToPlaylist: {
+                await showDialog<bool>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: 250, maxHeight: 400
+                        ),
+                        child: PopupMenuForAddToPlaylist(m)
+                      )
+                    );
+                  }
+                );
+
+                widget.onPlaylistChangedNotifier.value = <dynamic>[];
+
+                break;
+              }
+              default: break;
+            }
+          },
+          itemBuilder: (BuildContext context) {
+            return const <PopupMenuEntry<PopupMenuEnum>>[
+              const PopupMenuItem<PopupMenuEnum>(
+                value: PopupMenuEnum.AddToPlaylist,
+                child: const Text('Add to playlist')
+              )
+            ];
+          }
+        );
+      }
     }
 
     return Container(
@@ -367,18 +451,68 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
           ]
       ),
     );
+  }
+}
 
-//    return Container(
-//      child: ListTile(
-//        leading: Container(
-//          height: size.width * 0.1,
-//          width: size.width * 0.1,
-//          child: jucketImage,
-//        ),
-//        title: Text(listItem[index].title),
-//        subtitle: Text(listItem[index].artist),
-//        trailing: Icon(Icons.arrow_forward_ios, color: Colors.blueGrey,),
-//      ),
-//    );
+
+class EditPlaylistView extends StatefulWidget {
+  final String playlistIdentifier;
+  final listItem;
+  final ScrollController scrollController;
+  final Widget Function(int) childBuilder;
+
+  EditPlaylistView (
+    this.playlistIdentifier,
+    this.listItem,
+    {
+      @required this.scrollController,
+      @required this.childBuilder
+    }
+  );
+
+  @override
+  _EditPlaylistViewState createState() {
+    // TODO: implement createState
+    return _EditPlaylistViewState();
+  }
+}
+
+class _EditPlaylistViewState extends State<EditPlaylistView> {
+  List<Music> listItem;
+
+  @override
+  void initState () {
+    super.initState();
+
+    listItem = widget.listItem;
+  }
+
+  @override
+  Widget build (BuildContext context) {
+    return ReorderableListView(
+      scrollController: widget.scrollController,
+      onReorder: (int oldIndex, int newIndex) {
+        setState(() {
+          if (newIndex > oldIndex) {
+            newIndex -= 1;
+          }
+          
+          Music item = listItem.removeAt(oldIndex);
+          listItem.insert(newIndex, item);
+          Playlist(widget.playlistIdentifier, listItem).save();
+        });
+      },
+      children: List.generate(widget.listItem.length+1, (int index) {
+        if (index < widget.listItem.length) {
+          return FlatButton(
+            key: Key(index.toString()),
+            onPressed: () => null,
+            child: widget.childBuilder(index)
+          );
+        } else {
+          return Divider(key: Key(index.toString()), height: 100);
+        }
+      })
+    );
   }
 }
