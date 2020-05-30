@@ -130,17 +130,20 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
           );
         }
 
-        return Column(
-          children: <Widget>[
-            Align(
-              alignment: Alignment.topCenter,
-              child: _menu(),
-            ),
+        return Scaffold(
+          backgroundColor: editMode ? Colors.blue.withAlpha(30) : Colors.white,
+          body: Column(
+            children: <Widget>[
+              Align(
+                alignment: Alignment.topCenter,
+                child: _menu(),
+              ),
 
-            Expanded(
-              child: listView
-            )
-          ]
+              Expanded(
+                child: listView
+              )
+            ]
+          )
         );
       }
     );
@@ -244,38 +247,38 @@ class _PlaylistTabState extends State<PlaylistTab> with AutomaticKeepAliveClient
     } else {
       if (editMode) {
         return Container(
-          alignment: Alignment.centerLeft,
-          child: FlatButton(
-            onPressed: () {
-              setState(() {
-                editMode = false;
-              });
-            },
-            color: Colors.blue,
-            child: const Text(
-              'Quit Edit Mode',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold
-              )
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.all(10.0),
+            child: FlatButton(
+              onPressed: () {
+                setState(() {
+                  editMode = false;
+                });
+              },
+              color: Colors.red[200],
+              child: Icon(Icons.check)
             )
           )
         );
       } else {
         return Container(
-          alignment: Alignment.centerLeft,
-          child: FlatButton(
-            onPressed: () {
-              setState(() {
-                editMode = true;
-              });
-            },
-            color: Colors.blue,
-            child: const Text(
-              'Edit Playlist',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.all(10.0),
+            child: FlatButton(
+              onPressed: () {
+                setState(() {
+                  editMode = true;
+                });
+              },
+              color: Colors.blue,
+              child: const Text(
+                'Edit Playlist',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold
+                )
               )
             )
           )

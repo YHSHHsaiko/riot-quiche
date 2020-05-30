@@ -514,9 +514,9 @@ class MusicPlayerState extends State<MusicPlayer>
           width: headerHeight,
           child: IconButton(
             icon: Icon(Icons.layers),
-            onPressed: () {
+            onPressed: () async {
               print('layers');
-              showDialog(
+              layers = await showDialog(
                 context: context,
                 builder: (_) {
                   return MusicLayerSetting(callbackSetLayer, layers, MusicPlayerState.screenSize);

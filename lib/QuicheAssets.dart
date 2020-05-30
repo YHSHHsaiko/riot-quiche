@@ -8,8 +8,5 @@ class QuicheAssets {
 
   // App Icon
   static String get iconPath => p.join(_assetFolder, 'images', 'icon.png');
-
-  static Image get icon {
-    return Image.asset(iconPath);
-  }
+  static Image get icon => Image.asset(iconPath);
 }
