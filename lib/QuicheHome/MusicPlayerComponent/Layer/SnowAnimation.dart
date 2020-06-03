@@ -44,7 +44,7 @@ class SnowAnimation extends CustomizableStatefulWidget {
 
   factory SnowAnimation.fromJson (Map<String, dynamic> importedSetting) {
     int snowNumber = importedSetting['snowNumber'];
-    double speed = importedSetting['snowNumber'];
+    double speed = importedSetting['speed'];
     Size screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]);
     bool isGradient = importedSetting['isGradient'];
     Color color = Color(importedSetting['color']);
@@ -107,7 +107,7 @@ class SnowAnimation extends CustomizableStatefulWidget {
     List<LayerProp> list = [
       LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます(個数)', initValue: 50, isSetting: true, index: 1),
       LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2, isSetting: false, index: 2),
-      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true, isSetting: false, index: 3),
+      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: false, isSetting: false, index: 3),
       LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red, isSetting: true, index: 4),
     ];
     return list;
@@ -210,6 +210,7 @@ class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProvider
   Widget build(BuildContext context) {
     var _painter;
     if (widget.isGradient){
+      // BUG: DO NOT USE
       _painter = GradientSnowPainter(snows: snows);
     } else {
       _painter = SnowPainter(snows: snows);
