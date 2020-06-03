@@ -15,13 +15,20 @@ class LayerSetting extends StatefulWidget{
 
 class LayerSettingState extends State<LayerSetting>{
 
-  List<LayerProp> layerPropList;
+  List<LayerProp> layerPropList = [], layerPropList_false = [];
   List<TextEditingController> _textEditingControllerList = [];
 
   @override
   void initState() {
     super.initState();
-    layerPropList = widget.layerPropList;
+
+    for (LayerProp lp_f in widget.layerPropList){
+      if (lp_f.isSetting == true){
+        layerPropList.add(lp_f);
+      }else{
+        layerPropList_false.add(lp_f);
+      }
+    }
 
     for (LayerProp lp in layerPropList){
       if (lp.layerPropType == LayerPropType.number || lp.layerPropType == LayerPropType.string){
@@ -35,6 +42,13 @@ class LayerSettingState extends State<LayerSetting>{
       }
     }
     print('initState done.');
+  }
+
+  List<LayerProp> permByIndex(List<LayerProp> lp){
+    print("sort_before");
+    lp.sort((a, b) => a.index.compareTo(b.index));
+    print("sort_after");
+    return lp;
   }
 
   @override
@@ -61,10 +75,16 @@ class LayerSettingState extends State<LayerSetting>{
           }
           return Text(index.toString());
         },
-        itemCount: widget.layerPropList.length,
+        itemCount: layerPropList.length,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
+          //ここで、layerPropListとlayerPropList_falseを足して、indexで並べ替える。
+          print("add_before");
+          layerPropList.addAll(layerPropList_false);
+          print("add_after");
+          layerPropList = permByIndex(layerPropList);
+
           widget.callback(layerPropList, widget.type);
           Navigator.of(context).pop();
         },

@@ -44,15 +44,15 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
 
   static List<LayerProp> getSettingList(){
     List<LayerProp> list = [
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'startWidth', description: '0~360度を指定できます', initValue: 4),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'sweepWidth', description: '0~360度を指定できます', initValue: 8),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialStartWidth', description: '初期の角度を指定できます', initValue: 0.0),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialSweepPosition', description: '初期の幅を指定できます', initValue: 0.0),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'diameter', description: 'もし長辺、短辺で指定するときは0を入力してください', initValue: 300),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'longSide', description: '長辺', initValue: 300),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'shortSide', description: '短辺', initValue: 300),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'strokeWidth', description: '線の幅', initValue: 1),
-      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色', initValue: ColorType.red),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'startWidth', description: '0~360度を指定できます', initValue: 4, isSetting: false, index: 1),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'sweepWidth', description: '0~360度を指定できます', initValue: 8, isSetting: false, index: 2),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialStartWidth', description: '初期の角度を指定できます', initValue: 0.0, isSetting: false, index: 3),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialSweepPosition', description: '初期の幅を指定できます', initValue: 0.0, isSetting: false, index: 4),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'diameter', description: 'もし長辺、短辺で指定するときは0を入力してください', initValue: 300, isSetting: true, index: 5),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'longSide', description: '長辺', initValue: 300, isSetting: false, index: 6),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'shortSide', description: '短辺', initValue: 300, isSetting: false, index: 7),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'strokeWidth', description: '線の幅', initValue: 1, isSetting: true, index: 8),
+      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色', initValue: ColorType.red, isSetting: true, index: 9),
     ];
     return list;
   }

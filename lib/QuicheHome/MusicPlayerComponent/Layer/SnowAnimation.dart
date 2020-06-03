@@ -9,14 +9,14 @@ import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
 
 
 class SnowAnimation extends StatefulWidget implements CustomizableWidget{
-  final double snowNumber; // 個数
+  final int snowNumber; // 個数
   final double speed; // 落下速度
   final Size screenSize; // screenSize
   final bool isGradient;
   final Color color;
 
   SnowAnimation({
-    this.snowNumber = 50.0,
+    this.snowNumber = 50,
     this.speed = 0.1,
     this.screenSize,
     this.isGradient = false,
@@ -34,10 +34,10 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
 
   static List<LayerProp> getSettingList(){
     List<LayerProp> list = [
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます', initValue: 50.0),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2),
-      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true),
-      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'snowNumber', description: '雪の数を指定できます(個数)', initValue: 50, isSetting: true, index: 1),
+      LayerProp(layerPropType: LayerPropType.number,  entry: 'speed', description: null, initValue: 0.2, isSetting: false, index: 2),
+      LayerProp(layerPropType: LayerPropType.boolean, entry: 'isGradient',   description: '角度を付けます', initValue: true, isSetting: false, index: 3),
+      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色を指定できます', initValue: ColorType.red, isSetting: true, index: 4),
     ];
     return list;
   }

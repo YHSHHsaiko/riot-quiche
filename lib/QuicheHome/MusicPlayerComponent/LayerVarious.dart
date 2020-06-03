@@ -51,6 +51,8 @@ enum LayerPropType{
 class LayerProp{
   LayerPropType _layerPropType;
   String _entry, _description;
+  bool _isSetting;
+  int _index;
 
   dynamic _result;// 初期値を必ず追加しておくことが必要である
 
@@ -59,15 +61,21 @@ class LayerProp{
     @required String entry,
     String description = null,
     dynamic initValue = null,
+    bool isSetting,
+    int index,
   }): this._layerPropType = layerPropType,
         this._entry = entry,
         this._description = description,
-        this._result = initValue;
+        this._result = initValue,
+        this._isSetting = isSetting,
+        this._index = index;
 
   LayerPropType get layerPropType => _layerPropType;
   String        get entry         => _entry;
   String        get description   => _description;
   dynamic       get result        => _result;
+  bool          get isSetting     => _isSetting;
+  int           get index         => _index;
 
   void setResult(dynamic res){
     this._result = res;
