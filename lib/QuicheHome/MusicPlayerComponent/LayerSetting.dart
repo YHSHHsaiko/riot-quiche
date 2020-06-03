@@ -217,20 +217,40 @@ class LayerSettingState extends State<LayerSetting>{
 
 
 enum ColorType{
+  white,
+  black,
   red,
   orange,
+  lightorange,
+  yellow,
+  lightgreen,
   green,
+  bluegreen,
+  lightblue,
   blue,
+  bluepurple,
+  purple,
+  redpurple,
 }
 
 class ColorProp{
   static List<ColorType> _colorTypeValueList = ColorType.values;
 
   static List<Color> _colorList = [
-    Colors.red,
-    Colors.orange,
-    Colors.green,
-    Colors.blue,
+    Color(0xffffffff),
+    Color(0x00000000),
+    Color(0xffef858c),
+    Color(0xffef845c),
+    Color(0xfff9c270),
+    Color(0xfffff67f),
+    Color(0xffc1db81),
+    Color(0xff69bd83),
+    Color(0xff61c1be),
+    Color(0xff54c3f1),
+    Color(0xff6c9bd2),
+    Color(0xff796baf),
+    Color(0xffba79b1),
+    Color(0xffee87b4),
   ];
 
   static ColorType getNextColorType(ColorType type){
@@ -253,3 +273,4 @@ class ColorProp{
     return _colorList[getPrevColorType(type).index];
   }
 }
+

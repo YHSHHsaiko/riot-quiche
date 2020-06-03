@@ -494,7 +494,7 @@ class _EditPlaylistViewState extends State<EditPlaylistView> {
   Widget build (BuildContext context) {
     return ReorderableListView(
       //TODO : 俺にはわからないが、何故か下の奴がないと言われるんだ！
-//      scrollController: widget.scrollController,
+      scrollController: widget.scrollController,
       onReorder: (int oldIndex, int newIndex) {
         setState(() {
           if (newIndex > oldIndex) {
