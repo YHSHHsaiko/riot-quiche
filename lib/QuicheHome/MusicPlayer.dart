@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'dart:math';
 
 import 'package:riot_quiche/QuicheAssets.dart';

@@ -231,10 +231,16 @@ class MusicLayerSettingState extends State<MusicLayerSetting>{
   }
 
   void _editLayer () {
-    for (int i = 0; i < widList.length; ++i) {
+    List<CustomizableWidget> deleteList = <CustomizableWidget>[];
+
+    for (int i = 0; i < checkBoxList.length; ++i) {
       if (!checkBoxList[i]) {
-        widList.remove(widList[i]);
-      } 
+        deleteList.add(widList[i]);
+      }
+    }
+
+    for (CustomizableWidget targetWidget in deleteList) {
+      widList.remove(targetWidget);
     }
   }
 }
