@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:riot_quiche/Music/Album.dart';
+import 'package:riot_quiche/Music/Playlist.dart';
 
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/Music/Music.dart';
@@ -17,7 +19,7 @@ class PopupMenuForAddToPlaylist extends StatefulWidget {
 }
 
 class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
-  List<String> _playlistNameList;
+  List<Playlist> _playlists;
   ValueNotifier<String> onPlaylistInputValueNotifier;
   //
 
@@ -28,9 +30,11 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
     onPlaylistInputValueNotifier = ValueNotifier<String>(null)
     ..addListener(() {
       setState(() {
-        _playlistNameList.add(onPlaylistInputValueNotifier.value);
-        QuicheOracleFunctions.addPlaylist(onPlaylistInputValueNotifier.value);
+        Playlist newPlaylist = Playlist(onPlaylistInputValueNotifier.value, [])
+        ..save();
+        _playlists.add(newPlaylist);
       });
+      print('update playlists::${_playlists}');
     });
   }
 
@@ -56,7 +60,7 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
               break;
             }
             case ConnectionState.done: {
-              if (_playlistNameList == null) {
+              if (snapshot.hasError) {
                 return Center(child: FlutterLogo());
               } else {
                 return Column(
@@ -65,7 +69,7 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
                     Expanded(
                       flex: 1,
                       child: _PlaylistInput(
-                        _playlistNameList,
+                        List<String>.from(_playlists.map((Playlist playlist) => playlist.name)),
                         onPlaylistInputValueNotifier: onPlaylistInputValueNotifier
                       )
                     ),
@@ -75,8 +79,8 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
                         height: MediaQuery.of(context).size.height * 3 / 4,
                         child: ListView(
                           children: <Widget>[
-                            for (int i = 0; i < _playlistNameList.length; ++i) _PlaylistCell(
-                              _playlistNameList[i],
+                            for (int i = 0; i < _playlists.length; ++i) _PlaylistCell(
+                              _playlists[i],
                               widget.targetMusic
                             ),
                             Container(
@@ -98,20 +102,17 @@ class _PopupMenuForAddToPlaylistState extends State<PopupMenuForAddToPlaylist> {
   }
 
   Future<Null> _initialize () async {
-    _playlistNameList = await QuicheOracleVariables.playlistsName;
-    if (_playlistNameList == null) {
-      _playlistNameList = [];
-    }
+    _playlists = await Playlist.playlists;
   }
 }
 
 //
 class _PlaylistInput extends StatefulWidget {
-  final List<String> playlistNameList;
+  final List<String> playlistNames;
   final ValueNotifier<String> onPlaylistInputValueNotifier;
 
 
-  _PlaylistInput (this.playlistNameList, {@required this.onPlaylistInputValueNotifier});
+  _PlaylistInput (this.playlistNames, {@required this.onPlaylistInputValueNotifier});
 
   @override
   _PlaylistInputState createState () {
@@ -121,7 +122,6 @@ class _PlaylistInput extends StatefulWidget {
 
 class _PlaylistInputState extends State<_PlaylistInput> {
   TextEditingController _textEditingController;
-  Color _inputColor;
   String _addedPlaylistName;
   
   @override
@@ -129,7 +129,6 @@ class _PlaylistInputState extends State<_PlaylistInput> {
     super.initState();
 
     _textEditingController = TextEditingController();
-    _inputColor = Colors.black;
   }
 
   @override
@@ -140,7 +139,7 @@ class _PlaylistInputState extends State<_PlaylistInput> {
           flex: 1,
           child: FlatButton(
             onPressed: () {
-              if (!widget.playlistNameList.contains(_addedPlaylistName)) {
+              if (!widget.playlistNames.contains(_addedPlaylistName)) {
                 widget.onPlaylistInputValueNotifier.value = _addedPlaylistName;
               }
             },
@@ -149,16 +148,14 @@ class _PlaylistInputState extends State<_PlaylistInput> {
         ),
         Expanded(
           flex: 3,
-          child: TextField(
-            controller: _textEditingController,
-            onChanged: (String changedString) {
-              _addedPlaylistName = changedString;
-              if (widget.playlistNameList.contains(_addedPlaylistName)) {
-                _inputColor = Colors.red;
-              } else {
-                _inputColor = Colors.blue;
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TextField(
+              controller: _textEditingController,
+              onChanged: (String changedString) {
+                _addedPlaylistName = changedString;
               }
-            }
+            )
           )
         )
       ]
@@ -168,10 +165,10 @@ class _PlaylistInputState extends State<_PlaylistInput> {
 
 //
 class _PlaylistCell extends StatefulWidget {
-  final String playlistName;
+  final Playlist playlist;
   final Music targetMusic;
 
-  _PlaylistCell (this.playlistName, this.targetMusic);
+  _PlaylistCell (this.playlist, this.targetMusic);
 
   @override
   _PlaylistCellState createState () {
@@ -189,9 +186,9 @@ class _PlaylistCellState extends State<_PlaylistCell> {
     onCheckBoxChangedNotifier = ValueNotifier<bool>(null)
     ..addListener(() {
       if (onCheckBoxChangedNotifier.value) {
-        QuicheOracleFunctions.addToPlaylist(widget.playlistName, widget.targetMusic);
+        widget.playlist.add(widget.targetMusic).save();
       } else {
-        QuicheOracleFunctions.removeFromPlaylist(widget.playlistName, widget.targetMusic);
+        widget.playlist.remove(widget.targetMusic).save();
       }
     });
   }
@@ -227,7 +224,10 @@ class _PlaylistCellState extends State<_PlaylistCell> {
                 ),
                 Expanded(
                   flex: 3,
-                  child: Text(widget.playlistName)
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(widget.playlist.name)
+                  )
                 )
               ]
             );
@@ -239,8 +239,7 @@ class _PlaylistCellState extends State<_PlaylistCell> {
   }
 
   Future<bool> _isAddedToPlaylist (Music targetMusic) async {
-    List<Music> playlist = await QuicheOracleFunctions.getPlaylistFromName(widget.playlistName);
-    return List.from(playlist.map((Music music) => music.id)).contains(targetMusic.id);
+    return List.from(widget.playlist.musics.map((Music music) => music.id)).contains(targetMusic.id);
   }
 }
 

@@ -1,15 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import 'package:riot_quiche/Enumerates/ScrollEnum.dart';
 
 
 //長さが収まっちゃうときは、動かないような構造に
 //現状呼び出す側でHeightで囲む必要性あり
 
-enum ScrollEnum{
-  before,
-  now,
-  after,
-}
 
 class AutoScrollText extends StatefulWidget {
   final String text;

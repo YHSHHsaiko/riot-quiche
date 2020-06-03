@@ -1,15 +1,20 @@
+import 'dart:io';
 import 'dart:math';
+
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
-import 'package:riot_quiche/Enumerates/LayerType.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
+import 'package:riot_quiche/QuicheOracle.dart';
 
 //余りにも重いなら、ここで複数を処理できるようにしないといけない
 
-class CircleMine extends StatefulWidget implements CustomizableWidget{
+class CircleMine extends StatefulWidget implements CustomizableStatefulWidget {
   final int sweepWidth, startWidth;
   final double initialSweepPosition, initialStartWidth;
   final Size screenSize;
@@ -18,6 +23,9 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
   final double strokeWidth;
 
   final Color color;
+
+  @override
+  final uniqueID;
 
   CircleMine({
     this.startWidth = 4,
@@ -30,34 +38,105 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
     this.shortSide,
     this.strokeWidth = 1,
     this.color = Colors.white,
-  }) : assert(diameter != null || (longSide != null && shortSide != null));
+    @required this.uniqueID
+  })
+  : assert(diameter != null || (longSide != null && shortSide != null)),
+    assert(uniqueID != null);
 
-  @override
-  _CircleState createState() => _CircleState();
 
-  // implements 用
-  @override
-  LayerType layerType = LayerType.circleMine;
+  factory CircleMine.fromJson (Map<String, dynamic> importedSetting) {
+    int startWidth = importedSetting['startWidth'];
+    int sweepWidth = importedSetting['sweepWidth'];
+    double initialStartWidth = importedSetting['initialStartWidth'];
+    double initialSweepPosition = importedSetting['initialSweepPosition'];
+    Size screenSize = Size(
+        importedSetting['screenSize'][0], importedSetting['screenSize'][1]);
+    double diameter = importedSetting['diameter'];
+    double longSide = importedSetting['longSide'];
+    double shortSide = importedSetting['shortSide'];
+    double strokeWidth = importedSetting['strokeWidth'];
+    Color color = Color(importedSetting['color']);
+    String uniqueID = importedSetting['uniqueID'];
 
-  @override
-  Map<String, dynamic> setting;
+    return CircleMine(
+      startWidth: startWidth,
+      sweepWidth: sweepWidth,
+      initialStartWidth: initialStartWidth,
+      initialSweepPosition: initialSweepPosition,
+      screenSize: screenSize,
+      diameter: diameter,
+      longSide: longSide,
+      shortSide: shortSide,
+      strokeWidth: strokeWidth,
+      color: color,
+      uniqueID: uniqueID
+    );
+  }
 
-  static List<LayerProp> getSettingList(){
+  static List<LayerProp> getSettingList() {
     List<LayerProp> list = [
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'startWidth', description: '0~360度を指定できます', initValue: 4, isSetting: false, index: 1),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'sweepWidth', description: '0~360度を指定できます', initValue: 8, isSetting: false, index: 2),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialStartWidth', description: '初期の角度を指定できます', initValue: 0.0, isSetting: false, index: 3),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'initialSweepPosition', description: '初期の幅を指定できます', initValue: 0.0, isSetting: false, index: 4),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'diameter', description: 'もし長辺、短辺で指定するときは0を入力してください', initValue: 300, isSetting: true, index: 5),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'longSide', description: '長辺', initValue: 300, isSetting: false, index: 6),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'shortSide', description: '短辺', initValue: 300, isSetting: false, index: 7),
-      LayerProp(layerPropType: LayerPropType.number,  entry: 'strokeWidth', description: '線の幅', initValue: 1, isSetting: true, index: 8),
-      LayerProp(layerPropType: LayerPropType.color,   entry: 'color',  description: '色', initValue: ColorType.red, isSetting: true, index: 9),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'startWidth',
+          description: '0~360度を指定できます',
+          initValue: 4,
+          isSetting: false,
+          index: 1),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'sweepWidth',
+          description: '0~360度を指定できます',
+          initValue: 8,
+          isSetting: false,
+          index: 2),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'initialStartWidth',
+          description: '初期の角度を指定できます',
+          initValue: 0.0,
+          isSetting: false,
+          index: 3),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'initialSweepPosition',
+          description: '初期の幅を指定できます',
+          initValue: 0.0,
+          isSetting: false,
+          index: 4),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'diameter',
+          description: 'もし長辺、短辺で指定するときは0を入力してください',
+          initValue: 300,
+          isSetting: true,
+          index: 5),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'longSide',
+          description: '長辺',
+          initValue: 300,
+          isSetting: false,
+          index: 6),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'shortSide',
+          description: '短辺',
+          initValue: 300,
+          isSetting: false,
+          index: 7),
+      LayerProp(layerPropType: LayerPropType.number,
+          entry: 'strokeWidth',
+          description: '線の幅',
+          initValue: 1,
+          isSetting: true,
+          index: 8),
+      LayerProp(layerPropType: LayerPropType.color,
+          entry: 'color',
+          description: '色',
+          initValue: ColorType.red,
+          isSetting: true,
+          index: 9),
     ];
     return list;
   }
 
+
   factory CircleMine.fromLayerPropList(List<LayerProp> list, Size screenSize){
+    print('CircleMine.fromLayerPropList');
+    
     var diameter_tmp = list[4].result;
     var longSide_tmp = list[5].result.toDouble();
     var shortSide_tmp = list[6].result.toDouble();
@@ -76,14 +155,47 @@ class CircleMine extends StatefulWidget implements CustomizableWidget{
       shortSide: shortSide_tmp,
       strokeWidth: list[7].result.toDouble(),
       color: ColorProp.getColor(list[8].result),
+      uniqueID: DateTime.now().millisecondsSinceEpoch.toString(),
     );
   }
 
-  @override
-  String imagePath = 'images/dopper.jpg';
 
   @override
-  String widgetNameJP = '動く円';
+  _CircleState createState() => _CircleState();
+
+  @override
+  final StackLayerType layerType = StackLayerType.CircleMine;
+
+  @override
+  CircleMine importSetting (Map<String, dynamic> importedSetting) {
+    return CircleMine.fromJson(importedSetting);
+  }
+
+  @override
+  Map<String, dynamic> exportSetting () {
+    Map<String, dynamic> settingJson = {
+      "startWidth": startWidth,
+      "sweepWidth": sweepWidth,
+      "initialStartWidth": initialStartWidth,
+      "initialSweepPosition": initialSweepPosition,
+      "screenSize": [screenSize.width, screenSize.height],
+      "diameter": diameter,
+      "longSide": longSide,
+      "shortSide": shortSide,
+      "strokeWidth": strokeWidth,
+      "color": color.value,
+      "stackLayerType": layerType.name,
+      "uniqueID": uniqueID
+    };
+
+    return settingJson;
+  }
+
+  @override
+  String get imagePath => QuicheAssets.iconPath;
+
+  @override
+  String get widgetNameJP => '動く円';
 
 }
 

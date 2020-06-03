@@ -2,15 +2,17 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
 
+import 'package:riot_quiche/QuicheAssets.dart';
+import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter/material.dart';
 
-import 'package:riot_quiche/Enumerates/ExoPlayerPlaybackState.dart';
+import 'package:riot_quiche/Enumerates/PlaybackState.dart';
 import 'package:riot_quiche/Music/Music.dart';
-import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
 import 'package:riot_quiche/QuicheHome/MusicLayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicList/MusicList.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/BackGround.dart';
-import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/Circle.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/CircleMine.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/Layer/SnowAnimation.dart';
 import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
@@ -22,16 +24,23 @@ import 'package:riot_quiche/Enumerates/BottomMenuEnum.dart';
 
 class MusicPlayer extends StatefulWidget{
   final Size scSize;
-  MusicPlayer(this.scSize);
+  final List<dynamic> musicList;
+  final int index;
+  final int repeatChecker;
+  final List<CustomizableWidget> layers;
+
+  MusicPlayer(this.scSize, this.musicList, this.index, this.repeatChecker, this.layers);
 
   @override
   State<StatefulWidget> createState() => MusicPlayerState();
 }
 
-class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin {
+class MusicPlayerState extends State<MusicPlayer>
+      with TickerProviderStateMixin, WidgetsBindingObserver {
+
   /// MusicPlayer Hard Cording
   double heightRateHeader = 0.1, heightRateFooter = 0.3;
-  final imagePath = "images/dopper.jpg";
+  final imagePath = QuicheAssets.iconPath;
 
   /// MusicPlayer variables
   // controlls Animation
@@ -53,21 +62,22 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
 
   // controlls Music
   Music _music;
-  int nowPlayIndexOfQueue = 1;
+  int nowPlayIndexOfQueue;
   List<dynamic> musicList, moveIndexList;
   bool shuffleChecker = false;
-  int repeatChecker = 0;
+  int repeatChecker;
 
   // controlls Layers
-  List<Widget> layers = [];
+  List<CustomizableWidget> layers = [];
   List<Widget> mustLayers = [];
   static Size screenSize, longSize;
   double jacketSize;
 
-  // Others
-  MusicList _cMusicList;
-  // none
-
+  //
+  PlaybackState _currentState;
+  int _layerPreset;
+  ValueNotifier<List<dynamic>> onMusicChangedForSubPlayerNotifier;
+  //
 
 
   @override
@@ -115,12 +125,50 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
       vsync: this,
     );
 
-    PlatformMethodInvoker.redShift(this.forOnData);
+    //
+    _currentState = PlaybackState.STATE_STOPPED;
+    repeatChecker = widget.repeatChecker;
+    //
+
+    PlatformMethodInvoker.redShift((int position, PlaybackState state){
+      _currentState = state;
+
+      setState(() {
+        sliderValue = position.toDouble();
+        print(sliderValue > _music.duration.toDouble());
+        if (sliderValue > _music.duration.toDouble()){
+          sliderValue = 0; position = 0;
+          if (repeatChecker == 0){ //その場で停止
+            //何もしないで初期化
+          }else if (repeatChecker == 1){ //ただ最初に戻る
+            tapedFooterButton('nextAndPrev', 'next');
+          }else if (repeatChecker == 2){ //曲を次のものにして最初に戻る。
+            tapedFooterButton('nextAndPrev', 'unchanged');
+          }
+        }
+        nowSliderPosition = position;
+      });
+      print('''
+      *** redShift ***
+      ${state}
+      ''');
+      bool _flagsForAnimatedIconControllerChecker = animatedIconControllerChecker;
+      if (state == PlaybackState.STATE_PLAYING) {
+        _animatedIconController.reverse();
+        _flagsForAnimatedIconControllerChecker = true;
+      }else {
+        _animatedIconController.forward();
+        _flagsForAnimatedIconControllerChecker = false;
+      }
+
+      animatedIconControllerChecker = _flagsForAnimatedIconControllerChecker;
+
+    });
 
 
-    // TODO ここでPreference使って、曲データを参照する。
     // Set Initial Music.
-    _setMusic([QuicheOracleVariables.musicList[0]], 0);
+    // while (!_isStartRedShift) {}
+    _setMusic(widget.musicList, widget.index, true);
 
     // Index List For Shuffle.
     moveIndexList = List<dynamic>.generate(musicList.length, (i) => (i+1) % musicList.length);
@@ -135,26 +183,84 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
     }
 
 
-    // TODO :　仮で作っている表示用データ。この辺どうにかしないと
-    layers.addAll([
-      SnowAnimation(
-        snowNumber: 50,
-        screenSize: widget.scSize,
-        isGradient: false,
-      ),
+    layers.addAll(widget.layers);
 
-      CircleMine(
-        screenSize: widget.scSize,
-        diameter: jacketSize+50,
-        color: Colors.amber,
-      )]
-    );
+    //
+    onMusicChangedForSubPlayerNotifier = ValueNotifier<List<dynamic>>(null);
+
+    WidgetsBinding.instance.addObserver(this);
+    //
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void dispose () {
+    print('MusicPlayer::dispose()');
     _controller.dispose();
+    _animatedIconController.dispose();
+    onMusicChangedForSubPlayerNotifier.dispose();
+    
+    _saveCache();
+    
+    PlatformMethodInvoker.blueShift();
+    PlatformMethodInvoker.pause();
+
+    WidgetsBinding.instance.removeObserver(this);
+
+    super.dispose();
+  }
+
+  void _saveCache () async {
+    // save preferences
+    print('''
+    ******************************************
+    :save cache:
+    ******************************************
+    ''');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    prefs.setInt(QuicheOracleVariables.musicCachePrefName, 1);
+    prefs.setString(QuicheOracleVariables.musicIdCachePrefName, _music.id);
+    prefs.setInt(QuicheOracleVariables.musicRepeatCheckerPrefName, repeatChecker);
+    prefs.setStringList(
+      QuicheOracleVariables.musicQueueCachePrefName,
+      List<String>.from(musicList.map((dynamic music) => music.id))
+    );
+
+    prefs.setString(QuicheOracleVariables.layerPresetIDPrefName, _layerPreset.toString());
+
+    // save layers
+    File layerJsonFile = await QuicheOracleFunctions.getJsonLayerInformation(_layerPreset.toString())
+    ..createSync(recursive: true);
+
+    Map<String, dynamic> layerJsonObject = Map<String, dynamic>();
+    layerJsonObject['layers'] = <Map<String, dynamic>>[];
+    for (int i = 0; i < layers.length; ++i) {
+      layerJsonObject['layers'].add(layers[i].exportSetting());
+    }
+
+    QuicheOracleFunctions.saveJson(layerJsonFile, layerJsonObject);
+  }
+
+  @override
+  void didChangeAppLifecycleState (AppLifecycleState state) {
+    print('''
+    ******************************************
+    ${state}
+    ******************************************
+    ''');
+    switch (state) {
+      case AppLifecycleState.detached: {
+        dispose();
+        break;
+      }
+      case AppLifecycleState.paused: {
+        _saveCache();
+        break;
+      }
+      default: {
+        break;
+      }
+    }
   }
 
   /// .
@@ -193,6 +299,9 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
           _music = musicList[nowPlayIndexOfQueue];
           PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
           PlatformMethodInvoker.playFromCurrentQueueIndex();
+          
+          onMusicChangedForSubPlayerNotifier.value = <dynamic>[musicList, nowPlayIndexOfQueue];
+          sliderValue = 0;
           animatedIconControllerChecker = true;
         });
         break;
@@ -200,79 +309,56 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
   }
 
 
-
   /// for on date
-  void forOnData(int position, int state){
-    setState(() {
-      sliderValue = position.toDouble();
-      print(position.toDouble() > _music.duration.toDouble());
-      if (position.toDouble() > _music.duration.toDouble()){
-        sliderValue = 0; position = 0;
-        if (repeatChecker == 0){ //その場で停止
-          //何もしないで初期化
-        }else if (repeatChecker == 1){ //ただ最初に戻る
-          tapedFooterButton('nextAndPrev', 'next');
-        }else if (repeatChecker == 2){ //曲を次のものにして最初に戻る。
-          tapedFooterButton('nextAndPrev', 'unchanged');
-        }
-      }
-      nowSliderPosition = position;
-    });
-    print(state);
-    bool _flagsForAnimatedIconControllerChecker = animatedIconControllerChecker;
-    if (state == 1 || state == 2){ //stop:1, pause:2, play:3.
-      _animatedIconController.forward();
-      _flagsForAnimatedIconControllerChecker = false;
-    }else if (state == 3){
-      _animatedIconController.reverse();
-      _flagsForAnimatedIconControllerChecker = true;
-    }
-    setState(() {
-      animatedIconControllerChecker = _flagsForAnimatedIconControllerChecker;
-    });
-
-  }
-
 
 
   /// set music
-  int _setMusic (dynamic music, int playIndex) {
-    animatedIconControllerChecker = true;
+  Future<int> _setMusic (dynamic music, int playIndex, bool isInitial) async {
     nowPlayIndexOfQueue = playIndex;
 
     if (music is Music){
-      setState(() {
-        _music = music;
-        PlatformMethodInvoker.setCurrentMediaId(_music.id);
-        PlatformMethodInvoker.playFromCurrentMediaId();
-      });
+      _music = music;
+      await PlatformMethodInvoker.setCurrentMediaId(_music.id);
+
+      if (!isInitial) {
+        PlatformMethodInvoker.playFromCurrentMediaId(isForce: true);
+        sliderValue = 0;
+      }
+
     }else{
       List<String> idList = [];
       for (var m in music){
         idList.add(m.id);
       }
-      setState(() {
-        musicList = music;
 
-        if (nowPlayIndexOfQueue < 0) {
-          nowPlayIndexOfQueue = 0;
-        } else if (nowPlayIndexOfQueue >= musicList.length) {
-          nowPlayIndexOfQueue = musicList.length - 1;
-        }
-        _music = musicList[nowPlayIndexOfQueue];
-        
-        tapedFooterButton('shuffle', null);
-        PlatformMethodInvoker.setQueue(idList);
-        PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
-        PlatformMethodInvoker.playFromCurrentQueueIndex();
-      });
+      musicList = music;
+
+      if (nowPlayIndexOfQueue < 0) {
+        nowPlayIndexOfQueue = 0;
+      } else if (nowPlayIndexOfQueue >= musicList.length) {
+        nowPlayIndexOfQueue = musicList.length - 1;
+      }
+      _music = musicList[nowPlayIndexOfQueue];
+      
+      tapedFooterButton('shuffle', null);
+      PlatformMethodInvoker.setQueue(idList);
+      await PlatformMethodInvoker.setCurrentQueueIndex(nowPlayIndexOfQueue);
+
+      if (!isInitial) {
+        PlatformMethodInvoker.playFromCurrentQueueIndex(isForce: true);
+        sliderValue = 0;
+      }
     }
+
+    onMusicChangedForSubPlayerNotifier.value = <dynamic>[musicList, nowPlayIndexOfQueue];
+
+    setState(() {});
 
     return nowPlayIndexOfQueue;
   }
 
   /// callback for layerSetting
-  void callbackSetLayer(List<Widget> list){
+  void callbackSetLayer(List<CustomizableWidget> list){
     setState(() {
       print('set');
       layers = list;
@@ -300,11 +386,11 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
             showDialog(
               context: context,
               builder: (_) {
-                if (_cMusicList == null) {
-                  _cMusicList = MusicList(musicList, nowPlayIndexOfQueue, onChangedCallback: _setMusic);
-                }
-
-                return _cMusicList;
+                return MusicList(
+                  musicList, nowPlayIndexOfQueue,
+                  onChangedCallback: _setMusic,
+                  onMusicChangedForSubPlayerNotifier: onMusicChangedForSubPlayerNotifier
+                );
               },
             );
 
@@ -352,7 +438,7 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
               SlideTransition(
                 position: _offsetAnimation,
                 child: Stack(
-                  children: layers + mustLayers,
+                  children: List<Widget>.from(layers) + mustLayers,
                 ),
               ),
 
@@ -386,7 +472,7 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
             ],
           ),
         ),
-      ),
+      )
     );
   }
 
@@ -428,9 +514,9 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
           width: headerHeight,
           child: IconButton(
             icon: Icon(Icons.layers),
-            onPressed: () {
+            onPressed: () async {
               print('layers');
-              showDialog(
+              layers = await showDialog(
                 context: context,
                 builder: (_) {
                   return MusicLayerSetting(callbackSetLayer, layers, MusicPlayerState.screenSize);
@@ -514,7 +600,8 @@ class MusicPlayerState extends State<MusicPlayer> with TickerProviderStateMixin 
               _animatedIconController.reverse();
               print(sliderValue);
               sliderValue == 0
-                  ? PlatformMethodInvoker.playFromCurrentQueueIndex(): PlatformMethodInvoker.play();
+                  ? PlatformMethodInvoker.playFromCurrentQueueIndex(isForce: true)
+                  : PlatformMethodInvoker.playFromCurrentQueueIndex(isForce: false);
             }
             setState(() {
               animatedIconControllerChecker = !animatedIconControllerChecker;

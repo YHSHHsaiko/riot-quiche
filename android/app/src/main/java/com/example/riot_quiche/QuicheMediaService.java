@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -13,13 +15,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcel;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,6 +43,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +67,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
     private int notificationVisibility = NotificationCompat.VISIBILITY_PUBLIC;
 
     private int isConnect = 0; // false
+
+    private String currentMediaId = "";
 
     private ArrayList<MediaSessionCompat.QueueItem> queueItems = new ArrayList<>();
     private int queueIndex = 0;
@@ -343,8 +348,6 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
             return null;
         }
 
-        MediaDescriptionCompat description = metadata.getDescription();
-
         Intent notificationIntent = getApplicationContext().getPackageManager()
                 .getLaunchIntentForPackage(getApplicationContext().getPackageName());
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -366,6 +369,86 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         }
 
+        //
+        RemoteViews notificationLayout;
+        RemoteViews notificationLayoutExpanded;
+        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+            notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_small_pause);
+            notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.notification_large_pause);
+        } else {
+            notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_small_play);
+            notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.notification_large_play);
+        }
+
+        // set title and artist name
+        MediaMetadataCompat currentMedia = library.getMetadataFromMediaId(currentMediaId);
+        String title = currentMedia.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+        String artist = currentMedia.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
+//        int preferredSize = 8 * 30;
+//        if (title.getBytes().length > preferredSize) {
+//            title = title.substring(0, preferredSize) + "...";
+//        }
+//        if (artist.length() > preferredSize) {
+//            artist= artist.substring(0, preferredSize) + "...";
+//        }
+        notificationLayout.setTextViewText(R.id.title, title);
+        notificationLayoutExpanded.setTextViewText(R.id.title, title);
+        notificationLayout.setTextViewText(R.id.artist, artist);
+        notificationLayoutExpanded.setTextViewText(R.id.artist, artist);
+        //
+
+        Bitmap jacket = null;
+        if (library.getArtMap().containsKey(currentMediaId)) {
+            byte[] tmpByteArr = library.getArtMap().get(currentMediaId);
+            jacket = BitmapFactory.decodeByteArray(tmpByteArr, 0, tmpByteArr.length);
+        } else {
+            try {
+                jacket = BitmapFactory.decodeStream(getAssets().open("images/icon.png"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (jacket == null) {
+            try {
+                InputStream ims = getAssets().open("images/icon.png");
+
+                jacket = BitmapFactory.decodeStream(ims);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        PendingIntent previous = MediaButtonReceiver.buildMediaButtonPendingIntent(
+                this,
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        );
+        PendingIntent next = MediaButtonReceiver.buildMediaButtonPendingIntent(
+                this,
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+        );
+
+        PendingIntent play_pause;
+        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+            play_pause = MediaButtonReceiver.buildMediaButtonPendingIntent(
+                    this,
+                    PlaybackStateCompat.ACTION_PAUSE
+            );
+
+        } else {
+            play_pause = MediaButtonReceiver.buildMediaButtonPendingIntent(
+                    this,
+                    PlaybackStateCompat.ACTION_PLAY
+            );
+        }
+
+        notificationLayout.setOnClickPendingIntent(R.id.previous, previous);
+        notificationLayout.setOnClickPendingIntent(R.id.play_pause, play_pause);
+        notificationLayout.setOnClickPendingIntent(R.id.next, next);
+        notificationLayoutExpanded.setOnClickPendingIntent(R.id.previous, previous);
+        notificationLayoutExpanded.setOnClickPendingIntent(R.id.play_pause, play_pause);
+        notificationLayoutExpanded.setOnClickPendingIntent(R.id.next, next);
+        //
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 getApplicationContext(), NOTIFICATION_CHANNEL_ID);
 
@@ -377,52 +460,52 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         );
 
         builder
-                .setContentTitle(description.getTitle())
-                .setSubText(description.getDescription())
-                .setLargeIcon(description.getIconBitmap())
+                .setStyle(new androidx.media.app.NotificationCompat.DecoratedMediaCustomViewStyle()
+                .setMediaSession(mediaSession.getSessionToken()))
+                .setCustomContentView(notificationLayout)
+                .setCustomBigContentView(notificationLayoutExpanded)
+
+                .setSmallIcon(R.drawable.exo_controls_play)
+                .setLargeIcon(jacket)
 
                 .setContentIntent(pendingIntent)
 
                 .setDeleteIntent(deletePendingIntent)
 
                 .setVisibility(notificationVisibility)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-
-                .setSmallIcon(R.drawable.exo_controls_play)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
 
                 .setDefaults(0)
-//                .setColor()
-//                .setStyle()
         ;
 
-        builder.addAction(new NotificationCompat.Action(
-                R.drawable.exo_controls_previous, "prev",
-                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                )
-        ));
-        builder.addAction(new NotificationCompat.Action(
-                R.drawable.exo_controls_next, "next",
-                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT)
-                )
-        );
-
-        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
-
-            builder.addAction(new NotificationCompat.Action(
-                    R.drawable.exo_controls_pause, "pause",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this,
-                            PlaybackStateCompat.ACTION_PAUSE)));
-        } else {
-
-            builder.addAction(new NotificationCompat.Action(
-                    R.drawable.exo_controls_play, "play",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this,
-                            PlaybackStateCompat.ACTION_PLAY)));
-        }
+//        builder.addAction(new NotificationCompat.Action(
+//                R.drawable.exo_controls_rewind, "prev",
+//                MediaButtonReceiver.buildMediaButtonPendingIntent(
+//                        this,
+//                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+//                )
+//        ));
+//        builder.addAction(new NotificationCompat.Action(
+//                R.drawable.exo_controls_next, "next",
+//                MediaButtonReceiver.buildMediaButtonPendingIntent(
+//                        this,
+//                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT)
+//                )
+//        );
+//
+//        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+//
+//            builder.addAction(new NotificationCompat.Action(
+//                    R.drawable.exo_controls_pause, "pause",
+//                    MediaButtonReceiver.buildMediaButtonPendingIntent(this,
+//                            PlaybackStateCompat.ACTION_PAUSE)));
+//        } else {
+//
+//            builder.addAction(new NotificationCompat.Action(
+//                    R.drawable.exo_controls_play, "play",
+//                    MediaButtonReceiver.buildMediaButtonPendingIntent(this,
+//                            PlaybackStateCompat.ACTION_PLAY)));
+//        }
 
         Log.d("NOTIFICATION", "build");
         return builder.build();
@@ -432,7 +515,8 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         public static final String CUSTOM_ACTION_SET_QUEUE = "SET_QUEUE";
         public static final String CUSTOM_ACTION_STOP_SERVICE = "STOP_SERVICE";
         public static final String CUSTOM_ACTION_STOP_FOREGROUND = "STOP_FOREGROUND";
-        public static final String CUSTOM_ACTION_SET_CONNECT = "CUSTOM_ACTION_SET_CONNECT";
+        public static final String CUSTOM_ACTION_SET_CONNECT = "SET_CONNECT";
+        public static final String CUSTOM_ACTION_PLAY_FROM_QUEUE_INDEX = "PLAY_FROM_QUEUE_INDEX";
 
         private AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener =
                 new AudioManager.OnAudioFocusChangeListener() {
@@ -479,26 +563,37 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPlayFromMediaId (String mediaId, Bundle extras) {
-            /*
-            On played from local media ID (not an external network URI or others).
-            */
-            MediaBrowserCompat.MediaItem targetItem = library.getMediaItemFromMediaId(mediaId);
+            Byte isForce = 1;
+            if (extras != null) {
+                isForce = extras.getByte("isForce");
+            }
 
-            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
-                    getApplicationContext(),
-                    Util.getUserAgent(getApplicationContext(), "riot-quiche")
-            );
-            Uri uri = targetItem.getDescription().getMediaUri();
-            MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(uri);
+            if (isForce == 1 || !currentMediaId.equals(mediaId)) {
+                /*
+                On played from local media ID (not an external network URI or others).
+                */
+                MediaBrowserCompat.MediaItem targetItem = library.getMediaItemFromMediaId(mediaId);
 
-            // prepare exoPlayer
-            exoPlayer.prepare(mediaSource);
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
+                        getApplicationContext(),
+                        Util.getUserAgent(getApplicationContext(), "riot-quiche")
+                );
+                Uri uri = targetItem.getDescription().getMediaUri();
+                MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(uri);
 
-            Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
-            onPlay();
+                // prepare exoPlayer
+                exoPlayer.prepare(mediaSource);
 
-            mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
+                Log.d("service", "onPlayFromMediaId: play [" + uri.toString() + "]");
+                onPlay();
+
+                mediaSession.setMetadata(library.getMetadataFromMediaId(mediaId));
+            } else {
+                onPlay();
+            }
+
+            currentMediaId = mediaId;
         }
 
         @Override
@@ -578,6 +673,10 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 case QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_SET_CONNECT: {
                     isConnect = extras.getInt("connection");
                     break;
+                }
+                case QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_PLAY_FROM_QUEUE_INDEX: {
+                    queueIndex = (int)extras.getLong("index");
+                    onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), extras);
                 }
                 default: {
                     break;

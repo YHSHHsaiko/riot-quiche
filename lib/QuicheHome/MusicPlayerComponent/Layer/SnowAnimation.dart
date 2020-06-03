@@ -1,36 +1,107 @@
+import 'dart:io';
 import 'dart:math';
+
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:riot_quiche/QuicheAssets.dart';
 import 'package:riot_quiche/QuicheHome/CustomizableWidget.dart';
-import 'package:riot_quiche/Enumerates/LayerType.dart';
+import 'package:riot_quiche/Enumerates/StackLayerType.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerSetting.dart';
 import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
+import 'package:riot_quiche/QuicheOracle.dart';
 
 
-class SnowAnimation extends StatefulWidget implements CustomizableWidget{
+//<<<<<<< HEAD
+//class SnowAnimation extends StatefulWidget implements CustomizableWidget{
+//  final int snowNumber; // 個数
+//=======
+class SnowAnimation extends CustomizableStatefulWidget {
   final int snowNumber; // 個数
+//>>>>>>> 3b4b4eb2df3482c34ddf00c5af87c2f4025a14c6
   final double speed; // 落下速度
   final Size screenSize; // screenSize
   final bool isGradient;
   final Color color;
 
+  @override
+  final String uniqueID;
+
+
   SnowAnimation({
     this.snowNumber = 50,
     this.speed = 0.1,
-    this.screenSize,
+    @required this.screenSize,
     this.isGradient = false,
     this.color = Colors.white,
-  }): assert(screenSize != null);
+    @required this.uniqueID
+  })
+  : assert(screenSize != null),
+    assert(uniqueID != null),
+    super();
+
+
+  factory SnowAnimation.fromJson (Map<String, dynamic> importedSetting) {
+    int snowNumber = importedSetting['snowNumber'];
+    double speed = importedSetting['snowNumber'];
+    Size screenSize = Size(importedSetting['screenSize'][0], importedSetting['screenSize'][1]);
+    bool isGradient = importedSetting['isGradient'];
+    Color color = Color(importedSetting['color']);
+    String uniqueID = importedSetting['uniqueID'];
+
+    return SnowAnimation(
+      snowNumber: snowNumber,
+      speed: speed,
+      screenSize: screenSize,
+      isGradient: isGradient,
+      color: color,
+      uniqueID: uniqueID
+    );
+  }
+
+
+  factory SnowAnimation.fromLayerPropList(List<LayerProp> list, Size screenSize){
+    print('SnowAnimation.fromLayerPropList');
+    
+    return SnowAnimation(
+      snowNumber: list[0].result,
+      speed: list[1].result,
+      screenSize: screenSize,
+      isGradient: list[2].result,
+      color: ColorProp.getColor(list[3].result),
+      uniqueID: DateTime.now().millisecondsSinceEpoch.toString()
+    );
+  }
+
 
   @override
   _SnowAnimationState createState() => _SnowAnimationState();
 
   // CustomizableWidget
   @override
-  LayerType layerType = LayerType.snowAnimation;
+  final StackLayerType layerType = StackLayerType.SnowAnimation;
+
   @override
-  Map<String, dynamic> setting;
+  SnowAnimation importSetting (Map<String, dynamic> importedSetting) {
+    return SnowAnimation.fromJson(importedSetting);
+  }
+
+  @override
+  Map<String, dynamic> exportSetting () {
+    Map<String, dynamic> settingJson = {
+      "snowNumber": snowNumber,
+      "speed": speed,
+      "screenSize": [screenSize.width, screenSize.height],
+      "isGradient": isGradient,
+      "color": color.value,
+      "stackLayerType": layerType.name,
+      "uniqueID": uniqueID
+    };
+
+    return settingJson;
+  }
+  //
 
   static List<LayerProp> getSettingList(){
     List<LayerProp> list = [
@@ -42,21 +113,12 @@ class SnowAnimation extends StatefulWidget implements CustomizableWidget{
     return list;
   }
 
-  factory SnowAnimation.fromLayerPropList(List<LayerProp> list, Size screenSize){
-    return SnowAnimation(
-      snowNumber: list[0].result,
-      speed: list[1].result,
-      screenSize: screenSize,
-      isGradient: list[2].result,
-      color: ColorProp.getColor(list[3].result),
-    );
-  }
 
   @override
-  String imagePath = 'images/dopper.jpg';
+  String get imagePath => QuicheAssets.iconPath;
 
   @override
-  String widgetNameJP = '雪';
+  String get widgetNameJP => '雪';
 }
 
 class _SnowAnimationState extends State<SnowAnimation> with SingleTickerProviderStateMixin{
