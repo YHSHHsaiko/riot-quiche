@@ -94,8 +94,10 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
      *   The current position
      * index 1: [int]
      *   The current playback state
+     * index 2: [int]
+     *   The current queue index
      * */
-    int playbackStateInformationSize = 2;
+    int playbackStateInformationSize = 3;
     private ArrayList<Object> playbackStateInformationObject;
 
 
@@ -251,6 +253,9 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
 
                     /* retrieve current playback state */
                     playbackStateInformationObject.set(1, currentState);
+
+                    /* retrieve queue index */
+                    playbackStateInformationObject.set(2, queueIndex);
 
                     /* call red shift-taste function */
                     EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();

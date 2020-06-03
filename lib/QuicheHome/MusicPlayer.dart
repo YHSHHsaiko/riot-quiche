@@ -130,8 +130,9 @@ class MusicPlayerState extends State<MusicPlayer>
     repeatChecker = widget.repeatChecker;
     //
 
-    PlatformMethodInvoker.redShift((int position, PlaybackState state){
+    PlatformMethodInvoker.redShift((int position, PlaybackState state, int queueIndex){
       _currentState = state;
+      
 
       setState(() {
         sliderValue = position.toDouble();
@@ -162,6 +163,10 @@ class MusicPlayerState extends State<MusicPlayer>
       }
 
       animatedIconControllerChecker = _flagsForAnimatedIconControllerChecker;
+
+      if (nowPlayIndexOfQueue != queueIndex) {
+        _setMusic(musicList, queueIndex, false);
+      }
 
     });
 
