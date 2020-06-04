@@ -47,13 +47,16 @@ class _RequestPermissionsSectionState extends State<RequestPermissionsSection> {
             onPressed: () async {
               List<bool> isGranted = await PlatformMethodInvoker.requestPermissions(Permission.values);
 
-              for (int i = 0; i < Permission.values.length; ++i) {
+              for (int i = 0; i < isGranted.length; ++i) {
                 if (isGranted[i]) {
                   print('permission is granted: ${Permission.values[i]}');
                   QuicheOracleVariables.permissionInformation[Permission.values[i]] = true;
 
                   switch (Permission.values[i]) {
                     case Permission.READ_EXTERNAL_STORAGE: {
+                      break;
+                    }
+                    case Permission.FOREGROUND_SERVICE: {
                       break;
                     }
                     default: {
@@ -66,6 +69,9 @@ class _RequestPermissionsSectionState extends State<RequestPermissionsSection> {
 
                   switch (Permission.values[i]) {
                     case Permission.READ_EXTERNAL_STORAGE: {
+                      break;
+                    }
+                    case Permission.FOREGROUND_SERVICE: {
                       break;
                     }
                     default: {
@@ -102,6 +108,7 @@ class _RequestPermissionsSectionState extends State<RequestPermissionsSection> {
           children: <Widget>[
             // ここに各説明を挿入
             _PermissionExplanation1(),
+            _PermissionExplanation2()
           ],
           onPageChanged: (int p) => _onPageChanged(context, p),
         ),
@@ -139,6 +146,32 @@ class _PermissionExplanation1 extends StatelessWidget {
       child: const Text('''
         このアプリを起動するには、
         ストレージアクセス権限が必要です。
+        
+        ご理解ご協力のほど、よろしくお願い致します！
+      ''')
+    );
+  }
+}
+
+/*
+ * - permission 1:
+ *  foreground_service
+ * - Summary:
+ *  for android 9.0 (SDK version 28), we have to request permission for launching foreground service.
+ */
+class _PermissionExplanation2 extends StatelessWidget {
+
+  const _PermissionExplanation2 ({
+    Key key
+  })
+  : super(key: key);
+  
+  @override
+  Widget build (BuildContext context) {
+    return Center(
+      child: const Text('''
+        音楽を再生するには、
+        音楽サービスの起動権限が必要です。
         
         ご理解ご協力のほど、よろしくお願い致します！
       ''')

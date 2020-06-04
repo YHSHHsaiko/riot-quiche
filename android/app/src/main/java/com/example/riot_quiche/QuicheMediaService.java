@@ -605,7 +605,9 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
         public void onPlay () {
             if (audioManager.requestAudioFocus(audioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 Log.d("onPlay", "on PLAY granted.");
-                startService(new Intent(getApplicationContext(), QuicheMediaService.class));
+                try {
+                    startService(new Intent(getApplicationContext(), QuicheMediaService.class));
+                } catch (Exception e) {}
                 // activate media session
                 mediaSession.setActive(true);
                 exoPlayer.setPlayWhenReady(true);

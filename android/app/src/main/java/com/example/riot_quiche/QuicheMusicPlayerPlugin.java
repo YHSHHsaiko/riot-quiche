@@ -2,6 +2,7 @@ package com.example.riot_quiche;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -482,6 +483,12 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                         permissionIdentifiers.add(QuicheRequiredPermissions.READ_EXTERNAL_STORAGE);
                         break;
                     }
+                    case 1: {
+                        Log.d("ANDROID", "SDK VERSION: " + Build.VERSION.SDK_INT);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            permissionIdentifiers.add(QuicheRequiredPermissions.FOREGROUND_SERVICE);
+                        }
+                    }
                     default: {
                         Log.w("plugin", "[permission] this index will be ignored: " + permissionInteger);
                         break;
@@ -504,7 +511,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                                 Log.d("permissionResults", permissionResult.toString());
                                 int[] result = new int[permissionResult.size()];
 
-                                for (int i = 0; i < permissionIdentifiers.size(); ++i) {
+                                for (int i = 0; i < result.length; ++i) {
                                     String permissionIdentifier = permissionIdentifiers.get(i);
                                     if (permissionResult.containsKey(permissionIdentifier)) {
 //                                        result[i] = permissionResult.get(permissionIdentifier);

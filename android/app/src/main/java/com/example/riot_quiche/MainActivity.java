@@ -227,8 +227,10 @@ public class MainActivity extends FlutterActivity {
     private boolean startServiceAndConnect () {
         boolean hasAlreadyStarted = isMyServiceRunning(QuicheMediaService.class);
 
-        // start media foreground service
-        startService(new Intent(getApplicationContext(), QuicheMediaService.class));
+        if (!hasAlreadyStarted) {
+            // start media foreground service
+            startService(new Intent(getApplicationContext(), QuicheMediaService.class));
+        }
 
         // initialize media browser
         mediaBrowser = new MediaBrowserCompat(
