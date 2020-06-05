@@ -19,6 +19,7 @@ import 'package:riot_quiche/QuicheHome/Widgets/AutoScrollText.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 import 'package:riot_quiche/PlatformMethodInvoker.dart';
 import 'package:riot_quiche/Enumerates/BottomMenuEnum.dart';
+import 'package:image/image.dart' as img;
 
 
 
@@ -163,6 +164,7 @@ class MusicPlayerState extends State<MusicPlayer>
 
       animatedIconControllerChecker = _flagsForAnimatedIconControllerChecker;
 
+
     });
 
 
@@ -190,7 +192,49 @@ class MusicPlayerState extends State<MusicPlayer>
 
     WidgetsBinding.instance.addObserver(this);
     //
+
   }
+
+
+
+  /// ************************************************************************************
+  /// get pixel color
+
+
+  img.Image photo;
+  Color colorBack = Colors.white;
+
+  void searchPixel(Offset globalPosition) async {
+    _calculatePixel(globalPosition);
+  }
+
+  void _calculatePixel(Offset globalPosition) {
+    double px = globalPosition.dx;
+    double py = globalPosition.dy;
+
+    int pixel32 = photo.getPixelSafe(px.toInt(), py.toInt());
+    int hex = abgrToArgb(pixel32);
+
+    setState(() {
+      colorBack = Color(hex);
+    });
+  }
+
+  int abgrToArgb(int argbColor) {
+    int r = (argbColor >> 16) & 0xFF;
+    int b = argbColor & 0xFF;
+    return (argbColor & 0xFF00FF00) | (b << 16) | r;
+  }
+
+
+
+  /// ************************************************************************************
+
+
+
+
+
+
 
   @override
   void dispose () {
@@ -371,6 +415,12 @@ class MusicPlayerState extends State<MusicPlayer>
     Image returnsImageArt = _music.getArt();
     ImageProvider jacketImage = returnsImageArt == null ? AssetImage(imagePath) : returnsImageArt.image;
 
+    /// ************************************************************************************
+    photo = img.decodeImage(_music.art);
+    searchPixel(Offset(screenSize.width/2, screenSize.height/20));
+    /// ************************************************************************************
+
+
     mustLayers.clear();
     mustLayers.addAll([
       // Gesture Layer
@@ -502,7 +552,10 @@ class MusicPlayerState extends State<MusicPlayer>
                 height: headerHeight,
                 child: AutoScrollText(
                   text: _music.title,
-                  textStyle: TextStyle(fontSize: headerHeight / 2.5),
+                  textStyle: TextStyle(
+                    fontSize: headerHeight / 2.5,
+                    color: colorBack,
+                  ),
                 ),
               ),
             ],
