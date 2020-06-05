@@ -135,7 +135,7 @@ class PlatformMethodInvoker {
   }
 
   static Stream<dynamic> redShift (
-    void Function(int position, PlaybackState state) onData,
+    void Function(int position, PlaybackState state, int queueIndex) onData,
     {void Function(dynamic) onError, void Function() onDone}) {
 
     var stream = _redShiftChannel.receiveBroadcastStream(<dynamic>[
@@ -144,11 +144,12 @@ class PlatformMethodInvoker {
 
     final void Function(dynamic) _onData = (dynamic playbackInformationObject) {
       if (playbackInformationObject != null) {
-        List<dynamic> playbackinformationList = playbackInformationObject as List<dynamic>;
-        int position = playbackinformationList[0] as int;
-        int state = playbackinformationList[1] as int;
+        List<dynamic> playbackInformationList = playbackInformationObject as List<dynamic>;
+        int position = playbackInformationList[0] as int;
+        int state = playbackInformationList[1] as int;
+        int queueIndex = playbackInformationList[2] as int;
 
-        onData(position, PlaybackStateExt.of(state));
+        onData(position, PlaybackStateExt.of(state), queueIndex);
       } else {
         print('info: play back state is null.');
       }

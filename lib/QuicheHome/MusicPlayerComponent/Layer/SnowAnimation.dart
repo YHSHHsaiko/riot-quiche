@@ -13,13 +13,8 @@ import 'package:riot_quiche/QuicheHome/MusicPlayerComponent/LayerVarious.dart';
 import 'package:riot_quiche/QuicheOracle.dart';
 
 
-//<<<<<<< HEAD
-//class SnowAnimation extends StatefulWidget implements CustomizableWidget{
-//  final int snowNumber; // 個数
-//=======
 class SnowAnimation extends CustomizableStatefulWidget {
   final int snowNumber; // 個数
-//>>>>>>> 3b4b4eb2df3482c34ddf00c5af87c2f4025a14c6
   final double speed; // 落下速度
   final Size screenSize; // screenSize
   final bool isGradient;

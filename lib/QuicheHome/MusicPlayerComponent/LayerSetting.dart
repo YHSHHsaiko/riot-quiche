@@ -136,7 +136,7 @@ class LayerSettingState extends State<LayerSetting>{
             Expanded(
               flex: 1,
               child: IconButton(
-                icon: Icon(Icons.arrow_left),
+                icon: _shadowedIcon(Icons.arrow_left),
                 color: ColorProp.getPrevColor(_colorType),
                 onPressed: (){
                   setState((){
@@ -156,7 +156,7 @@ class LayerSettingState extends State<LayerSetting>{
             Expanded(
               flex: 1,
               child: IconButton(
-                icon: Icon(Icons.arrow_right),
+                icon: _shadowedIcon(Icons.arrow_right),
                 color: ColorProp.getNextColor(_colorType),
                 onPressed: (){
                   setState((){
@@ -168,6 +168,18 @@ class LayerSettingState extends State<LayerSetting>{
           ]
         )
       )
+    );
+  }
+
+  Widget _shadowedIcon (IconData iconData) {
+    double iconSize = 20.0;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withAlpha(40),
+        borderRadius: BorderRadius.all(Radius.circular(10))
+      ),
+      child: Icon(iconData, size: iconSize)
     );
   }
 
