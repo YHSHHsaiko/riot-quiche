@@ -182,7 +182,9 @@ extension QuicheOracleFunctions on QuicheOracle {
     List<Album> result = List<Album>();
     for (String id in (order == 'ASC') ? idList.keys : List<String>.from(idList.keys).reversed) {
       idList[id].sort((m1, m2) {
-        return m1.title.compareTo(m2.title);
+        int m1Id = int.parse(m1.id);
+        int m2Id = int.parse(m2.id);
+        return m1Id.compareTo(m2Id);
       });
 
       Music target = idList[id][0];
@@ -215,6 +217,9 @@ extension QuicheOracleFunctions on QuicheOracle {
       }
     }
 
+    result.sort((a1, a2) {
+      return a1.title.compareTo(a2.title);
+    });
     return result;
   }
 }
