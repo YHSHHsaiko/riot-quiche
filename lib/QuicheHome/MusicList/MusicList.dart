@@ -135,33 +135,43 @@ class _MusicListState extends State<MusicList> with TickerProviderStateMixin {
         return Future.value(false);
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('Select Music'),
-          bottom: PreferredSize(
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabs: <Tab>[
-                const Tab(
-                  text: 'Library'
-                ),
-                const Tab(
-                  text: 'Playlist'
-                )
-              ]
-            ),
-            preferredSize: Size.fromHeight(30.0)
-          ),
-        ),
-        body: Stack(
+        body: Column(
           children: <Widget>[
-            TabBarView(
-              controller: _tabController,
-              children: _tabs
+            PreferredSize(
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabs: <Tab>[
+                  Tab(
+                    child: Text(
+                      'Library',
+                      style: TextStyle(color: Colors.black45)
+                    )
+                  ),
+                  Tab(
+                    child: Text(
+                      'Playlist',
+                      style: TextStyle(color: Colors.black45)
+                    )
+                  )
+                ]
+              ),
+              preferredSize: Size.fromHeight(30.0)
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier, widget.onMusicChangedForSubPlayerNotifier),
+            Expanded(
+              flex: 3,
+              child: Stack(
+                children: <Widget>[
+                  TabBarView(
+                    controller: _tabController,
+                    children: _tabs
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: SubPlayer(widget.musicList[playIndex], onMusicChangedNotifier, widget.onMusicChangedForSubPlayerNotifier),
+                  )
+                ]
+              )
             )
           ]
         )

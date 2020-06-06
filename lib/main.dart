@@ -17,7 +17,7 @@ class QuicheMusicPlayer extends StatelessWidget with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nakamara has gone',
+      title: 'phonier',
       routes: <String, WidgetBuilder>{
         RouteName.Splash.name: (BuildContext context) {
           print('current Widget: ${RouteName.Splash.name}');

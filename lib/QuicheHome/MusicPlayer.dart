@@ -78,6 +78,9 @@ class MusicPlayerState extends State<MusicPlayer>
   PlaybackState _currentState;
   int _layerPreset;
   ValueNotifier<List<dynamic>> onMusicChangedForSubPlayerNotifier;
+
+  ImageProvider jacketImage;
+  Color againstColor;
   //
 
 
@@ -361,7 +364,7 @@ class MusicPlayerState extends State<MusicPlayer>
 
 
   /// set music
-  Future<int> _setMusic (dynamic music, int playIndex, bool isInitial) async {
+  Future<int> _setMusic (dynamic music, int playIndex, bool isInitial) async {    
     nowPlayIndexOfQueue = playIndex;
 
     if (music is Music){
@@ -398,6 +401,22 @@ class MusicPlayerState extends State<MusicPlayer>
       }
     }
 
+    /// ************************************************************************************
+    photo = img.decodeImage(_music.art);
+    int sum = 0;
+    for (int color in photo.data) {
+      sum += abgrToArgb(color);
+    }
+    colorBack = Color(sum ~/ photo.data.length);
+    
+    double luminance = colorBack.computeLuminance();
+    if (luminance > 0.5) {
+      againstColor = Colors.white;
+    } else {
+      againstColor = Colors.black;
+    }
+    /// ************************************************************************************
+
     onMusicChangedForSubPlayerNotifier.value = <dynamic>[musicList, nowPlayIndexOfQueue];
 
     setState(() {});
@@ -417,13 +436,7 @@ class MusicPlayerState extends State<MusicPlayer>
   @override
   Widget build(BuildContext context) {
     Image returnsImageArt = _music.getArt();
-    ImageProvider jacketImage = returnsImageArt == null ? AssetImage(imagePath) : returnsImageArt.image;
-
-    /// ************************************************************************************
-    photo = img.decodeImage(_music.art);
-    searchPixel(Offset(screenSize.width/2, screenSize.height/20));
-    /// ************************************************************************************
-
+    jacketImage = returnsImageArt == null ? QuicheAssets.icon.image : returnsImageArt.image;
 
     mustLayers.clear();
     mustLayers.addAll([
@@ -558,7 +571,7 @@ class MusicPlayerState extends State<MusicPlayer>
                   text: _music.title,
                   textStyle: TextStyle(
                     fontSize: headerHeight / 2.5,
-                    color: colorBack,
+                    color: againstColor,
                   ),
                 ),
               ),

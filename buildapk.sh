@@ -1,0 +1,1 @@
+bundletool.sh build-apks --bundle=./build/app/outputs/bundle/release/app-release.aab --output=./build/app/outputs/bundle/release/app-release.apks --ks="C:\Users\YHSHHsaiko\key.jks" --ks-key-alias=mimisbrunnr
