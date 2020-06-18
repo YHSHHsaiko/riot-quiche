@@ -470,7 +470,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 .setCustomContentView(notificationLayout)
                 .setCustomBigContentView(notificationLayoutExpanded)
 
-                .setSmallIcon(R.drawable.exo_controls_play)
+                .setSmallIcon(R.drawable.ic_stat_name)
                 .setLargeIcon(jacket)
 
                 .setContentIntent(pendingIntent)
