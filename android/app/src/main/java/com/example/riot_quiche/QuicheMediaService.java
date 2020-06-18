@@ -681,6 +681,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                 }
                 case QuicheMediaService.QuicheMediaSessionCallback.CUSTOM_ACTION_PLAY_FROM_QUEUE_INDEX: {
                     queueIndex = (int)extras.getLong("index");
+                    Log.d("aaaaaaaaaaaaaaaa", "QUEUE INDEXXXXXXX: " + queueIndex);
                     onPlayFromMediaId(queueItems.get(queueIndex).getDescription().getMediaId(), extras);
                 }
                 default: {

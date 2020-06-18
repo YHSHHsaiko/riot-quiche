@@ -132,6 +132,7 @@ class MusicPlayerState extends State<MusicPlayer>
     //
     _currentState = PlaybackState.STATE_STOPPED;
     repeatChecker = widget.repeatChecker;
+    nowPlayIndexOfQueue = widget.index;
     //
 
     PlatformMethodInvoker.redShift((int position, PlaybackState state, int queueIndex){
@@ -168,9 +169,9 @@ class MusicPlayerState extends State<MusicPlayer>
 
       animatedIconControllerChecker = _flagsForAnimatedIconControllerChecker;
 
-      if (nowPlayIndexOfQueue != queueIndex) {
-        _setMusic(musicList, queueIndex, false);
-      }
+      // if (nowPlayIndexOfQueue != queueIndex) {
+      //   _setMusic(musicList, queueIndex, false);
+      // }
 
     });
 
@@ -304,6 +305,7 @@ class MusicPlayerState extends State<MusicPlayer>
         dispose();
         break;
       }
+      case AppLifecycleState.inactive:
       case AppLifecycleState.paused: {
         _saveCache();
         break;
@@ -364,7 +366,7 @@ class MusicPlayerState extends State<MusicPlayer>
 
 
   /// set music
-  Future<int> _setMusic (dynamic music, int playIndex, bool isInitial) async {    
+  Future<int> _setMusic (dynamic music, int playIndex, bool isInitial) async {
     nowPlayIndexOfQueue = playIndex;
 
     if (music is Music){
@@ -402,18 +404,25 @@ class MusicPlayerState extends State<MusicPlayer>
     }
 
     /// ************************************************************************************
-    photo = img.decodeImage(_music.art);
-    int sum = 0;
-    for (int color in photo.data) {
-      sum += abgrToArgb(color);
-    }
-    colorBack = Color(sum ~/ photo.data.length);
-    
-    double luminance = colorBack.computeLuminance();
-    if (luminance > 0.5) {
-      againstColor = Colors.white;
+
+    print('TITLE_____________: ${_music.title}');
+    if (_music.art != null) {
+      photo = img.decodeImage(_music.art);
+      int sum = 0;
+      for (int color in photo.data) {
+        sum += abgrToArgb(color);
+      }
+      colorBack = Color(sum ~/ photo.data.length);
+      
+      double luminance = colorBack.computeLuminance();
+      if (luminance > 0.5) {
+        againstColor = Colors.white;
+      } else {
+        againstColor = Colors.black;
+      }
     } else {
-      againstColor = Colors.black;
+      colorBack = Colors.black;
+      againstColor = Colors.white;
     }
     /// ************************************************************************************
 
