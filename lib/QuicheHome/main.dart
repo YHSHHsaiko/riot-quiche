@@ -106,6 +106,12 @@ class _QuicheHomeState extends State<QuicheHome> {
       print('RESULT OF TRIGGER: ${isServiceAlreadyStarted}');
 
       await PlatformMethodInvoker.butterflyEffect();
+      PlatformMethodInvoker.quietusRay((dynamic data) {
+        Map<dynamic, dynamic> artMap = data as Map<dynamic, dynamic>;
+        for (String id in List<String>.from(artMap.keys)) {
+          QuicheOracleVariables.musicMap[id].art = (artMap[id]);
+        }
+      });
 
     } catch (err) {
       print(err);

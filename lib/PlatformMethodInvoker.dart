@@ -18,6 +18,9 @@ class PlatformMethodInvoker {
   static const EventChannel _redShiftChannel = const EventChannel(
     'redshift_channel'
   );
+  static const EventChannel _quietusRayChannel = const EventChannel(
+    'quietusray_channel'
+  );
 
   static String currentMediaId;
   static int currentQueueIndex;
@@ -157,6 +160,21 @@ class PlatformMethodInvoker {
 
     return stream..listen(
       _onData,
+      onError: onError,
+      onDone: onDone
+    );
+  }
+
+  static Stream<dynamic> quietusRay (
+    void Function(Map<String, List<int>> data) onData,
+    {void Function(dynamic) onError, void Function() onDone}) {
+
+    var stream = _quietusRayChannel.receiveBroadcastStream(<dynamic>[
+      'quietusRay'
+    ]);
+
+    return stream..listen(
+      onData,
       onError: onError,
       onDone: onDone
     );

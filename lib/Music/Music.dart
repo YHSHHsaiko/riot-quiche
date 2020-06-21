@@ -20,7 +20,8 @@ class Music extends Albatross{
   String get artUri => _artUri;
   final String _path;
   String get path => _path;
-  final List<int> _art;
+  List<int> _art;
+  set art (List<int> art) => _art = art;
   List<int> get art => _art;
   
   Music ({
@@ -85,4 +86,5 @@ class Music extends Albatross{
 
     return result;
   }
+
 }

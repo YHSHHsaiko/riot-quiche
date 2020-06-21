@@ -2,6 +2,7 @@ package com.example.riot_quiche;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import io.flutter.Log;
 import io.flutter.plugin.common.EventChannel;
@@ -27,6 +29,8 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     private MainActivity.PluginAPI pluginAPI;
     private MainActivity.PlayerAPI playerAPI;
 
+    private AsyncTask artMapAsyncTask;
+
     public final MethodAPI methodAPI = new MethodAPI();
     public final EventAPI eventAPI = new EventAPI();
 
@@ -38,6 +42,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
     private static final String METHOD_CHANNEL = "test_channel";
     private static final String EVENT_CHANNEL = "event_channel";
     private static final String REDSHIFT_CHANNEL = "redshift_channel";
+    private static final String QUIETUSRAY_CHANNEL = "quietusray_channel";
 
     // function names
     public static class MethodCalls {
@@ -58,6 +63,7 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         public static final String trigger = "trigger";
         public static final String redShift = "redShift";
         public static final String cancelEvent = "cancelEvent";
+        public static final String quietusRay = "quietusRay";
     }
     //
 
@@ -79,6 +85,9 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
         final EventChannel redShiftChannel = new EventChannel(registrar.messenger(), REDSHIFT_CHANNEL);
         redShiftChannel.setStreamHandler(instance);
+
+        final EventChannel quietusRayChannel = new EventChannel(registrar.messenger(), QUIETUSRAY_CHANNEL);
+        quietusRayChannel.setStreamHandler(instance);
 
         return instance;
     }
@@ -284,6 +293,16 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                 break;
             }
 
+            case EventCalls.quietusRay: {
+                try {
+                    eventAPI.quietusRay(sink);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    sink.error(EventCalls.quietusRay, "", null);
+                }
+                break;
+            }
+
             default: {
                 sink.success(null);
                 break;
@@ -443,11 +462,11 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
             try {
                 PublicSink instance = PublicSink.getInstance();
-                EventChannel.EventSink sink = instance.getSink();
+                EventChannel.EventSink sink = instance.getSink(PublicSink.RED_SHIFT_KEY);
                 if (sink != null) {
                     sink.endOfStream();
                 }
-                instance.setSink(null);
+                instance.setSink(PublicSink.RED_SHIFT_KEY, null);
 
                 res = true;
             } catch (Exception e) {
@@ -480,6 +499,10 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
                     // associated with Dart code: Permissions[enum] index
                     case 0: {
                         permissionIdentifiers.add(QuicheRequiredPermissions.READ_EXTERNAL_STORAGE);
+                        break;
+                    }
+                    case 1: {
+                        permissionIdentifiers.add(QuicheRequiredPermissions.FOREGROUND_SERVICE);
                         break;
                     }
                     default: {
@@ -563,7 +586,13 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
         }
 
         public void redShift (EventChannel.EventSink sink) {
-            PublicSink.getInstance().setSink(sink);
+            PublicSink.getInstance().setSink(PublicSink.RED_SHIFT_KEY, sink);
+        }
+
+        public void quietusRay (EventChannel.EventSink sink) {
+            PublicSink.getInstance().setSink(PublicSink.QUIETUS_RAY_KEY, sink);
+
+            artMapAsyncTask = new artMapAsync().execute();
         }
 
         public void cancelEvent (ArrayList<Object> objects, EventChannel.EventSink sink) {
@@ -576,6 +605,33 @@ public class QuicheMusicPlayerPlugin implements MethodCallHandler, StreamHandler
 
         public void receiveResult (String id, Object obj) {
             eventResults.put(id, obj);
+        }
+    }
+
+    private class artMapAsync extends AsyncTask<Integer, Integer, Integer> {
+        @Override
+        protected Integer doInBackground(Integer... value) {
+            try {
+                QuicheLibrary.getInstance().QuietusRay();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return 0;
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            EventChannel.EventSink quietusRaySink = PublicSink.getInstance().getSink(PublicSink.QUIETUS_RAY_KEY);
+            QuicheLibrary library = null;
+            try {
+                library = QuicheLibrary.getInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (library != null) {
+                quietusRaySink.success(library.getArtMap());
+            }
         }
     }
 

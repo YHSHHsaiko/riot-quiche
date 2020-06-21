@@ -161,11 +161,11 @@ public class MainActivity extends FlutterActivity {
         Log.d("activity", "onDestroy()");
 
         // blueShift
-        EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();
+        EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink(PublicSink.RED_SHIFT_KEY);
         if (redShiftSink != null) {
             Log.d("activity", "onDestroy::blueShift");
             redShiftSink.endOfStream();
-            PublicSink.getInstance().setSink(null);
+            PublicSink.getInstance().setSink(PublicSink.RED_SHIFT_KEY, null);
         }
         for (EventChannel.EventSink sink : eventAPI.eventSinks.keySet()) {
             if (sink != null) {

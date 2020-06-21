@@ -258,7 +258,7 @@ public class QuicheMediaService extends MediaBrowserServiceCompat {
                     playbackStateInformationObject.set(2, queueIndex);
 
                     /* call red shift-taste function */
-                    EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink();
+                    EventChannel.EventSink redShiftSink = PublicSink.getInstance().getSink(PublicSink.RED_SHIFT_KEY);
                     if (redShiftSink != null) {
                         redShiftSink.success(playbackStateInformationObject);
                     }

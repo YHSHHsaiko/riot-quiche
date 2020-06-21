@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import io.flutter.Log;
+import io.flutter.plugin.common.EventChannel;
 
 
 public class QuicheLibrary {
@@ -84,6 +85,32 @@ public class QuicheLibrary {
         contentResolver = context.getContentResolver();
         initializeArtMap();
         initializeMetadataMap();
+    }
+
+    public void QuietusRay () {
+        if (metadataMap.isEmpty()) {
+            return;
+        }
+
+        ArrayList<String> metadataMapList = new ArrayList<String>(metadataMap.keySet());
+        MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+        for (int i = 0; i < metadataMapList.size(); ++i) {
+            String key = metadataMapList.get(i);
+            MediaMetadataCompat metadata = metadataMap.get(key);
+            String id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
+            String filePath = metadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE);
+
+            try { // to avoid crash, we must catch exception at this block
+
+                metadataRetriever.setDataSource(filePath);
+                byte[] artArray = metadataRetriever.getEmbeddedPicture();
+                if (artArray != null) {
+                    artMap.put(id, artArray);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public LinkedHashMap<String, MediaMetadataCompat> getMetadataMap () {
@@ -146,12 +173,8 @@ public class QuicheLibrary {
             if (cursor != null) {
                 cursor.moveToFirst();
 
-                Log.d("THREAD_COUNT", Thread.activeCount() + "");
-                int pairListCapacity = 20;
-                ArrayList<Pair<String, String>> PairList_ID_filePath = new ArrayList<Pair<String, String>>(pairListCapacity);
                 HashMap<String, Integer> albumIdMap = new HashMap<>();
-                ExecutorService executorService = Executors.newFixedThreadPool(4);
-                Collection<Future<LinkedHashMap<String, byte[]>>> imageRetrievers = new LinkedList<>();
+
                 while (!cursor.isAfterLast()) {
                     Uri mediaUri = ContentUris.withAppendedId(source, cursor.getLong(id_index));
                     Uri mediaArtUri = getMediaArtUri(cursor.getLong(album_id_index));
@@ -178,43 +201,9 @@ public class QuicheLibrary {
                     Log.d("library", "media URI: " + cursor.getString(title_index));
                     metadataMap.put(cursor.getString(id_index), metadata);
 
-                    String id = cursor.getString(id_index);
-                    String filePath = cursor.getString(data_index);
-                    PairList_ID_filePath.add(new Pair<String, String>(id, filePath));
-
-                    if (PairList_ID_filePath.size() >= pairListCapacity) {
-                        Future<LinkedHashMap<String, byte[]>> imageRetriever = executorService.submit(
-                                new AsyncImageRetriever(new ArrayList<>(PairList_ID_filePath))
-                        );
-                        imageRetrievers.add(imageRetriever);
-
-                        PairList_ID_filePath.clear();
-                    }
-
                     cursor.moveToNext();
                 }
                 cursor.close();
-
-                if (PairList_ID_filePath.size() > 0) {
-                    Future<LinkedHashMap<String, byte[]>> imageRetriever = executorService.submit(
-                            new AsyncImageRetriever(new ArrayList<>(PairList_ID_filePath))
-                    );
-                    imageRetrievers.add(imageRetriever);
-                }
-
-                Log.d("get futures", "* start *");
-                for (Future<LinkedHashMap<String, byte[]>> imageRetriever : imageRetrievers) {
-                    try {
-                        LinkedHashMap<String, byte[]> subMap = imageRetriever.get();
-                        Log.d("asyncImageRetriever", "result map size: " + subMap.size());
-                        artMap.putAll(subMap);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                Log.d("get futures", "* end *");
-
-                executorService.shutdown();
             }
         }
 
