@@ -42,8 +42,8 @@ android {
         applicationId "com.example.riot_quiche"
         minSdkVersion 26
         targetSdkVersion 28
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        versionCode 1
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
